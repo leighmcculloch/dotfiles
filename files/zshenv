@@ -3,6 +3,9 @@
 # path reset on new shells
 export PATH=$ORIGINAL_PATH
 
+# add lazybin
+export PATH=$PATH:$HOME/.lazybin
+
 # add rbenv
 if [[ -f $LOCAL_BIN/rbenv ]]; then
   export RBENV_ROOT=$(dirname $(dirname $(readlink -n $(which rbenv))))
