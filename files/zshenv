@@ -1,13 +1,50 @@
-[ -z "$ORIGINAL_PATH" ] && export ORIGINAL_PATH=$PATH
-
 # path reset on new shells
+[ -z "$ORIGINAL_PATH" ] && export ORIGINAL_PATH=$PATH
 export PATH=$ORIGINAL_PATH
 
-# add lazybin
-export PATH=$PATH:$HOME/.lazybin
+# helper paths
+export DEVEL="$HOME/devel"
+export LAZYBIN="$HOME/.lazybin"
+export SCRIPTS="$HOME/.scripts"
+export LOCAL="$HOME/.local"
+export LOCAL_BIN="$LOCAL/bin"
+mkdir -p "$LOCAL_BIN"
+mkdir -p "$DEVEL"
+mkdir -p "$LAZYBIN"
 
-# add rbenv
+# for folders supplied by dotfiles
+export PATH="$PATH:$SCRIPTS"
+
+# for vim
+export EDITOR=vim
+# for ssh via gpg
+export SSH_AUTH_SOCK=$HOME/.gnupg/S.gpg-agent.ssh
+# for go
+export PATH="$PATH:$LOCAL_BIN/go/latest/bin"
+export GOBIN=$LOCAL_BIN
+# for ruby
 if [[ -f $LOCAL_BIN/rbenv ]]; then
   export RBENV_ROOT=$(dirname $(dirname $(readlink -n $(which rbenv))))
   eval "$(rbenv init -)"
 fi
+# for python
+export PATH="$PATH:$HOME/.local/bin"
+# for yarn
+export PATH="$PATH:$HOME/.yarn/bin"
+# for rust
+export PATH="$PATH:$HOME/.cargo/bin"
+# for java
+export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
+export PATH=$PATH:$LOCAL/apache-maven-3.6.0/bin
+# for dotnet
+export PATH="$PATH:$HOME/.dotnet"
+export PATH="$PATH:$HOME/.dotnet/tools"
+export DOTNET_ROOT="$PATH:$HOME/.dotnet"
+# for postgres running in docker
+export PGHOST=localhost
+export PGUSER=$USER
+# for homebrew
+export HOMEBREW_NO_ANALYTICS=1
+
+# for folders supplied by dotfiles (must be last)
+export PATH="$PATH:$LAZYBIN"
