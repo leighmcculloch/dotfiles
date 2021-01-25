@@ -15,7 +15,6 @@ links=(
   tmux
   tigrc
   vim
-  tmux
   ssh/config
   ssh/known_hosts
   gnupg/gpg-agent.conf
