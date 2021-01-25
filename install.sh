@@ -42,7 +42,3 @@ ln -sf "$PWD/files/enormous.zsh-theme" "$ZSH/custom/themes/"
 
 # install tmux plugins
 ~/.tmux/plugins/tpm/bin/install_plugins
-
-# install vim plugins
-vim +PlugInstall +qa
-vim +GoInstallBinaries +qa
