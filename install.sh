@@ -22,7 +22,7 @@ links=(
   lazybin
   scripts
 )
-for f in "${links}"; do
+for f in "${links[@]}"; do
   dest="$HOME/.$f"
   if [[ "$f" == *\/* ]]; then
     echo "Creating directory $dest..."
