@@ -31,11 +31,13 @@ alias ga.="git add ."
 alias gde="git diff --exit-code"
 
 # go aliases
-for dir in $LOCAL_BIN/go/*;
-do
-  local v=${dir##*/}
-  alias "go$v"="$LOCAL_BIN/go/$v/bin/go"
-done
+if [ -d $LOCAL_BIN/go ]; then
+  for dir in $LOCAL_BIN/go/*;
+  do
+    local v=${dir##*/}
+    alias "go$v"="$LOCAL_BIN/go/$v/bin/go"
+  done
+fi
 
 # load fzf
 if [[ -a $LOCAL/fzf/shell/key-bindings.zsh ]]; then
