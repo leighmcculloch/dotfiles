@@ -46,13 +46,11 @@ versions=(
       curl "https://dl.google.com/go/go$v.linux-amd64.tar.gz" | tar xz --strip-components=1 -C "$installdir/$v"
     done
 
+    echo -e "\e[1;93mLinking ${versions[0]} as latest into PATH...\e[0m"
+    ln -sfn "${versions_without_go_prefix[0]}" "$installdir/latest"
+
     echo -e "\e[1;32mFinished installing '$me'.\e[0m"
   fi
-} 1>&2
-
-{
-  echo -e "\e[1;93mLinking ${versions[0]} as latest into PATH...\e[0m"
-  ln -sfn "${versions_without_go_prefix[0]}" "$installdir/latest"
 } 1>&2
 
 "$me" "$@"
