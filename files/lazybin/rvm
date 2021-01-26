@@ -19,6 +19,4 @@ fi
 
 set +o nounset
 source $HOME/.rvm/scripts/rvm
-set -o nounset
-
 "$me" "$@"
