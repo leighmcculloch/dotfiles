@@ -13,7 +13,7 @@ mkdir -p "$DEVEL"
 mkdir -p "$LAZYBIN"
 
 # for folders supplied by dotfiles
-export PATH="$PATH:$SCRIPTS"
+export PATH="$PATH:$SCRIPTS:$LOCAL_BIN"
 
 # for vim
 export EDITOR=vim
