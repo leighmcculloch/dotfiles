@@ -16,7 +16,7 @@ if ! [ -d "/usr/bin/vim" ] ; then
   
   # install vim plugins
   vim +PlugInstall +qa
-  vim +GoInstallBinaries +qa
+  #vim +GoInstallBinaries +qa
 fi
 
 "$me" "$@"
