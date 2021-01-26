@@ -12,9 +12,9 @@ versions=(
   go1.16beta1
 )
 
-# Add last two releases of Go to list of versions automatically.
+# Add last release of Go to list of versions automatically.
 {
-  versions+=($(curl -s https://golang.org/dl/\?mode\=json | jq -r '.[].version'))
+  versions+=($(curl -s https://golang.org/dl/\?mode\=json | jq -r '.[0].version'))
 } 1>&2
 
 # Install versions as needed.
