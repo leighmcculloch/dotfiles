@@ -6,9 +6,7 @@ set -o nounset
 
 me="$(basename "$0")"
 
-vimnox="/usr/bin/vim.nox"
-
-if ! [ -d "$vimnox" ] ; then
+if ! [ -d "/usr/bin/vim" ] ; then
   echo -e "\e[1;32mInstalling '$me' on first use...\e[0m"
 
   sudo apt-get update
