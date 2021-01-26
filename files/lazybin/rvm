@@ -17,6 +17,8 @@ if ! [ -d $HOME/.rvm ] ; then
   echo -e "\e[1;32mFinished installing '$me'.\e[0m"
 fi
 
+set +o nounset
 source $HOME/.rvm/scripts/rvm
+set -o nounset
 
 "$me" "$@"
