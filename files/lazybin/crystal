@@ -11,7 +11,7 @@ if ! [ -f /usr/bin/crystal ] ; then
 
   curl -sL "https://keybase.io/crystal/pgp_keys.asc" | sudo apt-key add -
   echo "deb https://dist.crystal-lang.org/apt crystal main" | sudo tee /etc/apt/sources.list.d/crystal.list
-  sudo apt-get update
+  apt-update-if-stale
   sudo apt-get install -y \
     crystal \
     libssl-dev \

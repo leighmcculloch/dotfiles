@@ -11,7 +11,7 @@ if ! [ -f /usr/bin/cf ] ; then
 
   echo "deb https://packages.cloudfoundry.org/debian stable main" | sudo tee /etc/apt/sources.list.d/cloudfoundry-cli.list \
   curl https://packages.cloudfoundry.org/debian/cli.cloudfoundry.org.key | sudo apt-key add -
-  sudo apt-get update
+  apt-update-if-stale
   sudo apt-get -y install cf-cli
 
   echo -e "\e[1;32mFinished installing '$me'.\e[0m"
