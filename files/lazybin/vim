@@ -12,7 +12,7 @@ if ! [ -d "$vimnox" ] ; then
   echo -e "\e[1;32mInstalling '$me' on first use...\e[0m"
 
   sudo apt-get update
-  sudo apt-get install -y vim-nox
+  sudo apt-get install -y vim-tiny
 
   echo -e "\e[1;32mFinished installing '$me'.\e[0m"
   
