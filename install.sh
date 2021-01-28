@@ -39,6 +39,3 @@ if [ ! -d "$ZSH" ]; then
 fi
 mkdir -p "$ZSH/custom/themes"
 ln -sf "$PWD/files/enormous.zsh-theme" "$ZSH/custom/themes/"
-
-# install tmux plugins
-~/.tmux/plugins/tpm/bin/install_plugins
