@@ -37,9 +37,8 @@ export PATH="$PATH:$HOME/.cargo/bin"
 export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
 export PATH=$PATH:$LOCAL/apache-maven-3.6.0/bin
 # for dotnet
-export PATH="$PATH:$HOME/.dotnet"
-export PATH="$PATH:$HOME/.dotnet/tools"
-export DOTNET_ROOT="$PATH:$HOME/.dotnet"
+export DOTNET_ROOT="$HOME/.dotnet"
+export PATH="$PATH:$DOTNET_ROOT:$DOTNET_ROOT/tools"
 # for postgres running in docker
 export PGHOST=localhost
 export PGUSER=$USER
