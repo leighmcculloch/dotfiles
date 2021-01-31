@@ -41,4 +41,4 @@ mkdir -p "$ZSH/custom/themes"
 ln -sf "$PWD/files/enormous.zsh-theme" "$ZSH/custom/themes/"
 
 # install some defaults
-fzf --version
+$PWD/files/lazybin/fzf --version
