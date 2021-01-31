@@ -52,7 +52,7 @@ bindkey "^N" down-line-or-search
 stty start undef
 
 # setup homebrew
-if [[ -d /home/linuxbrew/.linuxbrew ]]; then
+if [[ -d /home/linuxbrew/.linuxbrew/bin/brew ]]; then
   eval $(/home/linuxbrew/.linuxbrew/bin/brew shellenv)
 fi
 
