@@ -6,12 +6,10 @@ set -o nounset
 
 me="$(basename "$0")"
 
-if ! [ -f /usr/bin/node ] ; then
+if ! [ -d $HOME/.nvm ] ; then
   echo -e "\e[1;32mInstalling '$me' on first use...\e[0m"
 
-  sudo apt-get -y install gnupg
-  curl -sL https://deb.nodesource.com/setup_10.x | sudo bash -
-  sudo apt-get -y install nodejs
+  curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.37.2/install.sh | bash
 
   echo -e "\e[1;32mFinished installing '$me'.\e[0m"
 fi

@@ -39,6 +39,11 @@ export PATH=$PATH:$LOCAL/apache-maven-3.6.0/bin
 # for dotnet
 export DOTNET_ROOT="$HOME/.dotnet"
 export PATH="$PATH:$DOTNET_ROOT:$DOTNET_ROOT/tools"
+# for nvm/node
+export NVM_DIR="$HOME/.nvm"
+if [ -s "$NVM_DIR/nvm.sh" ]; then
+  source "$NVM_DIR/nvm.sh"
+fi
 # for postgres running in docker
 export PGHOST=localhost
 export PGUSER=$USER
