@@ -1,5 +1,5 @@
 # path reset on new shells
-[ -z "$ORIGINAL_PATH" ] && export ORIGINAL_PATH=$PATH
+[ -z ${ORIGINAL_PATH:-} ] && export ORIGINAL_PATH=$PATH
 export PATH=$ORIGINAL_PATH
 
 # helper paths
@@ -45,10 +45,12 @@ export PGUSER=$USER
 # for homebrew
 export HOMEBREW_NO_ANALYTICS=1
 # for vscode
-for vscodeServerPath in $HOME/.vscode-server/bin/*/bin; do
-  export PATH="$PATH:$vscodeServerPath"
-  break
-done
+if [ -d $HOME/.vscode-server ]; then
+  for vscodeServerPath in $HOME/.vscode-server/bin/*/bin; do
+    export PATH="$PATH:$vscodeServerPath"
+    break
+  done
+fi
 
 # for folders supplied by dotfiles (must be last)
 export PATH="$PATH:$LAZYBIN"
