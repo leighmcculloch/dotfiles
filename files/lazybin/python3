@@ -11,6 +11,7 @@ if ! [ -f /usr/bin/python3 ] ; then
 
   apt-update-if-stale
   sudo apt-get -y install python3
+  sudo update-alternatives --install /usr/bin/python python /usr/bin/python3 1
 
   echo -e "\e[1;32mFinished installing '$me'.\e[0m"
 fi
