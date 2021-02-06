@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+
+set -o errexit
+set -o pipefail
+set -o nounset
+
+me="$(basename "$0")"
+
+if ! [ -f /usr/bin/glow ] ; then
+  echo -e "\e[1;32mInstalling '$me' on first use...\e[0m"
+
+  tmpdir=$(mktemp -d)
+
+  version=1.3.0
+  curl -sSL -o "$tmpdir/glow.deb" "https://github.com/charmbracelet/glow/releases/download/v${version}/glow_${version}_linux_amd64.deb"
+  sudo apt-get -y install -f "${tmpdir}/glow.deb"
+
+  rm -fr "$tmpdir"
+
+  echo -e "\e[1;32mFinished installing '$me'.\e[0m"
+fi
+
+"$me" "$@"
