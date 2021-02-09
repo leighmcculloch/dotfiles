@@ -8,6 +8,8 @@ set -o nounset
 links=(
   zshenv
   zshrc
+  bash_profile
+  bashrc
   gitmessage
   gitignore_global
   gitconfig

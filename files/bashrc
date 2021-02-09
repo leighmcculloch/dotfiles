@@ -1,0 +1,13 @@
+args=()
+i=0
+if [[ -o login ]]; then
+    args[$i]="-l"
+    ((++i))
+fi
+if [[ -o interactive ]]; then
+    args[$i]="-i"
+    ((++i))
+fi
+
+export SHELL=$(which zsh)
+exec zsh "${args[@]}"
