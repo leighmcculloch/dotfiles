@@ -34,6 +34,9 @@ for f in "${links[@]}"; do
   ln -sf "$PWD/files/$f" "$dest"
 done
 
+# setup paths, etc
+source $PWD/files/zshenv
+
 # install oh-my-zsh
 export ZSH="$HOME/.oh-my-zsh"
 if [ ! -d "$ZSH" ]; then
@@ -42,7 +45,5 @@ fi
 mkdir -p "$ZSH/custom/themes"
 ln -sf "$PWD/files/enormous.zsh-theme" "$ZSH/custom/themes/"
 
-source $PWD/files/zshenv
-
 # install some defaults
-$PWD/files/lazybin/fzf --version
+fzf --version
