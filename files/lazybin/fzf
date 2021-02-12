@@ -6,15 +6,17 @@ set -o nounset
 
 me="$(basename "$0")"
 
-if ! [ -f $LOCAL_BIN/fzf ] ; then
-  echo -e "\e[1;32mInstalling '$me' on first use...\e[0m"
+{
+  if ! [ -f $LOCAL_BIN/fzf ] ; then
+    echo -e "\e[1;32mInstalling '$me' on first use...\e[0m"
 
-  version=0.25.0
-  curl -sSL https://github.com/junegunn/fzf/releases/download/${version}/fzf-${version}-linux_amd64.tar.gz | tar xz -C $LOCAL_BIN
+    version=0.25.0
+    curl -sSL https://github.com/junegunn/fzf/releases/download/${version}/fzf-${version}-linux_amd64.tar.gz | tar xz -C $LOCAL_BIN
 
-  git clone --branch=${version} https://github.com/junegunn/fzf.git $LOCAL/fzf
+    git clone --branch=${version} https://github.com/junegunn/fzf.git $LOCAL/fzf
 
-  echo -e "\e[1;32mFinished installing '$me'.\e[0m"
-fi
+    echo -e "\e[1;32mFinished installing '$me'.\e[0m"
+  fi
+} 1>&2
 
 "$me" "$@"
