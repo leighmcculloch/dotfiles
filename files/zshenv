@@ -47,7 +47,7 @@ if [ -s "$NVM_DIR/nvm.sh" ]; then
 fi
 # for postgres running in docker
 export PGHOST=localhost
-export PGUSER=$USER
+export PGUSER=${USER:-$(whoami)}
 # for homebrew
 export HOMEBREW_NO_ANALYTICS=1
 # for vscode
