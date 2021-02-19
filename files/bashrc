@@ -1,13 +1,10 @@
 if [ type zsh &> /dev/null ]; then
     args=()
-    i=0
     if [[ -o login ]]; then
-        args[$i]="-l"
-        ((++i))
+        args+=("-l")
     fi
     if [[ -o interactive ]]; then
-        args[$i]="-i"
-        ((++i))
+        args+=("-i")
     fi
 
     export SHELL=$(which zsh)
