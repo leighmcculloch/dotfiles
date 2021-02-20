@@ -1,4 +1,4 @@
-if [ type zsh &> /dev/null ]; then
+if type zsh &> /dev/null; then
     args=()
     if [[ -o login ]]; then
         args+=("-l")
