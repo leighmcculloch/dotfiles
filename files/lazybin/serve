@@ -9,12 +9,9 @@ me="$(basename "$0")"
 if ! [ -f $LOCAL_BIN/serve ] ; then
   echo -e "\e[1;32mInstalling '$me' on first use...\e[0m"
 
-  dir=$(mktemp -d)
-  pushd $dir
-  go mod init tool
-  go get -u 4d63.com/serve
-  popd
-  rm -fr $dir
+  version=1.0.0
+  curl -sSL https://github.com/leighmcculloch/serve/releases/download/v${version}/serve_${version}_linux_amd64.tar.gz | tar xz -C $LOCAL
+  ln -sf $LOCAL/serve_${version}_linux_amd64/serve $LOCAL_BIN/serve
 
   echo -e "\e[1;32mFinished installing '$me'.\e[0m"
 fi
