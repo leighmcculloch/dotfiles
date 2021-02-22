@@ -29,6 +29,8 @@ function gfpr() {
 # git aliases
 alias ga.="git add ."
 alias gde="git diff --exit-code"
+alias gdcsv="git diff --color-words=\"[^[:space:],]+\""
+alias gscsv="git show --color-words=\"[^[:space:],]+\""
 
 # go aliases
 if [ -d $LOCAL_BIN/go ]; then
