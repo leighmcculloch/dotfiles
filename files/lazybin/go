@@ -48,6 +48,9 @@ versions=(
     echo -e "\e[1;93mLinking ${versions[0]} as latest into PATH...\e[0m"
     ln -sfn "${versions_without_go_prefix[0]}" "$installdir/latest"
 
+    echo -e "\e[1;93mLinking ${versions[0]} as latest into /usr/local/bin as well...\e[0m"
+    ln -sfn "${versions_without_go_prefix[0]}" "/usr/local/bin/go"
+
     echo -e "\e[1;32mFinished installing '$me'.\e[0m"
   fi
 } 1>&2
