@@ -17,6 +17,7 @@ links=(
   tmux
   tigrc
   vim
+  config/zls.json
   ssh/config
   ssh/known_hosts
   gnupg/gpg-agent.conf

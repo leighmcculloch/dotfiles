@@ -1,0 +1,7 @@
+{
+    "enable_snippets": false,
+    "warn_style": false,
+    "enable_semantic_tokens": false,
+    "operator_completions": true,
+    "zig_exe_path": "/home/vscode/.local/bin/zig"
+}
