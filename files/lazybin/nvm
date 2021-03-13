@@ -13,7 +13,7 @@ if ! [ -d $HOME/.nvm ] ; then
   # and sometimes it will error if the apt packages list cached locally is stale.
   apt-update-if-stale
   
-  curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.37.2/install.sh | bash
+  curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.37.2/install.sh | PROFILE=/dev/null bash
 
   echo -e "\e[1;32mFinished installing '$me'.\e[0m"
 fi
