@@ -10,3 +10,5 @@ if type zsh &> /dev/null; then
     export SHELL=$(which zsh)
     exec zsh "${args[@]}"
 fi
+
+source "$HOME/.zshenv"
