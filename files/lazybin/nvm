@@ -6,18 +6,16 @@ set -o nounset
 
 me="$(basename "$0")"
 
-if ! [ -d $HOME/.nvm ] ; then
-  echo -e "\e[1;32mInstalling '$me' on first use...\e[0m"
+{
+  if ! [ -d $HOME/.nvm ] ; then
+    echo -e "\e[1;32mInstalling '$me' on first use...\e[0m"
 
-  # Do an apt update first because nvm will try to apt install some packages
-  # and sometimes it will error if the apt packages list cached locally is stale.
-  apt-update-if-stale
-  
-  curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.37.2/install.sh | PROFILE=/dev/null bash
+    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.37.2/install.sh | PROFILE=/dev/null bash
 
-  echo -e "\e[1;32mFinished installing '$me'.\e[0m"
-fi
+    echo -e "\e[1;32mFinished installing '$me'.\e[0m"
+  fi
 
-. "$HOME/.nvm/nvm.sh"
+  . "$HOME/.nvm/nvm.sh"
+} 1>&2
 
 nvm "$@"
