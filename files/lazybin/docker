@@ -12,6 +12,7 @@ if ! [ -f /usr/bin/docker ] ; then
   os=$(awk -F= '/^ID=/{print $2}' /etc/os-release)
   echo -e "\e[1;32mInstalling '$me' for '$os'...\e[0m"
 
+  apt-update-if-stale
   sudo apt-get -y install \
     apt-transport-https \
     ca-certificates \
