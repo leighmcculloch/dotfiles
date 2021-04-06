@@ -10,8 +10,7 @@ if ! [ -f /usr/bin/python3 ] ; then
   echo -e "\e[1;32mInstalling '$me' on first use...\e[0m"
 
   apt-update-if-stale
-  sudo apt-get -y install python3
-  sudo update-alternatives --install /usr/bin/python python /usr/bin/python3 1
+  sudo apt-get -y install python3 python-is-python3
 
   echo -e "\e[1;32mFinished installing '$me'.\e[0m"
 fi
