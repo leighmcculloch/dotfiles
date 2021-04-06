@@ -3,7 +3,7 @@
 export PATH=$ORIGINAL_PATH
 
 # helper paths
-[ -z ${DOTFILES:-} ] && export DOTFILES=$(dirname $(readlink -f $0))
+export DOTFILES="$HOME/dotfiles"
 export DEVEL="$HOME/devel"
 export LAZYBIN="$HOME/.lazybin"
 export SCRIPTS="$HOME/.scripts"
