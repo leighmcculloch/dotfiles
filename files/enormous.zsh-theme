@@ -51,6 +51,13 @@ git_branch() {
   echo "%{$fg[magenta]%}$branch_name "
 }
 
+stg_patch() {
+  if [ "$(which stg)" != "/usr/bin/stg" ]; then return; fi
+  patch_name=$(stg series 2>/dev/null | grep "^> " | cut -d' ' -f 2)
+  if ! [ $patch_name ]; then return; fi
+  echo "%{$fg[white]%}☰$patch_name "
+}
+
 current_directory() {
   echo "%{$fg[green]%}%~ "
 }
@@ -63,5 +70,5 @@ exit_code() {
 }
 
 PROMPT='
-$(exit_code)$(current_directory)$(git_branch)$(git_behind_ahead_count)$(git_status_count)
+$(exit_code)$(current_directory)$(git_branch)$(git_behind_ahead_count)$(git_status_count)$(stg_patch)
 %{$fg[white]%}ΙΧΘΥΣ %{$reset_color%}'
