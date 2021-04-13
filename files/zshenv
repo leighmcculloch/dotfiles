@@ -59,5 +59,10 @@ if [ -d $HOME/.vscode-server ]; then
   done
 fi
 
+# if docker.sock isn't mounted assume we're using it via dockersocat
+if ! [ -f /var/run/docker.sock ]; then
+  export DOCKER_HOST=host.docker.internal:2375
+fi
+
 # for folders supplied by dotfiles (must be last)
 export PATH="$PATH:$LAZYBIN"
