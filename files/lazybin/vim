@@ -13,10 +13,9 @@ if ! [ -f "/usr/bin/vim" ] ; then
   sudo apt-get install -y vim
 
   echo -e "\e[1;32mFinished installing '$me'.\e[0m"
-  
+
   # install vim plugins
   vim +PlugInstall +qa
-  #vim +GoInstallBinaries +qa
 fi
 
 "$me" "$@"
