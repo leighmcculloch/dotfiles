@@ -5,6 +5,9 @@ plugins=(git docker tig golang httpie vscode nvm)
 DISABLE_AUTO_UPDATE="true"
 source $ZSH/oh-my-zsh.sh
 
+# zsh opts
+unsetopt HIST_VERIFY
+
 # aliases
 alias renv="eval \$(tmux show-env -s | grep '^SSH_')"
 
