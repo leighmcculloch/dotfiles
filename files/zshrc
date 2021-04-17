@@ -5,9 +5,6 @@ plugins=(git docker tig golang httpie vscode nvm)
 DISABLE_AUTO_UPDATE="true"
 source $ZSH/oh-my-zsh.sh
 
-# zsh opts
-unsetopt HIST_VERIFY
-
 # aliases
 alias renv="eval \$(tmux show-env -s | grep '^SSH_')"
 
@@ -63,3 +60,6 @@ fi
 
 # Add RVM to PATH for scripting. Make sure this is the last PATH variable change.
 export PATH="$PATH:$HOME/.rvm/bin"
+
+# zsh opts
+unsetopt HIST_VERIFY
