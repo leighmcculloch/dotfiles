@@ -1,0 +1,7 @@
+#!/usr/bin/env sh
+
+# Set the origin fetch to include all branches and fetch all branches. VSCode
+# does an initial shallow clone and that shallow clone sets a constrained fetch
+# search path. This expands it.
+git config remote.origin.fetch '+refs/heads/*:refs/remotes/origin/*'
+git fetch

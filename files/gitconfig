@@ -2,6 +2,7 @@
 	defaultBranch = main
 [core]
 	excludesfile = ~/.gitignore_global
+	hooksPath = /home/vscode/dotfiles/files/githooks
 	quotepath = false
 	editor = code -w
 	commentChar = ";"
@@ -14,7 +15,5 @@
 	default = simple
 [pull]
 	ff = only
-[remote "origin"]
-	fetch = +refs/heads/*:refs/remotes/origin/*
 [include]
 	path = ~/.gitconfig.local
