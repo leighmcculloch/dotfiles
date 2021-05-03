@@ -7,12 +7,12 @@ set -o nounset
 me="$(basename "$0")"
 
 {
-  if ! [ -f $LOCAL/v/v ] ; then
+  if ! [ -f $LOCAL/vls/vls ] ; then
     echo -e "\e[1;32mInstalling '$me' on first use...\e[0m"
 
-    rm -fr $LOCAL/v
-    git clone https://github.com/vlang/v $LOCAL/v
-    make -C $LOCAL/v
+    rm -fr $LOCAL/vls
+    git clone https://github.com/vlang/vls $LOCAL/vls
+    v -prod $LOCAL/vls/cmd/vls
 
     echo -e "\e[1;32mFinished installing '$me'.\e[0m"
   fi
