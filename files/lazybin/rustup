@@ -19,7 +19,7 @@ me="$(basename "$0")"
     # https://github.com/rust-lang/rustup/blob/22dc71adbd7e19de0090f991b3609e5f14910dcb/src/cli/self_update.rs#L415-L435
     export RUSTUP_INIT_SKIP_PATH_CHECK=yes
 
-    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --no-modify-path
 
     echo -e "\e[1;32mFinished installing '$me'.\e[0m"
   fi
