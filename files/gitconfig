@@ -10,7 +10,6 @@
 	branch = 
 [commit]
 	template = ~/.gitmessage
-	gpgsign = true
 [push]
 	default = simple
 [pull]
