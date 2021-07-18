@@ -24,7 +24,6 @@ export SSH_AUTH_SOCK=$HOME/.gnupg/S.gpg-agent.ssh
 export PATH="$PATH:$LOCAL_BIN/go/latest/bin"
 export GOBIN=$LOCAL_BIN
 export CGO_ENABLED=0
-export GOPROXY=direct
 # for v
 export PATH="$PATH:$LOCAL/v"
 # for ruby
