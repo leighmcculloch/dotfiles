@@ -60,6 +60,8 @@ if [ -d $HOME/.vscode-server ]; then
     break
   done
 fi
+# for brew
+export PATH=$PATH:/home/linuxbrew/.linuxbrew/bin
 
 # if docker.sock isn't mounted assume we're using it via dockersocat
 if ! [ -f /var/run/docker.sock ]; then
