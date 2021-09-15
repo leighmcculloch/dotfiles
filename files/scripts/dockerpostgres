@@ -4,7 +4,7 @@ set -o errexit
 set -o pipefail
 set -o nounset
 
-version=$(cat "$(dirname "$(readlink -f "$0")")/../versions/postgres")
+version=12
 name=${1:-postgres}
 network=${2:-container:$(hostname)}
 
