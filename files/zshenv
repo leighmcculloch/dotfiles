@@ -62,6 +62,6 @@ export PATH=$PATH:/home/linuxbrew/.linuxbrew/bin
 
 # for folders supplied by dotfiles (must be last)
 export PATH="$PATH:$LAZYBIN"
-if [ "$(uname)" == "Linux" ]; then
+if [ "$(uname)" = "Linux" ]; then
   export PATH="$PATH:$LAZYBIN_LINUX"
 fi
