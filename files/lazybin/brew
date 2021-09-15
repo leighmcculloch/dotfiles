@@ -9,8 +9,8 @@ me="$(basename "$0")"
 os="$(uname)"
 location=
 case $os in
-  Linux*)  location=/home/linuxbrew/.linuxbrew/bin/brew ;;
   Darwin*) location=/usr/local/bin/brew ;;
+  Linux*)  location=/home/linuxbrew/.linuxbrew/bin/brew ;;
   *) echo "Unrecognized operating system: $(uname)"; exit 1 ;;
 esac
 if ! [ -f $location ] ; then

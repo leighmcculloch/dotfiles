@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+
+set -o errexit
+set -o pipefail
+set -o nounset
+
+me="$(basename "$0")"
+
+{
+  os="$(uname)"
+  location=
+  case $os in
+    Darwin*)
+      if ! [ -f /usr/local/bin/fzf ] ; then
+        echo -e "\e[1;32mInstalling '$me' on first use...\e[0m"
+
+        brew install fzf
+
+        git clone https://github.com/junegunn/fzf.git $LOCAL/fzf
+
+        echo -e "\e[1;32mFinished installing '$me'.\e[0m"
+      fi
+    ;;
+    Linux*)
+      if ! [ -f $LOCAL_BIN/fzf ] ; then
+        echo -e "\e[1;32mInstalling '$me' on first use...\e[0m"
+
+        version=0.25.0
+        curl -sSL https://github.com/junegunn/fzf/releases/download/${version}/fzf-${version}-linux_amd64.tar.gz | tar xz -C $LOCAL_BIN
+
+        git clone --branch=${version} https://github.com/junegunn/fzf.git $LOCAL/fzf
+
+        echo -e "\e[1;32mFinished installing '$me'.\e[0m"
+      fi
+    ;;
+    *)
+      echo "Unrecognized operating system: $(uname)"
+      exit 1
+    ;;
+  esac
+} 1>&2
+
+"$me" "$@"
