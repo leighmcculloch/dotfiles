@@ -57,8 +57,10 @@ if [ -d $HOME/.vscode-server ]; then
     break
   done
 fi
-# for brew
+# for brew (linux)
 export PATH=$PATH:/home/linuxbrew/.linuxbrew/bin
+# for brew (macos)
+export PATH=$PATH:/usr/local/bin
 
 # for folders supplied by dotfiles (must be last)
 export PATH="$PATH:$LAZYBIN"
