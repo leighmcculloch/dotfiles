@@ -5,33 +5,13 @@ set -o pipefail
 set -o nounset
 
 # symlink files
-links=(
-  zshenv
-  zshrc
-  bash_profile
-  bashrc
-  gitmessage
-  gitignore_global
-  gitconfig
-  tmux.conf
-  tmux
-  tigrc
-  vim
-  ssh/config
-  ssh/known_hosts
-  lazybin
-  scripts
-)
-for f in "${links[@]}"; do
+pushd files
+for f in *; do
   dest="$HOME/.$f"
-  if [[ "$f" == *\/* ]]; then
-    destdir="$(dirname $dest)"
-    echo "Creating directory $destdir..."
-    mkdir -m 700 -p "$destdir"
-  fi
   echo "Linking $PWD/files/$f at $dest..."
-  ln -sf "$PWD/files/$f" "$dest"
+  ln -sf "$f" "$dest"
 done
+popd
 
 # setup paths, etc
 source $PWD/files/zshenv
