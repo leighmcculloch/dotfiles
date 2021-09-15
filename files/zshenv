@@ -4,13 +4,11 @@ export PATH=$ORIGINAL_PATH
 
 # helper paths
 export DOTFILES="$HOME/dotfiles"
-export DEVEL="$HOME/devel"
 export LAZYBIN="$HOME/.lazybin"
 export SCRIPTS="$HOME/.scripts"
 export LOCAL="$HOME/.local"
 export LOCAL_BIN="$LOCAL/bin"
 mkdir -p "$LOCAL_BIN"
-mkdir -p "$DEVEL"
 mkdir -p "$LAZYBIN"
 
 # for folders supplied by dotfiles
@@ -18,8 +16,6 @@ export PATH="$PATH:$SCRIPTS:$LOCAL_BIN"
 
 # for vim
 export EDITOR=vim
-# for ssh via gpg
-export SSH_AUTH_SOCK=$HOME/.gnupg/S.gpg-agent.ssh
 # for go
 export PATH="$PATH:$LOCAL_BIN/go/latest/bin"
 export GOBIN=$LOCAL_BIN
@@ -62,11 +58,6 @@ if [ -d $HOME/.vscode-server ]; then
 fi
 # for brew
 export PATH=$PATH:/home/linuxbrew/.linuxbrew/bin
-
-# if docker.sock isn't mounted assume we're using it via dockersocat
-if ! [ -f /var/run/docker.sock ]; then
-  export DOCKER_HOST=host.docker.internal:2375
-fi
 
 # for folders supplied by dotfiles (must be last)
 export PATH="$PATH:$LAZYBIN"
