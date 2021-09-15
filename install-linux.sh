@@ -8,7 +8,7 @@ set -o nounset
 pushd files
 for f in *; do
   dest="$HOME/.$f"
-  echo "Linking $PWD/files/$f at $dest..."
+  echo "Linking $PWD/$f at $dest..."
   ln -sf "$f" "$dest"
 done
 popd
