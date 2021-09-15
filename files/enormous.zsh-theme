@@ -2,21 +2,21 @@ git_untracked_count() {
   local stat="$1"
   local count=$(echo $stat | grep "^??" | wc -l)
   if [ $count -eq 0 ]; then return; fi
-  echo "%{$fg_no_bold[yellow]%}?%{$fg_bold[yellow]%}$count %{$reset_color%}"
+  echo "%{$fg_no_bold[yellow]%}?$count %{$reset_color%}"
 }
 
 git_modified_count() {
   local stat="$1"
   local count=$(echo $stat | grep "^.[MD]" | wc -l)
   if [ $count -eq 0 ]; then return; fi
-  echo "%{$fg_no_bold[red]%}M%{$fg_bold[red]%}$count %{$reset_color%}"
+  echo "%{$fg_no_bold[red]%}M%$count %{$reset_color%}"
 }
 
 git_index_count() {
   local stat="$1"
   local count=$(echo $stat | grep "^[AMRD]." | wc -l)
   if [ $count -eq 0 ]; then return; fi
-  echo "%{$fg_no_bold[green]%}S%{$fg_bold[green]%}$count %{$reset_color%}"
+  echo "%{$fg_no_bold[green]%}S$count %{$reset_color%}"
 }
 
 git_status_count() {
