@@ -12,7 +12,7 @@ for f in *; do
   src="$PWD/$f"
   dest="$HOME/.$f"
   echo "Linking $src at $dest..."
-  rm "$dest"
+  [ -d "$dest" ] && rm -d "$dest"
   ln -sf "$src" "$dest"
 done
 popd
