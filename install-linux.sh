@@ -7,9 +7,10 @@ set -o nounset
 # symlink files
 pushd files
 for f in *; do
+  src="$PWD/$f"
   dest="$HOME/.$f"
-  echo "Linking $PWD/$f at $dest..."
-  ln -sf "$f" "$dest"
+  echo "Linking $src at $dest..."
+  ln -sf "$src" "$dest"
 done
 popd
 
