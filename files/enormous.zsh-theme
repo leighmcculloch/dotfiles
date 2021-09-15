@@ -4,7 +4,7 @@ git_untracked_count() {
   if [ $count -eq 0 ]; then return; fi
   echo "%{$fg_no_bold[yellow]%}?$count %{$reset_color%}"
 }
-echo hi
+
 git_modified_count() {
   local stat="$1"
   local count=$(echo $stat | grep "^.[MD]" | wc -l | sed 's/^ *//')
