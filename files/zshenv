@@ -1,5 +1,5 @@
 # path reset on new shells
-[ -z ${ORIGINAL_PATH:-} ] && export ORIGINAL_PATH=$PATH
+[ -z "${ORIGINAL_PATH:-}" ] && export ORIGINAL_PATH=$PATH
 export PATH=$ORIGINAL_PATH
 
 # helper paths
