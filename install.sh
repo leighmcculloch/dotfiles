@@ -17,6 +17,11 @@ for f in *; do
 done
 popd
 
+# symlink ssh config into existing .ssh dir
+mkdir -p "$HOME/.ssh"
+ln -sf "$HOME/.ssh_config" "$HOME/.ssh/config"
+ln -sf "$HOME/.ssh_known_hosts" "$HOME/.ssh/known_hosts"
+
 # setup paths, etc
 source $PWD/files/zshenv
 
