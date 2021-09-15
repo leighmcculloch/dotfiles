@@ -1,20 +1,20 @@
 git_untracked_count() {
   local stat="$1"
-  local count=$(echo $stat | grep "^??" | wc -l)
+  local count=$(echo $stat | grep "^??" | wc -l | sed 's/^ *//')
   if [ $count -eq 0 ]; then return; fi
   echo "%{$fg_no_bold[yellow]%}?$count %{$reset_color%}"
 }
-
+echo hi
 git_modified_count() {
   local stat="$1"
-  local count=$(echo $stat | grep "^.[MD]" | wc -l)
+  local count=$(echo $stat | grep "^.[MD]" | wc -l | sed 's/^ *//')
   if [ $count -eq 0 ]; then return; fi
-  echo "%{$fg_no_bold[red]%}M%$count %{$reset_color%}"
+  echo "%{$fg_no_bold[red]%}M$count %{$reset_color%}"
 }
 
 git_index_count() {
   local stat="$1"
-  local count=$(echo $stat | grep "^[AMRD]." | wc -l)
+  local count=$(echo $stat | grep "^[AMRD]." | wc -l | sed 's/^ *//')
   if [ $count -eq 0 ]; then return; fi
   echo "%{$fg_no_bold[green]%}S$count %{$reset_color%}"
 }
