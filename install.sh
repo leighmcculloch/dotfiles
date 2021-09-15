@@ -4,6 +4,8 @@ set -o errexit
 set -o pipefail
 set -o nounset
 
+echo "Installing for $(uname)..."
+
 # symlink files
 pushd files
 for f in *; do

@@ -5,6 +5,7 @@ export PATH=$ORIGINAL_PATH
 # helper paths
 export DOTFILES="$HOME/dotfiles"
 export LAZYBIN="$HOME/.lazybin"
+export LAZYBIN_LINUX="$HOME/.lazybin-linux"
 export SCRIPTS="$HOME/.scripts"
 export LOCAL="$HOME/.local"
 export LOCAL_BIN="$LOCAL/bin"
@@ -61,3 +62,6 @@ export PATH=$PATH:/home/linuxbrew/.linuxbrew/bin
 
 # for folders supplied by dotfiles (must be last)
 export PATH="$PATH:$LAZYBIN"
+if [ "$(uname)" == "Linux" ]; then
+  export PATH="$PATH:$LAZYBIN_LINUX"
+fi
