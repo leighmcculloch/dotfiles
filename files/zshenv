@@ -3,7 +3,7 @@
 export PATH=$ORIGINAL_PATH
 
 # helper paths
-export DOTFILES="$HOME/dotfiles"
+export DOTFILES="$HOME/.dotfiles"
 export LAZYBIN="$HOME/.lazybin"
 export LAZYBIN_LINUX="$HOME/.lazybin-linux"
 export SCRIPTS="$HOME/.scripts"
