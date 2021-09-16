@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+
+set -o errexit
+set -o pipefail
+set -o nounset
+
+me="$(basename "$0")"
+
+{
+  os="$(uname)"
+  location=
+  case $os in
+    Darwin*)
+      if ! [ -f /usr/local/bin/multipass ] ; then
+        echo -e "\e[1;32mInstalling '$me' on first use...\e[0m"
+
+        brew install multipass
+
+        echo -e "\e[1;32mFinished installing '$me'.\e[0m"
+      fi
+    ;;
+    *)
+      echo "Unrecognized operating system: $(uname)"
+      exit 1
+    ;;
+  esac
+} 1>&2
+
+"$me" "$@"
