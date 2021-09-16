@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+
+set -o errexit
+set -o pipefail
+set -o nounset
+
+me="$(basename "$0")"
+
+version=3.0.3
+os="$(uname | tr '[:upper:]' '[:lower:]')"
+
+{
+  if ! [ -f $LOCAL_BIN/gas ] ; then
+    echo -e "\e[1;32mInstalling '$me' on first use...\e[0m"
+
+    curl -sSL https://github.com/leighmcculloch/gas/releases/download/v${version}/gas_${version}_${os}_amd64.tar.gz | tar xz -C $LOCAL
+    ln -sf $LOCAL/gas_${version}_${os}_amd64/gas $LOCAL_BIN/gas
+
+    echo -e "\e[1;32mFinished installing '$me'.\e[0m"
+  fi
+} 1>&2
+
+"$me" "$@"
