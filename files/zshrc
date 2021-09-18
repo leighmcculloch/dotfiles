@@ -35,6 +35,7 @@ alias gscsv="git show --color-words=\"[^[:space:],]+\""
 
 # go aliases
 alias gota="go test ./..."
+alias gots="gotestsum"
 
 # go aliases
 if [ -d $LOCAL_BIN/go ]; then
