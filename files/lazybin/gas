@@ -11,12 +11,12 @@ os="$(uname | tr '[:upper:]' '[:lower:]')"
 
 {
   if ! [ -f $LOCAL_BIN/gas ] ; then
-    echo -e "\e[1;32mInstalling '$me' on first use...\e[0m"
+    echo -e "\033[1;32mInstalling '$me' on first use...\033[0m"
 
     curl -sSL https://github.com/leighmcculloch/gas/releases/download/v${version}/gas_${version}_${os}_amd64.tar.gz | tar xz -C $LOCAL
     ln -sf $LOCAL/gas_${version}_${os}_amd64/gas $LOCAL_BIN/gas
 
-    echo -e "\e[1;32mFinished installing '$me'.\e[0m"
+    echo -e "\033[1;32mFinished installing '$me'.\033[0m"
   fi
 } 1>&2
 

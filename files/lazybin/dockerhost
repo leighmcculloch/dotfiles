@@ -12,11 +12,11 @@ me="$(basename "$0")"
   case $os in
     Darwin*)
       if ! [ -f /usr/local/bin/dockerhost ] ; then
-        echo -e "\e[1;32mInstalling '$me' on first use...\e[0m"
+        echo -e "\033[1;32mInstalling '$me' on first use...\033[0m"
 
         brew install 4d63/dockerhost/dockerhost
 
-        echo -e "\e[1;32mFinished installing '$me'.\e[0m"
+        echo -e "\033[1;32mFinished installing '$me'.\033[0m"
       fi
     ;;
     *)

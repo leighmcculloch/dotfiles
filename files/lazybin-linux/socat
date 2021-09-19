@@ -9,11 +9,11 @@ me="$(basename "$0")"
 socat="/usr/bin/socat"
 
 if ! [ -d "$socat" ] ; then
-  echo -e "\e[1;32mInstalling '$me' on first use...\e[0m"
+  echo -e "\033[1;32mInstalling '$me' on first use...\033[0m"
 
   sudo apt-get install -y socat
 
-  echo -e "\e[1;32mFinished installing '$me'.\e[0m"
+  echo -e "\033[1;32mFinished installing '$me'.\033[0m"
 fi
 
 "$me" "$@"

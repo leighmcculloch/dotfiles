@@ -7,14 +7,14 @@ set -o nounset
 me="$(basename "$0")"
 
 if ! [ -d $HOME/.rvm ] ; then
-  echo -e "\e[1;32mInstalling '$me' on first use...\e[0m"
+  echo -e "\033[1;32mInstalling '$me' on first use...\033[0m"
 
   # install rvm and stable ruby
   curl -sSL https://rvm.io/mpapis.asc | gpg --import -
   curl -sSL https://rvm.io/pkuczynski.asc | gpg --import -
   curl -sSL https://get.rvm.io | bash -s stable --ruby
 
-  echo -e "\e[1;32mFinished installing '$me'.\e[0m"
+  echo -e "\033[1;32mFinished installing '$me'.\033[0m"
 fi
 
 set +o nounset

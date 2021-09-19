@@ -29,29 +29,29 @@ versions=(
   for v in "${versions_without_go_prefix[@]}"
   do
     if [ ! -f "$installdir/$v/bin/go" ] ; then
-      echo -e "\e[1;32mChecking '$installdir/$v/bin/go' \e[0m"
+      echo -e "\033[1;32mChecking '$installdir/$v/bin/go' \033[0m"
 
       versions_to_install+=($v)
     fi
   done
 
   if ! [ ${#versions_to_install[@]} -eq 0 ] ; then
-    echo -e "\e[1;32mInstalling '$me' on first use...\e[0m"
+    echo -e "\033[1;32mInstalling '$me' on first use...\033[0m"
 
     for v in "${versions_to_install[@]}"
     do
-      echo -e "\e[1;93mInstalling 'go$v'...\e[0m"
+      echo -e "\033[1;93mInstalling 'go$v'...\033[0m"
       mkdir -p "$installdir/$v"
       curl "https://dl.google.com/go/go$v.linux-amd64.tar.gz" | tar xz --strip-components=1 -C "$installdir/$v"
     done
 
-    echo -e "\e[1;93mLinking ${versions[0]} as latest into PATH...\e[0m"
+    echo -e "\033[1;93mLinking ${versions[0]} as latest into PATH...\033[0m"
     ln -sfn "${versions_without_go_prefix[0]}" "$installdir/latest"
 
-    echo -e "\e[1;93mLinking ${versions[0]} as latest into /usr/local/bin as well...\e[0m"
+    echo -e "\033[1;93mLinking ${versions[0]} as latest into /usr/local/bin as well...\033[0m"
     sudo ln -sfn "$installdir/${versions_without_go_prefix[0]}/bin/go" "/usr/local/bin/go"
 
-    echo -e "\e[1;32mFinished installing '$me'.\e[0m"
+    echo -e "\033[1;32mFinished installing '$me'.\033[0m"
   fi
 } 1>&2
 

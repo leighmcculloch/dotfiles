@@ -11,19 +11,19 @@ me="$(basename "$0")"
   case $os in
     Darwin*)
       if ! [ -f /usr/local/bin/docker ] ; then
-        echo -e "\e[1;32mInstalling '$me' on first use...\e[0m"
+        echo -e "\033[1;32mInstalling '$me' on first use...\033[0m"
 
         brew install docker
 
-        echo -e "\e[1;32mFinished installing '$me'.\e[0m"
+        echo -e "\033[1;32mFinished installing '$me'.\033[0m"
       fi
     ;;
     Linux*)
       if ! [ -f /usr/bin/docker ] ; then
-        echo -e "\e[1;32mInstalling '$me' on first use...\e[0m"
+        echo -e "\033[1;32mInstalling '$me' on first use...\033[0m"
 
         os=$(awk -F= '/^ID=/{print $2}' /etc/os-release)
-        echo -e "\e[1;32mInstalling '$me' for '$os'...\e[0m"
+        echo -e "\033[1;32mInstalling '$me' for '$os'...\033[0m"
 
         apt-update-if-stale
         sudo apt-get -y install \
@@ -41,7 +41,7 @@ me="$(basename "$0")"
         sudo apt update
         sudo apt-get -y install docker-ce-cli
 
-        echo -e "\e[1;32mFinished installing '$me'.\e[0m"
+        echo -e "\033[1;32mFinished installing '$me'.\033[0m"
       fi
     ;;
     *)
