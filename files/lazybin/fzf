@@ -8,7 +8,6 @@ me="$(basename "$0")"
 
 {
   os="$(uname)"
-  location=
   case $os in
     Darwin*)
       if ! [ -f /usr/local/bin/fzf ] ; then

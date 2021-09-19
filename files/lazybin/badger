@@ -7,10 +7,10 @@ set -o nounset
 me="$(basename "$0")"
 
 {
-  if ! [ -f $LOCAL_BIN/deno ] ; then
+  if ! [ -f $LOCAL_BIN/badger ] ; then
     echo -e "\e[1;32mInstalling '$me' on first use...\e[0m"
 
-    curl -fsSL https://deno.land/x/install/install.sh | sh
+    go install github.com/dgraph-io/badger/badger@latest
 
     echo -e "\e[1;32mFinished installing '$me'.\e[0m"
   fi

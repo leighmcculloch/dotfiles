@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+
+set -o errexit
+set -o pipefail
+set -o nounset
+
+me="$(basename "$0")"
+
+{
+  os="$(uname)"
+  case $os in
+    Darwin*)
+      if ! [ -f /usr/local/bin/docker ] ; then
+        echo -e "\e[1;32mInstalling '$me' on first use...\e[0m"
+
+        brew install docker
+
+        echo -e "\e[1;32mFinished installing '$me'.\e[0m"
+      fi
+    ;;
+    Linux*)
+      if ! [ -f /usr/bin/docker ] ; then
+        echo -e "\e[1;32mInstalling '$me' on first use...\e[0m"
+
+        os=$(awk -F= '/^ID=/{print $2}' /etc/os-release)
+        echo -e "\e[1;32mInstalling '$me' for '$os'...\e[0m"
+
+        apt-update-if-stale
+        sudo apt-get -y install \
+          apt-transport-https \
+          ca-certificates \
+          curl \
+          gnupg-agent \
+          software-properties-common
+        curl -fsSL https://download.docker.com/linux/${os}/gpg \
+          | sudo apt-key add -
+        sudo add-apt-repository \
+          "deb [arch=amd64] https://download.docker.com/linux/${os} \
+          $(lsb_release -cs) \
+          stable"
+        sudo apt update
+        sudo apt-get -y install docker-ce-cli
+
+        echo -e "\e[1;32mFinished installing '$me'.\e[0m"
+      fi
+    ;;
+    *)
+      echo "Unrecognized operating system: $(uname)"
+      exit 1
+    ;;
+  esac
+} 1>&2
+
+"$me" "$@"
