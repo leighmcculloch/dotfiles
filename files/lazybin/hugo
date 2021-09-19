@@ -7,11 +7,10 @@ set -o nounset
 me="$(basename "$0")"
 
 {
-  if ! [ -f /usr/bin/"$me" ] ; then
+  if ! [ -f $LOCAL_BIN/hugo ] ; then
     echo -e "\033[1;32mInstalling '$me' on first use...\033[0m"
 
-    apt-update-if-stale
-    sudo apt-get install -y gcc
+    go install github.com/gohugoio/hugo@latest
 
     echo -e "\033[1;32mFinished installing '$me'.\033[0m"
   fi

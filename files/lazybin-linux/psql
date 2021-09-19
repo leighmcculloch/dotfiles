@@ -6,6 +6,7 @@ set -o nounset
 
 me="$(basename "$0")"
 
+{
 if ! [ -f /usr/bin/psql ] ; then
   echo -e "\033[1;32mInstalling '$me' on first use...\033[0m"
 
@@ -20,5 +21,6 @@ if ! [ -f /usr/bin/psql ] ; then
 
   echo -e "\033[1;32mFinished installing '$me'.\033[0m"
 fi
+} 1>&2
 
 "$me" "$@"
