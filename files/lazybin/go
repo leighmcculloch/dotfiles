@@ -9,11 +9,18 @@ installdir="$LOCAL_BIN/go"
 
 # OS / Arch
 os="$(uname | tr '[:upper:]' '[:lower:]')"
-archmap=(
-  ["i386"]="amd64"
-  ["arm64"]="arm64"
-)
-arch="${archmap["$(uname -p)"]}"
+arch=
+{
+  rawarch="$(uname -p)"
+  case $rawarch in
+    i386*) arch="amd64" ;;
+    arm64*) arch="arm64" ;;
+    *)
+      echo "Unrecognized architecture: $rawarch"
+      exit 1
+    ;;
+  esac
+} 1>&2
 
 # Specify exact versions of Go to install.
 versions=(
@@ -56,8 +63,10 @@ versions=(
     echo -e "\033[1;93mLinking ${versions[0]} as latest into PATH...\033[0m"
     ln -sfn "${versions_without_go_prefix[0]}" "$installdir/latest"
 
-    echo -e "\033[1;93mLinking ${versions[0]} as latest into /usr/local/bin as well...\033[0m"
-    sudo ln -sfn "$installdir/${versions_without_go_prefix[0]}/bin/go" "/usr/local/bin/go"
+    if [ "$os" = "linux" ] ; then
+      echo -e "\033[1;93mLinking ${versions[0]} as latest into /usr/local/bin as well...\033[0m"
+      sudo ln -sfn "$installdir/${versions_without_go_prefix[0]}/bin/go" "/usr/local/bin/go"
+    fi
 
     echo -e "\033[1;32mFinished installing '$me'.\033[0m"
   fi
