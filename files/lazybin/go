@@ -7,6 +7,14 @@ set -o nounset
 me="$(basename "$0")"
 installdir="$LOCAL_BIN/go"
 
+# OS / Arch
+os="$(uname | tr '[:upper:]' '[:lower:]')"
+archmap=(
+  ["i386"]="amd64"
+  ["arm64"]="arm64"
+)
+arch="${archmap["$(uname -p)"]}"
+
 # Specify exact versions of Go to install.
 versions=(
 )
@@ -36,13 +44,13 @@ versions=(
   done
 
   if ! [ ${#versions_to_install[@]} -eq 0 ] ; then
-    echo -e "\033[1;32mInstalling '$me' on first use...\033[0m"
+    echo -e "\033[1;32mInstalling '$me' ($os) ($arch) on first use...\033[0m"
 
     for v in "${versions_to_install[@]}"
     do
       echo -e "\033[1;93mInstalling 'go$v'...\033[0m"
       mkdir -p "$installdir/$v"
-      curl "https://dl.google.com/go/go$v.linux-amd64.tar.gz" | tar xz --strip-components=1 -C "$installdir/$v"
+      curl "https://dl.google.com/go/go$v.$os-$arch.tar.gz" | tar xz --strip-components=1 -C "$installdir/$v"
     done
 
     echo -e "\033[1;93mLinking ${versions[0]} as latest into PATH...\033[0m"
