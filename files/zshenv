@@ -19,6 +19,7 @@ export PATH="$PATH:$SCRIPTS:$LOCAL_BIN"
 export EDITOR=vim
 # for go
 export PATH="$PATH:$LOCAL_BIN/go/latest/bin"
+export GOPATH="$LOCAL/gopath"
 export GOBIN=$LOCAL_BIN
 export CGO_ENABLED=0
 # for v
