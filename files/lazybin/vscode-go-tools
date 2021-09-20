@@ -49,7 +49,14 @@ me="$(basename "$0")"
   fi
   if ! [ -f $LOCAL_BIN/dlv-dap ] ; then
     echo -e "\033[1;32mInstalling 'dlv-dap' on first use...\033[0m"
-    go build -o $LOCAL_BIN/dlv-dap github.com/go-delve/delve/cmd/dlv@master
+    dir=$(mktemp -d)
+    pushd $dir
+    git clone https://github.com/go-delve/delve
+    pushd delve/cmd/dlv
+    go build -o $LOCAL_BIN/dlv-dap
+    popd
+    popd
+    rm -fr $dir
     echo -e "\033[1;32mFinished installing 'dlv-dap'.\033[0m"
   fi
   if ! [ -f $LOCAL_BIN/golangci-lint ] ; then
