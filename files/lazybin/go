@@ -11,9 +11,9 @@ installdir="$LOCAL_BIN/go"
 os="$(uname | tr '[:upper:]' '[:lower:]')"
 arch=
 {
-  rawarch="$(uname -p)"
+  rawarch="$(uname -m)"
   case $rawarch in
-    i386*) arch="amd64" ;;
+    x86_64*) arch="amd64" ;;
     arm64*) arch="arm64" ;;
     *)
       echo "Unrecognized architecture: $rawarch"
