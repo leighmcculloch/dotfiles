@@ -30,8 +30,10 @@ export ZSH="$HOME/.oh-my-zsh"
 if [ ! -d "$ZSH" ]; then
   git clone https://github.com/robbyrussell/oh-my-zsh "$ZSH"
 fi
-mkdir -p "$ZSH/custom/themes"
-ln -sf "$PWD/files/enormous.zsh-theme" "$ZSH/custom/themes/"
+export ZSH_CUSTOM_THEMES="$ZSH/custom/themes"
+rm -fr "$ZSH_CUSTOM_THEMES"
+mkdir -p "$ZSH_CUSTOM_THEMES"
+git clone --branch v1.15.0 --depth=1 https://github.com/romkatv/powerlevel10k.git "$ZSH_CUSTOM_THEMES/powerlevel10k"
 
 # install some defaults
 fzf --version
