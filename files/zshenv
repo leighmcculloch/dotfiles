@@ -62,6 +62,8 @@ fi
 export PATH=$PATH:/home/linuxbrew/.linuxbrew/bin
 # for brew (macos)
 export PATH=$PATH:/usr/local/bin
+# for docker to use buildkit
+export DOCKER_BUILDKIT=1
 
 # for folders supplied by dotfiles (must be last)
 export PATH="$PATH:$LAZYBIN"
