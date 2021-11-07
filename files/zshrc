@@ -77,15 +77,14 @@ export PATH="$PATH:$HOME/.rvm/bin"
 unsetopt HIST_VERIFY
 
 # print exit code once after last command output
-ZSH_EXEC_COMMAND=0
 function track-exec-command() {
-  ZSH_EXEC_COMMAND=1
+  zsh_exec_command=1
 }
 function print-exit-code() {
   local -i code=$?
   (( code == 0 )) && return
-  (( ZSH_EXEC_COMMAND == 0 )) && return
-  ZSH_EXEC_COMMAND=0
+  (( zsh_exec_command != 1 )) && return
+  unset zsh_exec_command
   print -rC1 -- ''${(%):-"%F{160}✘ exit status $code%f"}''
 }
 autoload -Uz add-zsh-hook
