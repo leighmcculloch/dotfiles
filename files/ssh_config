@@ -4,3 +4,8 @@ Host *
     HashKnownHosts no
     StrictHostKeyChecking yes
     CheckHostIP no
+
+Host flydev
+    User root
+    StrictHostKeyChecking no
+    UserKnownHostsFile /dev/null
