@@ -1,11 +1,10 @@
-UserKnownHostsFile ~/.ssh/known_hosts ~/.ssh/known_hosts_private
+Host flydev
+    User root
+    StrictHostKeyChecking no
+    UserKnownHostsFile /dev/null
 
 Host *
     HashKnownHosts no
     StrictHostKeyChecking yes
     CheckHostIP no
-
-Host flydev
-    User root
-    StrictHostKeyChecking no
-    UserKnownHostsFile /dev/null
+    UserKnownHostsFile ~/.ssh/known_hosts ~/.ssh/known_hosts_private
