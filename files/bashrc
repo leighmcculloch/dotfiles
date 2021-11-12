@@ -1,14 +1,14 @@
-# if type zsh &> /dev/null; then
-#     args=()
-#     if [[ -o login ]]; then
-#         args+=("-l")
-#     fi
-#     if [[ -o interactive ]]; then
-#         args+=("-i")
-#     fi
+if type zsh &> /dev/null; then
+    args=()
+    if [[ -o login ]]; then
+        args+=("-l")
+    fi
+    if [[ -o interactive ]]; then
+        args+=("-i")
+    fi
 
-#     export SHELL=$(which zsh)
-#     exec zsh "${args[@]}"
-# fi
+    export SHELL=$(which zsh)
+    exec zsh "${args[@]}"
+fi
 
 source "$HOME/.zshenv"
