@@ -15,6 +15,10 @@ me="$(basename "$0")"
 
         brew install docker
 
+        mkdir -p "$HOME/.docker/cli-plugins"
+        curl -L -o "$HOME/.docker/cli-plugins/docker-buildx" https://github.com/docker/buildx/releases/download/v0.7.0/buildx-v0.7.0.darwin-amd64
+        chmod +x "$HOME/.docker/cli-plugins/docker-buildx"
+
         echo -e "\033[1;32mFinished installing '$me'.\033[0m"
       fi
     ;;
@@ -40,6 +44,10 @@ me="$(basename "$0")"
           stable"
         sudo apt update
         sudo apt-get -y install docker-ce-cli
+
+        mkdir -p "$HOME/.docker/cli-plugins"
+        curl -sSL -o "$HOME/.docker/cli-plugins/docker-buildx" https://github.com/docker/buildx/releases/download/v0.7.0/buildx-v0.7.0.linux-amd64
+        chmod +x "$HOME/.docker/cli-plugins/docker-buildx"
 
         echo -e "\033[1;32mFinished installing '$me'.\033[0m"
       fi
