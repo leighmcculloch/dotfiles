@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+
+set -o errexit
+set -o pipefail
+set -o nounset
+
+me="$(basename "$0")"
+
+{
+  os="$(uname)"
+  case $os in
+    Darwin*)
+      if ! [ -f /usr/local/bin/dart ] ; then
+        echo -e "\033[1;32mInstalling '$me' on first use...\033[0m"
+
+        brew install dart-lang/dart/dart
+
+        echo -e "\033[1;32mFinished installing '$me'.\033[0m"
+      fi
+    ;;
+    Linux*)
+      if ! [ -f /usr/bin/elixir ] ; then
+        echo -e "\033[1;32mInstalling '$me' on first use...\033[0m"
+
+        sudo apt-get update
+        sudo apt-get install apt-transport-https
+        sudo sh -c 'wget -qO- https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -'
+        sudo sh -c 'wget -qO- https://storage.googleapis.com/download.dartlang.org/linux/debian/dart_stable.list > /etc/apt/sources.list.d/dart_stable.list'
+        sudo apt-get update
+        sudo apt-get install dart
+
+        echo -e "\033[1;32mFinished installing '$me'.\033[0m"
+      fi
+    ;;
+    *)
+      echo "Unrecognized operating system: $(uname)"
+      exit 1
+    ;;
+  esac
+} 1>&2
+
+"$me" "$@"
