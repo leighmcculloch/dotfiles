@@ -11,7 +11,7 @@ me="$(basename "$0")"
     echo -e "\033[1;32mInstalling '$me' on first use...\033[0m"
 
     dir=$(mktemp -d)
-    git clone -b v0.0.252 https://github.com/superfly/flyctl $dir
+    git clone -b v0.0.255 https://github.com/superfly/flyctl $dir
     pushd $dir
     go build -o $LOCAL_BIN/fly
     popd
