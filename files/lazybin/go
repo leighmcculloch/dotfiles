@@ -28,7 +28,7 @@ versions=(
 
 # Add last release of Go to list of versions automatically.
 {
-  versions+=($(curl -s https://golang.org/dl/\?mode\=json | jq -r '.[0].version'))
+  versions+=($(curl -s https://go.dev/dl/\?mode\=json | jq -r '.[0].version'))
 } 1>&2
 
 # Install versions as needed.
