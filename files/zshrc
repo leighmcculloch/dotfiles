@@ -2,6 +2,9 @@
 bindkey "^P" up-line-or-search
 bindkey "^N" down-line-or-search
 
+# enable vim mode
+bindkey -v
+
 # free up the c-q shortcut for use in vim
 stty start undef
 
