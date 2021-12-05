@@ -10,7 +10,7 @@ me="$(basename "$0")"
   os="$(uname)"
   case $os in
     Darwin*)
-      if ! [ -f /usr/local/bin/elixir ] ; then
+      if ! [ -f /usr/local/bin/crystal ] ; then
         echo -e "\033[1;32mInstalling '$me' on first use...\033[0m"
 
         brew install crystal
@@ -19,7 +19,7 @@ me="$(basename "$0")"
       fi
     ;;
     Linux*)
-      if ! [ -f /usr/bin/elixir ] ; then
+      if ! [ -f /usr/bin/crystal ] ; then
         echo -e "\033[1;32mInstalling '$me' on first use...\033[0m"
 
         curl -fsSL https://crystal-lang.org/install.sh | sudo bash
