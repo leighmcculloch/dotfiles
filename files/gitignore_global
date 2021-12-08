@@ -8,3 +8,4 @@
 .devcontainer
 .vscode
 zig-cache
+.idea
