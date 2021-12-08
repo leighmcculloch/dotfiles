@@ -22,6 +22,14 @@ mkdir -p "$HOME/.ssh"
 ln -sf "$HOME/.ssh_config" "$HOME/.ssh/config"
 ln -sf "$HOME/.ssh_known_hosts" "$HOME/.ssh/known_hosts"
 
+# symlink sublime settings
+sublime_dir="$HOME/Library/Application Support/Sublime Text/Packages/User"
+if [ -d "$sublime_dir" ]; then
+  mv "$sublime_dir" "$sublime_dir.bak.$RANDOM"
+fi
+mkdir -p "$(dirname "$sublime_dir")"
+ln -sf "$HOME/.sublime" "$sublime_dir"
+
 # setup paths, etc
 source $PWD/files/zshenv
 
