@@ -6,7 +6,7 @@
 [core]
 	excludesfile = ~/.gitignore_global
 	quotepath = false
-	editor = code -w
+	editor = vim
 	commentChar = ";"
 [pager]
 	branch = 
