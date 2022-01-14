@@ -7,15 +7,15 @@ set -o nounset
 me="$(basename "$0")"
 
 {
-  if ! [ -d $HOME/.nvm ] ; then
+  if ! [ -d "$HOME/.nvm" ] ; then
     echo -e "\033[1;32mInstalling '$me' on first use...\033[0m"
 
-    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.37.2/install.sh | PROFILE=/dev/null bash
+    git clone -b v0.39.1 https://github.com/nvm-sh/nvm.git "$HOME/.nvm"
 
     echo -e "\033[1;32mFinished installing '$me'.\033[0m"
   fi
-
-  . "$HOME/.nvm/nvm.sh"
 } 1>&2
 
-nvm "$@"
+. "$HOME/.nvm/nvm.sh"
+
+"$me" "$@"
