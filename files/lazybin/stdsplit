@@ -11,7 +11,7 @@ me="$(basename "$0")"
   location=
   case $os in
     Darwin*)
-      if ! [ -f /usr/local/bin/stdsplit ] ; then
+      if ! [ -f "$(brew --prefix)"/bin/stdsplit ] ; then
         echo -e "\033[1;32mInstalling '$me' on first use...\033[0m"
 
         brew install 4d63/stdsplit/stdsplit

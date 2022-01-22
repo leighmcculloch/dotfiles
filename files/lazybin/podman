@@ -11,7 +11,7 @@ me="$(basename "$0")"
   location=
   case $os in
     Darwin*)
-      if ! [ -f /usr/local/bin/podman ] ; then
+      if ! [ -f "$(brew --prefix)"/bin/podman ] ; then
         echo -e "\033[1;32mInstalling '$me' on first use...\033[0m"
 
         brew install podman

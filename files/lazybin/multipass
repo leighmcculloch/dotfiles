@@ -11,10 +11,10 @@ me="$(basename "$0")"
   location=
   case $os in
     Darwin*)
-      if ! [ -f /usr/local/bin/multipass ] ; then
+      if ! [ -f "$(brew --prefix)"/bin/multipass ] ; then
         echo -e "\033[1;32mInstalling '$me' on first use...\033[0m"
 
-        brew install multipass
+        brew install --cask multipass
 
         echo -e "\033[1;32mFinished installing '$me'.\033[0m"
       fi

@@ -10,7 +10,7 @@ me="$(basename "$0")"
   os="$(uname)"
   case $os in
     Darwin*)
-      if ! [ -f /usr/local/bin/fzf ] ; then
+      if ! [ -f "$(brew --prefix)"/bin/fzf ] ; then
         echo -e "\033[1;32mInstalling '$me' on first use...\033[0m"
 
         brew install fzf
