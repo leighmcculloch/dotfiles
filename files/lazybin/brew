@@ -6,11 +6,12 @@ set -o nounset
 
 me="$(basename "$0")"
 
-os="$(uname)"
+os="$(uname -s -m)"
 location=
 case $os in
-  Darwin*) location=/usr/local/bin/brew ;;
-  Linux*)  location=/home/linuxbrew/.linuxbrew/bin/brew ;;
+  "Darwin x86_64"*) location=/usr/local/bin ;;
+  "Darwin arm64"*) location=/opt/homebrew/bin/brew ;;
+  "Linux"*) location=/home/linuxbrew/.linuxbrew/bin/brew ;;
   *) echo "Unrecognized operating system: $(uname)"; exit 1 ;;
 esac
 if ! [ -f $location ] ; then
@@ -18,7 +19,10 @@ if ! [ -f $location ] ; then
 
   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
 
+  echo 'eval "$($location shellenv)"' >> "$HOME/.zprofile"
+
   echo -e "\033[1;32mFinished installing '$me'.\033[0m"
 fi
 
+eval "$($location shellenv)"
 "$me" "$@"

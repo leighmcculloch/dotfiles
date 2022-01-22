@@ -62,8 +62,10 @@ if [ -d $HOME/.vscode-server ]; then
 fi
 # for brew (linux)
 export PATH=$PATH:/home/linuxbrew/.linuxbrew/bin
-# for brew (macos)
+# for brew (macos intel)
 export PATH=$PATH:/usr/local/bin
+# for brew (macos silicon)
+export PATH=$PATH:/opt/homebrew/bin
 # for docker to use buildkit
 export DOCKER_BUILDKIT=1
 # for vmcli
