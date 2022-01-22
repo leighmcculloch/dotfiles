@@ -11,7 +11,7 @@ me="$(basename "$0")"
   location=
   case $os in
     Darwin*)
-      if ! [ -f "$(brew --prefix)"/dockerhost ] ; then
+      if ! [ -f "$(brew --prefix)"/bin/dockerhost ] ; then
         echo -e "\033[1;32mInstalling '$me' on first use...\033[0m"
 
         brew install --cask 4d63/dockerhost/dockerhost
