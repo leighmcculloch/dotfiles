@@ -53,6 +53,12 @@ export PGHOST=localhost
 export PGUSER=${USER:-$(whoami)}
 # for homebrew
 export HOMEBREW_NO_ANALYTICS=1
+# for homebrew (linux)
+export PATH=/home/linuxbrew/.linuxbrew/bin:$PATH
+# for homebrew (macos intel)
+export PATH=/usr/local/bin:$PATH
+# for homebrew (macos silicon)
+export PATH=/opt/homebrew/bin:$PATH
 # for vscode
 if [ -d $HOME/.vscode-server ]; then
   for vscodeServerPath in $HOME/.vscode-server/bin/*/bin; do
@@ -60,12 +66,6 @@ if [ -d $HOME/.vscode-server ]; then
     break
   done
 fi
-# for brew (linux)
-export PATH=$PATH:/home/linuxbrew/.linuxbrew/bin
-# for brew (macos intel)
-export PATH=$PATH:/usr/local/bin
-# for brew (macos silicon)
-export PATH=$PATH:/opt/homebrew/bin
 # for docker to use buildkit
 export DOCKER_BUILDKIT=1
 # for vmcli
