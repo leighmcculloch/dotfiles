@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+set -o errexit
+set -o pipefail
+set -o nounset
+
+docker run --rm -it -v "$PWD":"$PWD" -w "$PWD" --entrypoint abigen ethereum/client-go:alltools-stable "$@"
