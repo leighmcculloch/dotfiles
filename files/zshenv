@@ -70,6 +70,10 @@ export VMCTLDIR="$HOME/VMs"
 # for dart
 export PATH="$PATH:$HOME/.pub-cache/bin"
 
+# for lib packages if installed via homebrew
+export PKG_CONFIG_PATH="$PKG_CONFIG_PATH:$(brew --prefix)/opt/libpq/lib/pkgconfig"
+export PKG_CONFIG_PATH="$PKG_CONFIG_PATH:$(brew --prefix)/opt/openssl@3/lib/pkgconfig"
+
 # for folders supplied by dotfiles (must be last)
 export PATH="$PATH:$LAZYBIN"
 if [ "$(uname)" = "Linux" ]; then
