@@ -63,10 +63,18 @@ export VMCTLDIR="$HOME/VMs"
 export PATH="$PATH:$HOME/.pub-cache/bin"
 # for homebrew
 export HOMEBREW_NO_ANALYTICS=1
-if ! type "brew" > /dev/null; then
-  export PATH="$(brew --prefix)/bin:$PATH"
-  export PKG_CONFIG_PATH="$PKG_CONFIG_PATH:$(brew --prefix)/opt/libpq/lib/pkgconfig"
-  export PKG_CONFIG_PATH="$PKG_CONFIG_PATH:$(brew --prefix)/opt/openssl@3/lib/pkgconfig"
+os="$(uname -s -m)"
+brew=
+case $os in
+  "Darwin x86_64"*) brew=/usr/local/bin/brew ;;
+  "Darwin arm64"*) brew=/opt/homebrew/bin/brew ;;
+  "Linux"*) brew=/home/linuxbrew/.linuxbrew/bin/brew ;;
+  *) ;;
+esac
+if [ -f $brew ] ; then
+  export PATH="$($brew --prefix)/bin:$PATH"
+  export PKG_CONFIG_PATH="$PKG_CONFIG_PATH:$($brew --prefix)/opt/libpq/lib/pkgconfig"
+  export PKG_CONFIG_PATH="$PKG_CONFIG_PATH:$($brew --prefix)/opt/openssl@3/lib/pkgconfig"
 fi
 
 # for folders supplied by dotfiles (must be last)

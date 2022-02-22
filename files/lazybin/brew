@@ -9,7 +9,7 @@ me="$(basename "$0")"
 os="$(uname -s -m)"
 location=
 case $os in
-  "Darwin x86_64"*) location=/usr/local/bin ;;
+  "Darwin x86_64"*) location=/usr/local/bin/brew ;;
   "Darwin arm64"*) location=/opt/homebrew/bin/brew ;;
   "Linux"*) location=/home/linuxbrew/.linuxbrew/bin/brew ;;
   *) echo "Unrecognized operating system: $(uname)"; exit 1 ;;
