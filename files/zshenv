@@ -48,14 +48,6 @@ export NVM_DIR="$HOME/.nvm"
 # for postgres running in docker
 export PGHOST=localhost
 export PGUSER=${USER:-$(whoami)}
-# for homebrew
-export HOMEBREW_NO_ANALYTICS=1
-# for homebrew (linux)
-export PATH=/home/linuxbrew/.linuxbrew/bin:$PATH
-# for homebrew (macos intel)
-export PATH=/usr/local/bin:$PATH
-# for homebrew (macos silicon)
-export PATH=/opt/homebrew/bin:$PATH
 # for vscode
 if [ -d $HOME/.vscode-server ]; then
   for vscodeServerPath in $HOME/.vscode-server/bin/*/bin; do
@@ -69,10 +61,13 @@ export DOCKER_BUILDKIT=1
 export VMCTLDIR="$HOME/VMs"
 # for dart
 export PATH="$PATH:$HOME/.pub-cache/bin"
-
-# for lib packages if installed via homebrew
-export PKG_CONFIG_PATH="$PKG_CONFIG_PATH:$(brew --prefix)/opt/libpq/lib/pkgconfig"
-export PKG_CONFIG_PATH="$PKG_CONFIG_PATH:$(brew --prefix)/opt/openssl@3/lib/pkgconfig"
+# for homebrew
+export HOMEBREW_NO_ANALYTICS=1
+if ! type "brew" > /dev/null; then
+  export PATH="$(brew --prefix)/bin:$PATH"
+  export PKG_CONFIG_PATH="$PKG_CONFIG_PATH:$(brew --prefix)/opt/libpq/lib/pkgconfig"
+  export PKG_CONFIG_PATH="$PKG_CONFIG_PATH:$(brew --prefix)/opt/openssl@3/lib/pkgconfig"
+fi
 
 # for folders supplied by dotfiles (must be last)
 export PATH="$PATH:$LAZYBIN"
