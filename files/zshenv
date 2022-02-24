@@ -61,6 +61,8 @@ export DOCKER_BUILDKIT=1
 export VMCTLDIR="$HOME/VMs"
 # for dart
 export PATH="$PATH:$HOME/.pub-cache/bin"
+# for multipass (a cask installed by homebrew but to a unique path)
+export PATH="/usr/local/bin:$PATH"
 # for homebrew
 export HOMEBREW_NO_ANALYTICS=1
 os="$(uname -s -m)"
