@@ -14,16 +14,18 @@ me="$(basename "$0")"
     arch=
     os=
     case "$(uname)" in
-      Darwin*)
-        arch=x86_64
-        os=macos
-      ;;
-      Linux*)
-        arch=x86_64
-        os=linux
-      ;;
+      Darwin*) os=macos ;;
+      Linux*) os=linux ;;
       *)
         echo "Unrecognized operating system: $(uname)"
+        exit 1
+      ;;
+    esac
+    case "$(uname -m)" in
+      arm64*) arch=aarch64 ;;
+      x86_64*) arch=x86_64 ;;
+      *)
+        echo "Unrecognized architecture: $(uname)"
         exit 1
       ;;
     esac
