@@ -36,6 +36,12 @@ me="$(basename "$0")"
     curl -sSL "$tarball" | tar xJ -C "$LOCAL"
     ln -sf "$LOCAL/zig-$os-$arch-$version/zig" "$LOCAL_BIN/zig"
 
+    # Link the zig bin into a directory that is always on the PATH, even in
+    # situations where the PATH hasn't been configured for some obscure reason.
+    # This allows for ZLS to find zig naturally on the path when it is loaded
+    # from within the VSCode extension.
+    ln -sf $LOCAL_BIN/zig /usr/local/bin/zig
+
     echo -e "\033[1;32mFinished installing '$me'.\033[0m"
   fi
 } 1>&2

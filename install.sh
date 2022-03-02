@@ -30,6 +30,11 @@ fi
 mkdir -p "$(dirname "$sublime_dir")"
 ln -sf "$HOME/.sublime" "$sublime_dir"
 
+# symlink config items on macos systems
+if [ "$(uname)" = Darwin ]; then
+  ln -sf "$PWD/files/config/zls.json" "$HOME/Library/Application Support/"
+fi
+
 # setup paths, etc
 source $PWD/files/zshenv
 
