@@ -22,7 +22,7 @@ me="$(basename "$0")"
     # situations where the PATH hasn't been configured for some obscure reason.
     # This allows for instructing the VSCode ZLS extension to find the zls
     # executable with simply "zls".
-    ln -sf $LOCAL_BIN/zls /usr/local/bin/zls
+    sudo ln -sf $LOCAL_BIN/zls /usr/local/bin/zls
 
     echo -e "\033[1;32mFinished installing '$me'.\033[0m"
   fi

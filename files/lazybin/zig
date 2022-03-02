@@ -40,7 +40,7 @@ me="$(basename "$0")"
     # situations where the PATH hasn't been configured for some obscure reason.
     # This allows for ZLS to find zig naturally on the path when it is loaded
     # from within the VSCode extension.
-    ln -sf $LOCAL_BIN/zig /usr/local/bin/zig
+    sudo ln -sf $LOCAL_BIN/zig /usr/local/bin/zig
 
     echo -e "\033[1;32mFinished installing '$me'.\033[0m"
   fi
