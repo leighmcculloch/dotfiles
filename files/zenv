@@ -75,6 +75,9 @@ case $os in
 esac
 if [ -f $brew ] ; then
   export PATH="$($brew --prefix)/bin:$PATH"
+  if [ -z "${PKG_CONFIG_PATH-}" ]; then
+    export PKG_CONFIG_PATH=
+  fi
   export PKG_CONFIG_PATH="$PKG_CONFIG_PATH:$($brew --prefix)/opt/libpq/lib/pkgconfig"
   export PKG_CONFIG_PATH="$PKG_CONFIG_PATH:$($brew --prefix)/opt/openssl@3/lib/pkgconfig"
 fi

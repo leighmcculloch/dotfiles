@@ -36,7 +36,7 @@ if [ "$(uname)" = Darwin ]; then
 fi
 
 # setup paths, etc
-source $PWD/files/zshenv
+source $PWD/files/zenv
 
 # install oh-my-zsh
 export ZSH="$HOME/.oh-my-zsh"
