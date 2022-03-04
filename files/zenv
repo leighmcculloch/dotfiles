@@ -27,7 +27,7 @@ export CGO_ENABLED=1
 # for v
 export PATH="$PATH:$LOCAL/v"
 # for ruby
-if [[ -f $LOCAL_BIN/rbenv ]]; then
+if [ -f $LOCAL_BIN/rbenv ]; then
   export RBENV_ROOT=$(dirname $(dirname $(readlink -n $(which rbenv))))
   eval "$(rbenv init -)"
 fi
