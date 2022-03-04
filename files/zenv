@@ -83,7 +83,7 @@ if [ -f $brew ] ; then
 fi
 
 # source additional zenvs
-for f in "$HOME/.zenv_"*; do
+for f in "$HOME/.zenv_"*(N); do
   [ -f $f ] && . $f
 done
 
