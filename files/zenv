@@ -83,8 +83,8 @@ if [ -f $brew ] ; then
 fi
 
 # source additional zenvs
-for f in $HOME/.zenv_*(N); do
-  source $f
+for f in "$HOME/.zenv_"*; do
+  [ -f $f ] && . $f
 done
 
 # for folders supplied by dotfiles (must be last)
