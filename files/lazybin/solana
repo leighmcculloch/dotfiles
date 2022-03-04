@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+
+set -o errexit
+set -o pipefail
+set -o nounset
+
+me="$(basename "$0")"
+
+{
+  if ! [ -f $LOCAL_BIN/act ] ; then
+    echo -e "\033[1;32mInstalling '$me' on first use...\033[0m"
+
+    version=v1.10.0
+    variant=
+    case "$(uname -s -p)" in
+      'Darwin x86_64'*) variant='x86_64-apple-darwin' ;;
+      'Darwin arm64'*) variant='aarch64-apple-darwin' ;;
+      'Linux'*) variant='x86_64-unknown-linux-gnu' ;;
+      *)
+        echo "Unrecognized system: $(uname -s -p)"
+        exit 1
+      ;;
+    esac
+
+    echo -e "\033[1;32mInstalling '$me' $version $variant on first use...\033[0m"
+
+    tarball="https://github.com/solana-labs/solana/releases/download/$version/solana-release-$variant.tar.bz2"
+    curl -sSL "$tarball" | tar xj -C "$LOCAL"
+
+    echo 'export PATH="$LOCAL/solana-release/bin:$PATH"' > $HOME/.zenv_solana
+
+    echo -e "\033[1;32mFinished installing '$me'.\033[0m"
+  fi
+} 1>&2
+
+"$me" "$@"

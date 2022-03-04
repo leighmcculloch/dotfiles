@@ -82,6 +82,11 @@ if [ -f $brew ] ; then
   export PKG_CONFIG_PATH="$PKG_CONFIG_PATH:$($brew --prefix)/opt/openssl@3/lib/pkgconfig"
 fi
 
+# source additional zenvs
+for f in $HOME/.zenv_*; do
+  source $f
+done
+
 # for folders supplied by dotfiles (must be last)
 export PATH="$PATH:$LAZYBIN"
 if [ "$(uname)" = "Linux" ]; then
