@@ -48,6 +48,7 @@ alias gde="git diff --exit-code"
 alias gdcsv="git diff --color-words=\"[^[:space:],]+\""
 alias gdcacsv="git diff --cached --color-words=\"[^[:space:],]+\""
 alias gscsv="git show --color-words=\"[^[:space:],]+\""
+alias gacnf!="ga . && gcn! && gp -f"
 
 # go aliases
 alias gota="go test ./..."
