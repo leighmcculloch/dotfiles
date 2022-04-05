@@ -26,6 +26,7 @@ export PATH="$PATH:$LOCAL_BIN/go/latest/bin"
 export GOPATH="$LOCAL/gopath"
 export GOBIN=$LOCAL_BIN
 export CGO_ENABLED=1
+# for deno
 export PATH="$PATH:$HOME/.deno/bin"
 # for v
 export PATH="$PATH:$LOCAL/v"
