@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+
+set -o errexit
+set -o pipefail
+set -o nounset
+
+me="$(basename "$0")"
+
+{
+  if ! [ -f $LOCAL_BIN/docker-compose ] ; then
+    echo -e "\033[1;32mInstalling '$me' on first use...\033[0m"
+
+    version="$(curl -L --progress-bar https://api.github.com/repos/docker/compose/releases/latest | jq -r '.name')"
+    os="$(uname -s -m)"
+    suffix=
+    case $os in
+      "Darwin x86_64"*) suffix=darwin-x86_64 ;;
+      "Darwin arm64"*) suffix=darwin-aarch64 ;;
+      "Linux x86_64"*) suffix=linux-x86_64 ;;
+      "Linux aarch64"*) suffix=linux-aarch64 ;;
+      *) echo "Unrecognized operating system: $os"; exit 1 ;;
+    esac
+
+    echo -e "\033[1;32mInstalling '$me' $version $suffix on first use...\033[0m"
+
+    curl --progress-bar -SL -o $LOCAL_BIN/docker-compose "https://github.com/docker/compose/releases/download/$version/docker-compose-$suffix"
+    chmod +x $LOCAL_BIN/docker-compose
+
+    echo -e "\033[1;32mFinished installing '$me'.\033[0m"
+  fi
+} 1>&2
+
+"$me" "$@"
