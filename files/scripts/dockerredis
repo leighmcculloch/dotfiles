@@ -4,4 +4,9 @@ set -o errexit
 set -o pipefail
 set -o nounset
 
-docker run -d --rm -it --network=container:$(hostname) --name=redis redis
+name=${1:-redis}
+network=${2:-container:$(hostname)}
+
+docker run -d --rm -it --network=$network --name=$name \
+    -p 6379:6379 \
+    redis
