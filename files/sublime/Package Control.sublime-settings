@@ -6,7 +6,11 @@
 	"installed_packages":
 	[
 		"LSP",
+		"LSP-file-watcher-chokidar",
 		"LSP-gopls",
+		"LSP-rust-analyzer",
 		"Package Control",
+		"Rust Enhanced",
+		"TOML",
 	],
 }

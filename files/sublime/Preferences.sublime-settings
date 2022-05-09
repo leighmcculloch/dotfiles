@@ -1,5 +1,8 @@
 {
 	"font_size": 18,
 	"save_on_focus_lost": true,
-	"ignored_packages": ["Vintage"],
+	"ignored_packages": [
+		"Rust",
+		"Vintage",
+	],
 }
