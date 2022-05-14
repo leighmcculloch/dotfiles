@@ -44,6 +44,7 @@ function gfpr() {
 
 # git aliases
 alias ga.="git add ."
+alias gb="git branch --sort=-committerdate"
 alias gde="git diff --exit-code"
 alias gdcsv="git diff --color-words=\"[^[:space:],]+\""
 alias gdcacsv="git diff --cached --color-words=\"[^[:space:],]+\""
