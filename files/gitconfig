@@ -12,9 +12,14 @@
 	branch = 
 [commit]
 	template = ~/.gitmessage
+	gpgsign = true
 [push]
 	default = current
 [pull]
 	ff = only
 [include]
 	path = ~/.gitconfig.local
+[gpg "x509"]
+	program = gitsign
+[gpg]
+	format = x509
