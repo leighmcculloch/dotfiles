@@ -15,6 +15,9 @@ me="$(basename "$0")"
         echo -e "\033[1;32mInstalling '$me' on first use...\033[0m"
 
         brew install podman
+        podman machine init
+        podman machine start
+        echo "export DOCKER_HOST='unix:///$HOME/.local/share/containers/podman/machine/podman-machine-default/podman.sock'" > $HOME/.zenv_podman
 
         echo -e "\033[1;32mFinished installing '$me'.\033[0m"
       fi
