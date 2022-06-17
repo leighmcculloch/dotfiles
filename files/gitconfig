@@ -12,7 +12,7 @@
 	branch = 
 [commit]
 	template = ~/.gitmessage
-	gpgsign = true
+	# gpgsign = true
 [push]
 	default = current
 [pull]
