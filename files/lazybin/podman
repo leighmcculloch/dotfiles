@@ -15,8 +15,10 @@ me="$(basename "$0")"
         echo -e "\033[1;32mInstalling '$me' on first use...\033[0m"
 
         brew install podman
-        echo -e "\033[1;32mInitializing podman machine...\033[0m"
-        podman machine init
+        echo -e "\033[1;32mInitializing podman machine (8 cpus, 80gb disk, 24gb mem)...\033[0m"
+        podman machine init --cpus=8 --disk-size=80 --memory=24576
+
+
         echo -e "\033[1;32mStarting podman machine...\033[0m"
         podman machine start
         echo -e "\033[1;32mWriting ~/.zenv_podman for podman...\033[0m"
