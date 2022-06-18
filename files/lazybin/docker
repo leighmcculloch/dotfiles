@@ -9,14 +9,27 @@ me="$(basename "$0")"
 {
   os="$(uname)"
   case $os in
-    Darwin*)
+    Darwin x86_64*)
       if ! [ -f "$(brew --prefix)"/bin/docker ] ; then
         echo -e "\033[1;32mInstalling '$me' on first use...\033[0m"
 
         brew install docker
 
         mkdir -p "$HOME/.docker/cli-plugins"
-        curl -L -o "$HOME/.docker/cli-plugins/docker-buildx" https://github.com/docker/buildx/releases/download/v0.7.0/buildx-v0.7.0.darwin-amd64
+        curl -L -o "$HOME/.docker/cli-plugins/docker-buildx" https://github.com/docker/buildx/releases/download/v0.8.2/buildx-v0.8.2.darwin-amd64
+        chmod +x "$HOME/.docker/cli-plugins/docker-buildx"
+
+        echo -e "\033[1;32mFinished installing '$me'.\033[0m"
+      fi
+    ;;
+    Darwin arm64*)
+      if ! [ -f "$(brew --prefix)"/bin/docker ] ; then
+        echo -e "\033[1;32mInstalling '$me' on first use...\033[0m"
+
+        brew install docker
+
+        mkdir -p "$HOME/.docker/cli-plugins"
+        curl -L -o "$HOME/.docker/cli-plugins/docker-buildx" https://github.com/docker/buildx/releases/download/v0.8.2/buildx-v0.8.2.darwin-arm64
         chmod +x "$HOME/.docker/cli-plugins/docker-buildx"
 
         echo -e "\033[1;32mFinished installing '$me'.\033[0m"
