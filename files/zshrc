@@ -50,6 +50,8 @@ alias gdcsv="git diff --color-words=\"[^[:space:],]+\""
 alias gdcacsv="git diff --cached --color-words=\"[^[:space:],]+\""
 alias gscsv="git show --color-words=\"[^[:space:],]+\""
 alias gacnf!="ga . && gcn! && gp -f"
+alias gs="git stash"
+alias gsp="git stash pop"
 
 # go aliases
 alias gota="go test ./..."
