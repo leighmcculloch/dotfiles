@@ -52,6 +52,8 @@ alias gscsv="git show --color-words=\"[^[:space:],]+\""
 alias gacnf!="ga . && gcn! && gp -f"
 alias gs="git stash"
 alias gsp="git stash pop"
+alias gpr="gh pr create --fill"
+alias gprm="gh pr create --fill && gh pr merge --auto"
 
 # go aliases
 alias gota="go test ./..."
