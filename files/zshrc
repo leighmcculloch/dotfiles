@@ -52,8 +52,7 @@ alias gscsv="git show --color-words=\"[^[:space:],]+\""
 alias gacnf!="ga . && gcn! && gp -f"
 alias gs="git stash"
 alias gsp="git stash pop"
-alias gpr="gh pr create --fill --body-file=$HOME/.gitmessage"
-alias gprd="gh pr create --fill --body-file=$HOME/.gitmessage --draft"
+alias gprd="gh pr create --title \"$(git --no-pager log -1 --format=%s)\" --body-file=$HOME/.gitmessage --draft"
 alias gprm="gh pr create --fill && gh pr merge --auto --delete-branch --squash"
 
 # go aliases
