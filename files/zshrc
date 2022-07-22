@@ -52,7 +52,7 @@ alias gscsv="git show --color-words=\"[^[:space:],]+\""
 alias gacnf!="ga . && gcn! && gp -f"
 alias gs="git stash"
 alias gsp="git stash pop"
-alias gprd="gh pr create --title \"$(git --no-pager log -1 --format=%s)\" --body=\"$(echo "### What\n$(git --no-pager log -1 --format=%s).\n\n### Why\n...")\""
+alias gprd="gh pr create --title \"$(git --no-pager log -1 --format=%s)\" --body=\"$(echo "### What\n$(git --no-pager log -1 --format=%s).\n\n### Why\n...")\" --draft"
 alias gprm="gh pr create --title \"$(git --no-pager log -1 --format=%s)\" --body=\"$(echo "### What\n$(git --no-pager log -1 --format=%s).\n\n### Why\n...")\" && gh pr merge --auto --delete-branch --squash"
 
 # go aliases
