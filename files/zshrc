@@ -56,22 +56,51 @@ alias gsp="git stash pop"
 # github aliases
 function gprd() {
   local commit="$(git log -1 --pretty=format:%s)"
-  local title="$(gum input --width 50 --prompt 'Title: ' --placeholder "$commit" --value "$commit")"
-  local what="$(gum write --width 80 --prompt 'What: ' --placeholder "$commit" --value "$commit")"
-  local why="$(gum write --width 80 --prompt 'Why: ' --placeholder "...")"
+  local title="$(gum input --width 50 --prompt 'Title: ' --value "$commit")"
+  echo "Title: $title"
+  local what="$(gum input --width 80 --prompt 'What: ' --value "$title")"
+  echo "What: $what"
+  echo "Why:"
+  local why="$(gum write --width 80 --prompt '| ')"
   echo "Reviewer: "
-  local reviewer="$(gum choose --prompt 'Reviewers' --no-limit stellar/contract-committers stellar/core-committers stellar/core-contributors stellar/product-eng-team stellar/horizon-committers)"
-  gh pr create --draft --title "$title" --body "### What\n$what\n\n### Why\n$why" --reviewer "$reviewer"
+  local reviewer="$(gum choose --no-limit \
+    graydon jonjove sisuresh paulbellamy \
+    stellar/contract-committers \
+    stellar/core-committers \
+    stellar/core-contributors \
+    stellar/product-eng-team \
+    stellar/horizon-committers
+  )"
+  gh pr create --draft --title "$title" --body "### What
+$what
+
+### Why
+$why" --reviewer "$(IFS=,; echo -n "${reviewer[*]}")"
 }
-function gprd() {
+function gprm() {
   local commit="$(git log -1 --pretty=format:%s)"
-  local title="$(gum input --prompt 'Title: ' --placeholder "$commit" --value "$commit")"
-  local what="$(gum input --prompt 'What' --placeholder "$commit" --value "$commit")"
-  local why="$(gum input --prompt 'Why' --placeholder "...")"
-  gh pr create --title "$title" --body "### What\n$what\n\n### Why\n$why"
+  local title="$(gum input --width 50 --prompt 'Title: ' --value "$commit")"
+  echo "Title: $title"
+  local what="$(gum input --width 80 --prompt 'What: ' --value "$title")"
+  echo "What: $what"
+  echo "Why:"
+  local why="$(gum write --width 80 --prompt '| ')"
+  echo "Reviewer: "
+  local reviewer="$(gum choose --no-limit \
+    graydon jonjove sisuresh paulbellamy \
+    stellar/contract-committers \
+    stellar/core-committers \
+    stellar/core-contributors \
+    stellar/product-eng-team \
+    stellar/horizon-committers
+  )"
+  gh pr create --title "$title" --body "### What
+$what
+
+### Why
+$why" --reviewer "$(IFS=,; echo -n "${reviewer[*]}")"
   gh pr merge --squash --auto --delete-branch
 }
-alias gprm="gh pr create && gh pr merge --auto --delete-branch --squash"
 
 # go aliases
 alias gota="go test ./..."
