@@ -81,7 +81,7 @@ function gprm() {
   local commit="$(git log -1 --pretty=format:%s)"
   local title="$(gum input --width 50 --prompt 'Title: ' --value "$commit")"
   echo "Title: $title"
-  local what="$(gum input --width 80 --prompt 'What: ' --value "$title")"
+  local what="$(gum input --width 80 --prompt 'What: ' --value "$title.")"
   echo "What: $what"
   echo "Why:"
   local why="$(gum write --width 80 --prompt '| ')"
