@@ -86,6 +86,10 @@ if [ -f $brew ] ; then
   export PKG_CONFIG_PATH="$PKG_CONFIG_PATH:$($brew --prefix)/opt/openssl@3/lib/pkgconfig"
 fi
 
+# See files/lazybin/rustup for why this is required. It is included here for
+# whenever installing rustup in demos.
+export RUSTUP_INIT_SKIP_PATH_CHECK=yes
+
 # source additional zenvs
 if [ -n "$(find $HOME -maxdepth 1 -name '.zenv_*' -print -quit)" ]; then
   for f in "$HOME/.zenv_"*; do
