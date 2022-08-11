@@ -61,7 +61,7 @@ function gprd() {
   local what="$(gum input --width 80 --prompt 'What: ' --value "$title")"
   echo "What: $what"
   echo "Why:"
-  local why="$(gum write --width 80 --prompt '| ')"
+  local why="$(gum write --width 80 --char-limit 99999 --prompt '| ')"
   echo "Reviewer: "
   local reviewer="$(gum choose --no-limit \
     graydon jonjove sisuresh paulbellamy \
@@ -84,7 +84,7 @@ function gprm() {
   local what="$(gum input --width 80 --prompt 'What: ' --value "$title.")"
   echo "What: $what"
   echo "Why:"
-  local why="$(gum write --width 80 --prompt '| ')"
+  local why="$(gum write --width 80 --char-limit 99999 --prompt '| ')"
   echo "Reviewer: "
   local reviewer="$(gum choose --no-limit \
     graydon jonjove sisuresh paulbellamy \
