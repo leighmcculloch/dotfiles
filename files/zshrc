@@ -98,7 +98,7 @@ function gprm() {
 $what
 
 ### Why
-$why" --reviewer "$(IFS=,; echo -n "${reviewer[*]}")"
+$why" --reviewer "$(IFS=,; echo -n "${reviewer[*]}")" $@
   gh pr merge --squash --auto --delete-branch
 }
 
