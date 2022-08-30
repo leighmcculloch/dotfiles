@@ -75,7 +75,7 @@ function gprd() {
 $what
 
 ### Why
-$why" --reviewer "$(IFS=,; echo -n "${reviewer[*]}")"
+$why" --reviewer "$(IFS=,; echo -n "${reviewer[*]}")" $@
 }
 function gprm() {
   local commit="$(git log -1 --pretty=format:%s)"
