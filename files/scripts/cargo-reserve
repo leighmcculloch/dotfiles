@@ -4,11 +4,16 @@ set -o errexit
 set -o pipefail
 set -o nounset
 
+if [ -z "$2" ]; then
+    echo "Missing argument. One argument required."
+    exit 1
+fi
+
 name="$(gum input --prompt 'Crate Name: ' --value "$2")"
 
 gum confirm "Reserve $name on crates.io?"
 
-echo -e "Reserving '$name' on crates.io..."
+echo "Reserving '$name' on crates.io..."
 
 dir="$(mktemp -d)"
 pushd "$dir"
