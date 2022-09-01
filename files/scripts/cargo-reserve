@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+
+set -o errexit
+set -o pipefail
+set -o nounset
+
+name="$(gum input --prompt 'Crate Name: ' --value "$1")"
+
+gum confirm "Reserve $name on crates.io?"
+
+echo -e "Reserving '$1' on crates.io..."
+
+dir="$(mktemp -d)"
+pushd "$dir"
+cat <<EOF > Cargo.toml
+[package]
+name = "$1"
+version = "0.0.1"
+EOF
+mkdir src
+touch src/lib.rs
+cargo publish
+popd
