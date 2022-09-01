@@ -32,4 +32,5 @@ EOF
 mkdir src
 touch src/lib.rs
 cargo publish
+cargo yank $name --version 0.0.1
 popd
