@@ -10,10 +10,20 @@ me="$(basename "$0")"
   if ! [ -f $HOME/.cargo/bin/hx ] ; then
     echo -e "\033[1;32mInstalling '$me' on first use...\033[0m"
 
-    cargo install helix-term \
-      --locked \
-      --git https://github.com/helix-editor/helix \
-      --rev 5b1113766d5363c2e434ab596fcca64a1c707a55
+    echo -e "\033[1;32mCloning git repo...\033[0m"
+    mkdir -p $LOCAL/helix-term
+    pushd $LOCAL/helix-term
+    git init
+    git remote add origin https://github.com/helix-editor/helix
+    git fetch origin 5b1113766d5363c2e434ab596fcca64a1c707a55
+    git reset --hard FETCH_HEAD
+    popd
+
+    echo -e "\033[1;32mSymlinking runtime files...\033[0m"
+    ln -sf $LOCAL/helix-term/runtime $HOME/.config/helix/runtime
+
+    echo -e "\033[1;32mCompiling hx...\033[0m"
+    cargo install --locked --path $LOCAL/helix-term/helix-term
 
     echo -e "\033[1;32mFinished installing '$me'.\033[0m"
   fi
