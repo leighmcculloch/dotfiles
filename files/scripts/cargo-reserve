@@ -3,14 +3,14 @@
 set -o errexit
 set -o pipefail
 
-if [ -z "$2" ]; then
+if [ -z "$1" ]; then
     echo "Missing argument. One argument required."
     exit 1
 fi
 
 set -o nounset
 
-name="$(gum input --prompt 'Name: ' --value "$2")"
+name="$(gum input --prompt 'Name: ' --value "$1")"
 
 echo "Description:"
 description="$(gum write --prompt '| ' --value "$name")"
