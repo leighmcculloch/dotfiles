@@ -14,7 +14,8 @@
 	template = ~/.gitmessage
 	# gpgsign = true
 [push]
-	default = current
+	default = upstream
+	autoSetupRemote = true
 [pull]
 	ff = only
 [include]
