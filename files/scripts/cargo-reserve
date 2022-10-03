@@ -8,9 +8,20 @@ if [ -z "$1" ]; then
     exit 1
 fi
 
+name="$1"
+
+# If the name is reserve it is being run as `cargo reserve`.
+if [[ "$name" == "reserve" ]]; then
+    if [ -z "$2" ]; then
+        echo "Missing argument. One argument required."
+        exit 1
+    fi
+    name="$2"
+fi
+
 set -o nounset
 
-name="$(gum input --prompt 'Name: ' --value "$1")"
+name="$(gum input --prompt 'Name: ' --value "$name")"
 
 echo "Description:"
 description="$(gum write --prompt '| ' --value "$name")"
