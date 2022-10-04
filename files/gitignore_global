@@ -10,3 +10,4 @@
 zig-cache
 .idea
 __debug_bin
+.soroban/
