@@ -53,6 +53,12 @@ alias gacnf!="ga . && gcn! && gp -f"
 alias gs="git stash"
 alias gsp="git stash pop"
 
+function gnb() {
+  local word1="$(perl -e 'srand; rand($.) < 1 && ( $line = $_ ) while <>; print $line' /usr/share/dict/words)"
+  local word2="$(perl -e 'srand; rand($.) < 1 && ( $line = $_ ) while <>; print $line' /usr/share/dict/words)"
+  git checkout -b "$word1-$word2" $@
+}
+
 # github aliases
 function gprd() {
   local commit="$(git log -1 --pretty=format:%s)"
