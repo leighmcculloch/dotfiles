@@ -13,7 +13,7 @@ mkdir -p "$LOCAL_BIN"
 mkdir -p "$LAZYBIN"
 
 # for folders supplied by dotfiles
-export PATH="$PATH:$SCRIPTS:$LOCAL_BIN"
+export PATH="$PATH:$LOCAL_BIN"
 
 # for other general installs
 export PATH="$HOME/.bin:$PATH"
@@ -98,7 +98,7 @@ if [ -n "$(find $HOME -maxdepth 1 -name '.zenv_*' -print -quit)" ]; then
 fi
 
 # for folders supplied by dotfiles (must be last)
-export PATH="$PATH:$LAZYBIN"
+export PATH="$PATH:$SCRIPTS:$LAZYBIN"
 if [ "$(uname)" = "Linux" ]; then
   export PATH="$PATH:$LAZYBIN_LINUX"
 fi
