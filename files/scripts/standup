@@ -13,7 +13,7 @@ until [ "$d" = "0" ]; do
     ((d--))
 done
 
-repotrims=""
+repotrim='|ltrimstr("stellar-")|ltrimstr("soroban-")|ltrimstr("rs-stellar-")|ltrimstr("rs-soroban-")'
 
 query="org:$org author:$username is:pr is:closed updated:>=$date"
 echo "*Done* – ${daysofweek[*]// /, } – [closed prs](https://github.com/pulls?q=$(printf %s "$query" | jq -sRr @uri))"
