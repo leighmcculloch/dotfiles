@@ -1,0 +1,34 @@
+#!/usr/bin/env zsh
+
+org="${1}"
+username="$(gh api -X GET user -q .login)"
+
+days="${2:-7}"
+date="$(date -v-${days}d +%Y-%m-%d)"
+
+daysofweek=()
+d=$days
+until [ "$d" = "0" ]; do
+    daysofweek+="$(date -v-${d}d +%a)"
+    ((d--))
+done
+
+repotrims=""
+
+query="org:$org author:$username is:pr is:closed updated:>=$date"
+echo "*Done* – ${daysofweek[*]// /, } – [closed prs](https://github.com/pulls?q=$(printf %s "$query" | jq -sRr @uri))"
+gh api -X GET /search/issues -f q="$query" \
+    | jq -r '.items[] | (.title + " [" + (.pull_request.html_url|capture(".+/(?<repo>[a-zA-Z-_]+)/pull/[0-9]+")|.repo'"${repotrim}"') + "#" + (.number|tostring) + "](" + .pull_request.html_url + ")")'
+echo
+
+query="org:$org author:$username is:pr is:open"
+echo "*Ongoing* – [open prs](https://github.com/pulls?q=$(printf %s "$query" | jq -sRr @uri))"
+gh api -X GET /search/issues -f q="$query" \
+    | jq -r '.items[] | (.title + " [" + (.pull_request.html_url|capture(".+/(?<repo>[a-zA-Z-_]+)/pull/[0-9]+")|.repo'"${repotrim}"') + "#" + (.number|tostring) + "](" + .pull_request.html_url + ")")'
+echo
+
+query="org:$org assignee:$username is:issue is:open"
+echo "*Next* – [open issues](https://github.com/issues?q=$(printf %s "$query" | jq -sRr @uri))"
+gh api -X GET /search/issues -f q="$query" \
+    | jq -r '.items[] | (.title + " [" + (.html_url|capture(".+/(?<repo>[a-zA-Z-_]+)/issues/[0-9]+")|.repo'"${repotrim}"') + "#" + (.number|tostring) + "](" + .html_url + ")")'
+echo
