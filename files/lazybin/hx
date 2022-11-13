@@ -23,7 +23,7 @@ me="$(basename "$0")"
     ln -sf $LOCAL/helix-term/runtime $HOME/.config/helix/runtime
 
     echo -e "\033[1;32mCompiling hx...\033[0m"
-    cargo install --locked --path $LOCAL/helix-term/helix-term
+    cargo +nightly install --locked --path $LOCAL/helix-term/helix-term
 
     echo -e "\033[1;32mFinished installing '$me'.\033[0m"
   fi
