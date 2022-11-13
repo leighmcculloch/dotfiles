@@ -21,6 +21,9 @@ me="$(basename "$0")"
 
     curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --no-modify-path
 
+    rustup update stable
+    rustup update nightly
+
     echo -e "\033[1;32mFinished installing '$me'.\033[0m"
   fi
 } 1>&2
