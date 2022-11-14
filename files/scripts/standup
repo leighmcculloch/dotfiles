@@ -16,7 +16,7 @@ done
 repotrim='|ltrimstr("stellar-")|ltrimstr("soroban-")|ltrimstr("rs-stellar-")|ltrimstr("rs-soroban-")'
 
 query="org:$org author:$username is:pr is:closed updated:>=$date"
-echo "*Done* – ${daysofweek[*]// /, } – [closed prs](https://github.com/pulls?q=$(printf %s "$query" | jq -sRr @uri))"
+echo "*Done* (${daysofweek[*]// /, }) – [closed prs](https://github.com/pulls?q=$(printf %s "$query" | jq -sRr @uri))"
 gh api -X GET /search/issues -f q="$query" \
     | jq -r '.items[] | (.title + " [" + (.pull_request.html_url|capture(".+/(?<repo>[a-zA-Z-_]+)/pull/[0-9]+")|.repo'"${repotrim}"') + "#" + (.number|tostring) + "](" + .pull_request.html_url + ")")'
 echo
