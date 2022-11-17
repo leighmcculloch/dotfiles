@@ -5,5 +5,5 @@ set -o pipefail
 set -o nounset
 
 podman machine rm -f || true
-podman machine init --cpus=8 --disk-size=80 --memory=24576
+podman machine init --cpus=4 --disk-size=200 --memory=24576
 podman machine start
