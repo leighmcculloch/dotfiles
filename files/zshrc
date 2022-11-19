@@ -42,8 +42,9 @@ function gfpr() {
   fi
 }
 
-# git aliases
+# git aliases (in addition to oh-my-zsh git plugin)
 alias ga.="git add ."
+alias gap="git add -p"
 alias gb="git branch --sort=-committerdate"
 alias gde="git diff --exit-code"
 alias gdcsv="git diff --color-words=\"[^[:space:],]+\""
@@ -52,6 +53,13 @@ alias gscsv="git show --color-words=\"[^[:space:],]+\""
 alias gacnf!="ga . && gcn! && gp -f"
 alias gs="git stash"
 alias gsp="git stash pop"
+
+# sapling aliases
+alias sa='sl add'
+alias sap='sl commit -i'
+alias sc='sl commit -v'
+alias scn!='sl commit -v --no-edit --amend'
+alias sp='sl push'
 
 function gbb() {
   local word1="$(perl -e 'srand; rand($.) < 1 && ( $line = $_ ) while <>; print $line' /usr/share/dict/words)"
