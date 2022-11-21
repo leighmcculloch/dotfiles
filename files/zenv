@@ -58,7 +58,7 @@ export PATH="$PATH:$HOME/.local/bin"
 # for yarn
 export PATH="$PATH:$HOME/.yarn/bin"
 # for rust
-export PATH="$PATH:$HOME/.cargo/bin"
+export PATH="$HOME/.cargo/bin:$PATH"
 export CARGO_UNSTABLE_SPARSE_REGISTRY=true
 # for java
 export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
