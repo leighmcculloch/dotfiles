@@ -60,10 +60,6 @@ export PATH="$PATH:$HOME/.yarn/bin"
 # for rust
 export PATH="$HOME/.cargo/bin:$PATH"
 export CARGO_UNSTABLE_SPARSE_REGISTRY=true
-if [ -d "/Volumes/RAM" ]; then
-  export CARGO_TARGET_DIR=/Volumes/RAM/cargo-target
-  export SCCACHE_DIR=/Volumes/RAM/sccache
-fi
 # for java
 export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
 export PATH=$PATH:$LOCAL/apache-maven-3.6.0/bin
