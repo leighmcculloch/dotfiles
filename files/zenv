@@ -86,6 +86,8 @@ export VMCTLDIR="$HOME/VMs"
 export PATH="$PATH:$HOME/.pub-cache/bin"
 # for multipass (a cask installed by homebrew but to a unique path)
 export PATH="/usr/local/bin:$PATH"
+# for pony
+export PATH="$HOME/.local/share/ponyup/bin:$PATH"
 
 # See files/lazybin/rustup for why this is required. It is included here for
 # whenever installing rustup in demos.
