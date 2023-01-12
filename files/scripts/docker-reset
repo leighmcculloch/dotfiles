@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+set -o nounset
+
+docker rmi -f $(docker images -aq)
+docker system prune -f
