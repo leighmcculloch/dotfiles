@@ -5,6 +5,7 @@
 	],
 	"installed_packages":
 	[
+		"FileDiffs",
 		"LSP",
 		"LSP-file-watcher-chokidar",
 		"LSP-gopls",
