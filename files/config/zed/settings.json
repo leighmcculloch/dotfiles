@@ -1,0 +1,23 @@
+{
+  "project_panel": {
+    "dock": "right"
+  },
+  "theme": "Ayu Dark",
+  "buffer_font_size": 15,
+  "lsp": {
+    "gopls": {},
+    "rust-analyzer": {
+      "initialization_options": {
+        "checkOnSave": {
+          "command": "clippy"
+        }
+      }
+    }
+  },
+  "vim_mode": true,
+  "autosave": {
+    "after_delay": {
+      "milliseconds": 1000
+    }
+  }
+}
