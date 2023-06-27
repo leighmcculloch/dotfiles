@@ -80,12 +80,7 @@ function gprd() {
   echo "$why"
   echo "Reviewer: "
   local reviewer="$(gum choose --no-limit \
-    graydon jonjove sisuresh paulbellamy \
-    stellar/contract-committers \
-    stellar/core-committers \
-    stellar/core-contributors \
-    stellar/product-eng-team \
-    stellar/horizon-committers
+    $(gh api '/repos/{owner}/{repo}/contributors' --jq '.[].login')
   )"
   gh pr create --draft --title "$title" --body "### What
 $what
