@@ -84,6 +84,8 @@ export PATH="$PATH:$HOME/.pub-cache/bin"
 export PATH="/usr/local/bin:$PATH"
 # for pony
 export PATH="$HOME/.local/share/ponyup/bin:$PATH"
+# for value
+export PATH="$HOME/.local/bin/vale:$PATH"
 
 # See files/lazybin/rustup for why this is required. It is included here for
 # whenever installing rustup in demos.
