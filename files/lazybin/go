@@ -25,7 +25,6 @@ arch=
 
 # Specify exact versions of Go to install.
 versions=(
-  go1.21rc2
 )
 
 # Add last release of Go to list of versions automatically.
