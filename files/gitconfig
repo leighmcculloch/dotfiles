@@ -9,6 +9,8 @@
 	quotepath = false
 	editor = vim
 	commentChar = ";"
+[advice]
+	detachedHead = false
 [pager]
 	branch = 
 [commit]
