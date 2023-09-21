@@ -5,13 +5,5 @@
 	],
 	"installed_packages":
 	[
-		"FileDiffs",
-		"LSP",
-		"LSP-file-watcher-chokidar",
-		"LSP-gopls",
-		"LSP-rust-analyzer",
-		"Package Control",
-		"Rust Enhanced",
-		"TOML",
 	],
 }

@@ -1,5 +1,6 @@
 {
 	"font_size": 18,
+	"font_face": "Fira Code",
 	"save_on_focus_lost": true,
 	"ignored_packages": [
 		"Rust",
