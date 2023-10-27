@@ -104,6 +104,9 @@ if [ "$(uname)" = "Linux" ]; then
   export PATH="$PATH:$LAZYBIN_LINUX"
 fi
 
+# use VSCode as terminal editor
+export EDITOR='code -w'
+
 # format of the `time` command in zsh to include memory usage, etc
 if [[ `uname` == Darwin ]]; then
     MAX_MEMORY_UNITS=KB
