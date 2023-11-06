@@ -10,7 +10,7 @@ me="$(basename "$0")"
   if ! [ -f $LOCAL_BIN/fx ] ; then
     echo -e "\033[1;32mInstalling '$me' on first use...\033[0m"
 
-    go install github.com/antonmedv/fx@v0.0.0-20230920142740-0d636cc6b375
+    go install github.com/antonmedv/fx@1d02a1fd3315552d925a5491b85fe3dea5b4f53c
 
     echo -e "\033[1;32mFinished installing '$me'.\033[0m"
   fi
