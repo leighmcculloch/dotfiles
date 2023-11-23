@@ -4,4 +4,6 @@ set -o errexit
 set -o pipefail
 set -o nounset
 
-podman "$@"
+set -- "${@/#test/nextest run}"
+
+$HOME/.cargo/bin/cargo $@
