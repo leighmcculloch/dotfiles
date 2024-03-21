@@ -1,9 +1,10 @@
 {
-	"font_size": 18,
+	"font_size": 17,
 	"font_face": "Fira Code",
 	"save_on_focus_lost": true,
 	"ignored_packages": [
 		"Rust",
 		"Vintage",
 	],
+	"index_files": true,
 }
