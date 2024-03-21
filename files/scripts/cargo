@@ -1,9 +1,0 @@
-#!/usr/bin/env bash
-
-set -o errexit
-set -o pipefail
-set -o nounset
-
-set -- "${@/#test/nextest run}"
-
-$HOME/.cargo/bin/cargo $@
