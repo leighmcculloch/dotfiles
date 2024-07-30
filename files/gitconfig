@@ -23,9 +23,9 @@
 	ff = only
 [include]
 	path = ~/.gitconfig.local
-[gpg "x509"]
-	program = gitsign
-[gpg]
-	format = x509
+# [gpg "x509"]
+# 	program = gitsign
+# [gpg]
+# 	format = x509
 [diff "json"]
 	textconv = jq .
