@@ -24,6 +24,11 @@ source $ZSH/oh-my-zsh.sh
 # aliases
 alias renv="eval \$(tmux show-env -s | grep '^SSH_')"
 
+function git() {
+  command git config core.hooksPath no-hooks
+  command git $@
+}
+
 # alias for loading env files
 function e() {
   local env_file="$1"

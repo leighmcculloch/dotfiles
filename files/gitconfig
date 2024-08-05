@@ -9,6 +9,7 @@
 	quotepath = false
 	editor = vim
 	commentChar = ";"
+	hooksPath = no-hooks
 [advice]
 	detachedHead = false
 [pager]
