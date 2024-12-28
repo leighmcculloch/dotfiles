@@ -1,5 +1,0 @@
-#!/usr/bin/env bash
-
-if [ -z "$(sudo find /var/lib/apt/lists/partial -mmin -30)" ]; then
-  sudo apt-get update
-fi

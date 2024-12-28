@@ -7,33 +7,17 @@ stty start undef
 
 source ~/.zenv
 
-# Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
-# Initialization code that may require console input (password prompts, [y/n]
-# confirmations, etc.) must go above this block; everything else may go below.
-if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
-  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
-fi
-
 # oh-my-zsh
 export ZSH=$HOME/.oh-my-zsh
-ZSH_THEME="powerlevel10k/powerlevel10k"
-plugins=(git docker tig golang vscode nvm)
+ZSH_CUSTOM="$HOME/.dotfiles/files/oh-my-zsh-custom"
+ZSH_THEME="minimal"
+plugins=(git docker tig golang vscode nvm git-prompt)
 DISABLE_AUTO_UPDATE="false"
 source $ZSH/oh-my-zsh.sh
-
-# aliases
-alias renv="eval \$(tmux show-env -s | grep '^SSH_')"
 
 function git() {
   command git config core.hooksPath no-hooks
   command git $@
-}
-
-# alias for loading env files
-function e() {
-  local env_file="$1"
-  shift
-  env $(cat "$env_file" | xargs) $@
 }
 
 # pull pr alias
@@ -47,6 +31,9 @@ function gfpr() {
   fi
 }
 
+# general aliases
+alias l="ls -lah"
+
 # git aliases (in addition to oh-my-zsh git plugin)
 alias ga.="git add ."
 alias gap="git add -p"
@@ -59,13 +46,6 @@ alias gacnf!="ga . && gcn! && gp -f"
 alias gs="git stash"
 alias gsp="git stash pop"
 alias gid="git rev-parse HEAD"
-
-# sapling aliases
-alias sa='sl add'
-alias sap='sl commit -i'
-alias sc='sl commit -v'
-alias scn!='sl commit -v --no-edit --amend'
-alias sp='sl push'
 
 function gbb() {
   local word1="$(perl -e 'srand; rand($.) < 1 && ( $line = $_ ) while <>; print $line' /usr/share/dict/words)"
@@ -94,53 +74,10 @@ $what
 ### Why
 $why" --reviewer "$(IFS=,; echo -n "${reviewer[*]}")" $@
 }
-function gprm() {
-  local commit="$(git log -1 --pretty=format:%s)"
-  local title="$(gum input --width 50 --prompt 'Title: ' --value "$commit")"
-  echo "Title: $title"
-  local what="$(gum input --width 80 --prompt 'What: ' --value "$title.")"
-  echo "What: $what"
-  echo "Why:"
-  local why="$(gum write --width 80 --char-limit 99999 --prompt '| ')"
-  echo "$why"
-  echo "Reviewer: "
-  local reviewer="$(gum choose --no-limit \
-    graydon jonjove sisuresh paulbellamy \
-    stellar/contract-committers \
-    stellar/core-committers \
-    stellar/core-contributors \
-    stellar/product-eng-team \
-    stellar/horizon-committers
-  )"
-  gh pr create --title "$title" --body "### What
-$what
-
-### Why
-$why" --reviewer "$(IFS=,; echo -n "${reviewer[*]}")" $@
-  gh pr merge --squash --auto --delete-branch
-}
-
-# go aliases
-alias gota="go test ./..."
-alias gots="gotestsum"
-
-# go aliases
-if [ -d $LOCAL_BIN/go ]; then
-  for dir in $LOCAL_BIN/go/*;
-  do
-    local v=${dir##*/}
-    alias "go$v"="$LOCAL_BIN/go/$v/bin/go"
-  done
-fi
 
 # load fzf
 if [[ -a $LOCAL/fzf/shell/key-bindings.zsh ]]; then
   source $LOCAL/fzf/shell/key-bindings.zsh
-fi
-
-# setup homebrew
-if [[ -d /home/linuxbrew/.linuxbrew/bin/brew ]]; then
-  eval $(/home/linuxbrew/.linuxbrew/bin/brew shellenv)
 fi
 
 # setup nvm/node
@@ -168,6 +105,3 @@ function print-exit-code() {
 autoload -Uz add-zsh-hook
 add-zsh-hook preexec track-exec-command
 add-zsh-hook precmd print-exit-code
-
-# To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
-[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh

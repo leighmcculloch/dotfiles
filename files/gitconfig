@@ -16,7 +16,6 @@
 	branch = 
 [commit]
 	template = ~/.gitmessage
-	# gpgsign = true
 [push]
 	default = upstream
 	autoSetupRemote = true
@@ -24,9 +23,11 @@
 	ff = only
 [include]
 	path = ~/.gitconfig.local
-# [gpg "x509"]
-# 	program = gitsign
-# [gpg]
-# 	format = x509
 [diff "json"]
 	textconv = jq .
+[credential "https://github.com"]
+	helper = 
+	helper = !/opt/homebrew/bin/gh auth git-credential
+[credential "https://gist.github.com"]
+	helper = 
+	helper = !/opt/homebrew/bin/gh auth git-credential

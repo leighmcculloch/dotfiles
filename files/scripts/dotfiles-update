@@ -1,5 +1,0 @@
-#!/usr/bin/env bash
-
-pushd $DOTFILES
-git pull --ff-only
-popd

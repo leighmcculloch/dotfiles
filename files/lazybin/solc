@@ -1,7 +1,0 @@
-#!/usr/bin/env bash
-
-set -o errexit
-set -o pipefail
-set -o nounset
-
-docker run --rm -it --platform linux/amd64 -v "$PWD":"$PWD" -w "$PWD" ethereum/solc:stable "$@"
