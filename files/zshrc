@@ -75,14 +75,6 @@ $what
 $why" --reviewer "$(IFS=,; echo -n "${reviewer[*]}")" $@
 }
 
-# setup nvm/node
-if [ -s "$NVM_DIR/nvm.sh" ]; then
-  source "$NVM_DIR/nvm.sh"
-fi
-
-# Add RVM to PATH for scripting. Make sure this is the last PATH variable change.
-export PATH="$PATH:$HOME/.rvm/bin"
-
 # zsh opts
 unsetopt HIST_VERIFY
 
