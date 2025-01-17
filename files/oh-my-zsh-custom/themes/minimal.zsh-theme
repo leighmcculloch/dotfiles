@@ -10,10 +10,11 @@ ZSH_THEME_GIT_PROMPT_BEHIND="%{↓%G%}"
 ZSH_THEME_GIT_PROMPT_AHEAD="%{↑%G%}"
 ZSH_THEME_GIT_PROMPT_UNTRACKED="%{$fg[cyan]%}%{U%G%}"
 ZSH_THEME_GIT_PROMPT_STASHED="%{$fg_bold[blue]%}%{⚑%G%}"
-ZSH_THEME_GIT_PROMPT_CLEAN="%{$fg_bold[green]%}%{✔%G%}"
+ZSH_THEME_GIT_PROMPT_CLEAN=""
 ZSH_THEME_GIT_PROMPT_UPSTREAM_SEPARATOR="->"
 
 PROMPT='
 %F{178}%2~ $(git_super_status)
 $ %{$reset_color%}'
 RPROMPT=''
+
