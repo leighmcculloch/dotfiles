@@ -48,9 +48,42 @@ alias gsp="git stash pop"
 alias gid="git rev-parse HEAD"
 
 function gbb() {
-  local word1="$(perl -e 'srand; rand($.) < 1 && ( $line = $_ ) while <>; print $line' /usr/share/dict/words)"
-  local word2="$(perl -e 'srand; rand($.) < 1 && ( $line = $_ ) while <>; print $line' /usr/share/dict/words)"
-  local name="$(echo "$word1-$word2" | tr '[:upper:]' '[:lower:]')"
+  if [ -z "$ANTHROPIC_API_KEY" ]; then
+    echo "Error: ANTHROPIC_API_KEY environment variable is not set"
+    return 1
+  fi
+
+  local branches="${${$(git branch --all --format='%(refname:short)' | jq -R -s '.')%\"}#\"}"
+
+  local diff="$(git diff HEAD)"
+  if [ -z "$diff" ]; then
+    echo "No changes detected in working directory"
+    return 1
+  fi
+
+  local escaped_diff="${${$(echo "$diff" | jq -R -s '.')%\"}#\"}"
+
+  local response="$(curl -s -X POST https://api.anthropic.com/v1/messages \
+    -H "Content-Type: application/json" \
+    -H "x-api-key: $ANTHROPIC_API_KEY" \
+    -H "anthropic-version: 2023-06-01" \
+    -d '{
+      "model": "claude-3-5-sonnet-20241022",
+      "max_tokens": 50,
+      "messages": [{
+        "role": "user",
+        "content": "Given the following git diff, suggest a concise, kebab-case branch name that describes the changes (max 3 words).\n\nReply only with the branch name, nothing else. \n\nDo not use any of these names: '"${branches}"'. \n\nDiff:\n '"${escaped_diff}"'"
+      }]
+    }')"
+
+  >&2 echo "$response"
+
+  local name=$(echo "$response" | jq -r '.content[0].text' | tr '[:upper:] ' '[:lower:]-')
+  if [ -z "$name" ]; then
+    echo "Error: Failed to get branch name from Anthropic API"
+    return 1
+  fi
+
   git checkout -b "$name" $@
 }
 
