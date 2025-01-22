@@ -46,6 +46,7 @@ alias gacnf!="ga . && gcn! && gp -f"
 alias gs="git stash"
 alias gsp="git stash pop"
 alias gid="git rev-parse HEAD"
+unalias gc
 
 function gbb() {
   if [ -z "$ANTHROPIC_API_KEY" ]; then
@@ -68,15 +69,14 @@ function gbb() {
     -H "x-api-key: $ANTHROPIC_API_KEY" \
     -H "anthropic-version: 2023-06-01" \
     -d '{
-      "model": "claude-3-5-sonnet-20241022",
+      "model": "claude-3-5-haiku-20241022",
       "max_tokens": 50,
+      "system": "You are a senior software engineer.",
       "messages": [{
         "role": "user",
         "content": "Given the following git diff, suggest a concise, kebab-case branch name that describes the changes (max 3 words).\n\nReply only with the branch name, nothing else. \n\nDo not use any of these names: '"${branches}"'. \n\nDiff:\n '"${escaped_diff}"'"
       }]
     }')"
-
-  >&2 echo "$response"
 
   local name=$(echo "$response" | jq -r '.content[0].text' | tr '[:upper:] ' '[:lower:]-')
   if [ -z "$name" ]; then
@@ -84,28 +84,117 @@ function gbb() {
     return 1
   fi
 
+  local name="$(gum input --width 50 --char-limit 50 --prompt '| ' --value "$name")"
+
   git checkout -b "$name" $@
+}
+
+function gc() {
+  if [ -z "$ANTHROPIC_API_KEY" ]; then
+    echo "Error: ANTHROPIC_API_KEY environment variable is not set"
+    return 1
+  fi
+
+  local diff="$(git diff HEAD)"
+  if [ -z "$diff" ]; then
+    echo "No changes detected in working directory"
+    return 1
+  fi
+
+  local escaped_diff="${${$(echo "$diff" | jq -R -s '.')%\"}#\"}"
+
+  local response="$(curl -s -X POST https://api.anthropic.com/v1/messages \
+    -H "Content-Type: application/json" \
+    -H "x-api-key: $ANTHROPIC_API_KEY" \
+    -H "anthropic-version: 2023-06-01" \
+    -d '{
+      "model": "claude-3-5-haiku-20241022",
+      "max_tokens": 50,
+      "system": "You are a senior software engineer.",
+      "messages": [{
+        "role": "user",
+        "content": "Given the following git diff, suggest a concise, commit message that says in present tense what has changed without saying why (max 50 characters).\n\nReply only with the commit message, nothing else. Do not use convention commit format. Start the commit message with a lower case letter and do not end with a full stop. Avoid generic phrases. \n\nDiff:\n '"${escaped_diff}"'"
+      }]
+    }')"
+
+  local suggestion=$(echo "$response" | jq -r '.content[0].text')
+  if [ -z "$suggestion" ]; then
+    echo "Error: Failed to get commit message from Anthropic API"
+    return 1
+  fi
+
+  local message="$(gum write --width 80 --char-limit 99999 --prompt '| ' --value "$suggestion")"
+
+  git commit -m "$message" $@
 }
 
 # github aliases
 function gprd() {
-  local commit="$(git log -1 --pretty=format:%s)"
-  local title="$(gum input --width 50 --prompt 'Title: ' --value "$commit")"
-  echo "Title: $title"
-  local what="$(gum input --width 80 --prompt 'What: ' --value "$title")"
-  echo "What: $what"
+  if [ -z "$ANTHROPIC_API_KEY" ]; then
+    echo "Error: ANTHROPIC_API_KEY environment variable is not set"
+    return 1
+  fi
+
+  local diff="$(git log --patch main..)"
+  if [ -z "$diff" ]; then
+    echo "No changes detected in working directory"
+    return 1
+  fi
+
+  local escaped_diff="${${$(echo "$diff" | jq -R -s '.')%\"}#\"}"
+
+  local response="$(curl -s https://api.anthropic.com/v1/messages \
+    -H "Content-Type: application/json" \
+    -H "x-api-key: $ANTHROPIC_API_KEY" \
+    -H "anthropic-version: 2023-06-01" \
+    -d '{
+      "model": "claude-3-5-haiku-20241022",
+      "max_tokens": 500,
+      "system": "You are a senior software engineer.",
+      "messages": [{
+        "role": "user",
+        "content": "Given the following log and diff, suggest a concise pull request title (max 50 characters) and description, where the description is separated into two sections. The first section is under the heading \"What\" and describes in present tense what has changed. The second section is under the heading \"Why\" and describes why the change is being made.\n\nReply only with the title, what, and why in valid JSON format {\"title\":\"\",\"what\":\"\",\"why\":\"\"}, on a single line, nothing else. Start the title with a capital letter but do not end with a full stop. Use full sentences for what and why. Avoid generic phrases. \n\nLog with Diff:\n '"${escaped_diff}"'"
+      }]
+    }')"
+
+  local suggestion=$(echo "$response" | jq -r '.content[0].text')
+  if [ -z "$suggestion" ]; then
+    echo "Error: Failed to get commit message from Anthropic API"
+    return 1
+  fi
+
+  local suggestion_title=$(echo "$suggestion" | jq -r '.title')
+  local suggestion_what=$(echo "$suggestion" | jq -r '.what')
+  local suggestion_why=$(echo "$suggestion" | jq -r '.why')
+
+  echo "Title:"
+  local title="$(gum input --width 50 --prompt '| ' --value "$suggestion_title")"
+  echo "$title"
+
+  echo "What:"
+  local what="$(gum write --width 80 --prompt '| ' --value "$suggestion_what")"
+  echo "$what"
+
   echo "Why:"
-  local why="$(gum write --width 80 --char-limit 99999 --prompt '| ')"
+  local why="$(gum write --width 80 --char-limit 99999 --prompt '| ' --value "$suggestion_why")"
   echo "$why"
-  echo "Reviewer: "
+
+  echo "Reviewer:"
   local reviewer="$(gum choose --no-limit \
     $(gh api '/repos/{owner}/{repo}/contributors' --jq '.[].login')
   )"
-  gh pr create --draft --title "$title" --body "### What
+  echo "$reviewer"
+
+  gh pr create \
+    --draft \
+    --title "$title" \
+    --body "### What
 $what
 
 ### Why
-$why" --reviewer "$(IFS=,; echo -n "${reviewer[*]}")" $@
+$why" \
+    --reviewer "$(IFS=,; echo -n "${reviewer[*]}")" \
+    $@
 }
 
 # zsh opts
