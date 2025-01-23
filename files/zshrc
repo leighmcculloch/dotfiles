@@ -90,6 +90,25 @@ function gbb() {
 }
 
 function gc() {
+  local message=""
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      -m)
+        if [[ -n "$2" ]]; then
+          message="$2"
+          shift 2
+          break
+        fi
+        ;;
+    esac
+    shift
+  done
+
+  if [[ -n "$message" ]]; then
+    git commit -m "$message" "$@"
+    return
+  fi
+
   if [ -z "$ANTHROPIC_API_KEY" ]; then
     echo "Error: ANTHROPIC_API_KEY environment variable is not set"
     return 1
