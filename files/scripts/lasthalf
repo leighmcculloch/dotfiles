@@ -1,0 +1,23 @@
+#!/usr/bin/env zsh
+
+start_date="2024-07-01"
+end_date="2024-12-31"
+
+# Print CSV header
+echo "title,repository,number,url,created_at,state"
+
+# Search PRs and format as CSV
+gh search prs --author=@me --created=${start_date}..${end_date} \
+    --json title,repository,number,url,createdAt,state \
+    --limit 300 --sort created \
+    | jq -r '.[] | [
+        .title,
+        .repository.name,
+        .number,
+        .url,
+        .createdAt,
+        .state
+    ] | @csv'
+
+
+
