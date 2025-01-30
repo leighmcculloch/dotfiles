@@ -7,8 +7,9 @@ Plug 'maralla/completor.vim'
 Plug 'vim-scripts/vim-auto-save'
 Plug 'tpope/vim-fugitive'
 Plug 'mhinz/vim-signify'
-Plug 'mbbill/undotree'
-Plug 'kaicataldo/material.vim'
+"Plug 'mbbill/undotree'
+"Plug 'kaicataldo/material.vim'
+Plug 'phanviet/vim-monokai-pro'
 call plug#end()
 
 runtime vimrc.lock
@@ -20,7 +21,7 @@ set nomore
 set termguicolors
 
 set background=dark
-silent! colorscheme material
+silent! colorscheme monokai_pro
 
 set backspace=indent,eol,start
 
@@ -96,3 +97,15 @@ function! NERDTreeFindOrToggle()
 endfun
 nmap <c-e> :call NERDTreeFindOrToggle()<cr>
 au FileType nerdtree nmap <buffer> <c-e> :NERDTreeClose<cr>
+
+let g:completor_filetype_map = {}
+let g:completor_filetype_map.rust = {
+      \   'ft': 'lsp',
+      \   'cmd': 'rust-analyzer',
+      \   'options': {
+      \     'format': {
+      \       'tabSize': 4,
+      \       'insertSpaces': v:true
+      \     }
+      \   }
+      \ }
