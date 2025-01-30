@@ -30,6 +30,3 @@ export ZSH="$HOME/.oh-my-zsh"
 if [ ! -d "$ZSH" ]; then
   git clone https://github.com/robbyrussell/oh-my-zsh "$ZSH"
 fi
-
-# install some defaults
-fzf --version
