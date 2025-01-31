@@ -42,10 +42,7 @@ if [ -n "$(find $HOME -maxdepth 1 -name '.zenv_*' -print -quit)" ]; then
 fi
 
 # for folders supplied by dotfiles (must be last)
-export PATH="$SCRIPTS:$PATH:$LAZYBIN"
-if [ "$(uname)" = "Linux" ]; then
-  export PATH="$PATH:$LAZYBIN_LINUX"
-fi
+export PATH="$SCRIPTS:$PATH"
 
 # use VSCode as terminal editor
 export EDITOR='code -w'
