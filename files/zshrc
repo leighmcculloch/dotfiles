@@ -114,9 +114,11 @@ function gc() {
     return 1
   fi
 
-  local diff="$(git diff HEAD)"
+  local branch="${${$(git branch --format='%(refname:short)' --show-current | jq -R -s '.')%\"}#\"}"
+
+  local diff="$(git diff --staged)"
   if [ -z "$diff" ]; then
-    echo "No changes detected in working directory"
+    echo "No staged changes"
     return 1
   fi
 
@@ -132,7 +134,7 @@ function gc() {
       "system": "You are a senior software engineer.",
       "messages": [{
         "role": "user",
-        "content": "Given the following git diff, suggest a concise, commit message that says in present tense what has changed without saying why (max 50 characters).\n\nReply only with the commit message, nothing else. Do not use convention commit format. Start the commit message with a lower case letter and do not end with a full stop. Avoid generic phrases. \n\nDiff:\n '"${escaped_diff}"'"
+        "content": "Given the following git diff, suggest a concise, commit message that says in present tense what has changed without saying why (max 50 characters).\n\nReply only with the commit message, nothing else. Do not use convention commit format. Start the commit message with a lower case letter and do not end with a full stop. Avoid generic phrases. \n\nBranch: '"${branch}"' \n\nDiff:\n '"${escaped_diff}"'"
       }]
     }')"
 
