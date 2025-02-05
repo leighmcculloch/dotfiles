@@ -156,7 +156,8 @@ function gprd() {
     return 1
   fi
 
-  local diff="$(git log --patch main..)"
+  local default_branch="$(gh repo view --json defaultBranchRef --jq .defaultBranchRef.name)"
+  local diff="$(git log --patch $default_branch..)"
   if [ -z "$diff" ]; then
     echo "No changes detected in working directory"
     return 1
