@@ -9,7 +9,9 @@ source ~/.zenv
 
 # oh-my-zsh
 export ZSH=$HOME/.oh-my-zsh
-ZSH_TMUX_AUTOSTART=true
+if [[ "$TERM_PROGRAM" != "vscode" ]]; then
+  ZSH_TMUX_AUTOSTART=true
+fi
 ZSH_CUSTOM="$HOME/.dotfiles/files/oh-my-zsh-custom"
 ZSH_THEME="minimal"
 plugins=(tmux git fzf git-prompt)
