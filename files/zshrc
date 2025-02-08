@@ -77,7 +77,7 @@ function gbb() {
       "system": "You are a senior software engineer.",
       "messages": [{
         "role": "user",
-        "content": "Given the following git diff, suggest a concise, kebab-case branch name that describes the changes (max 3 words).\n\nReply only with the branch name, nothing else. \n\nDo not use any of these names: '"${branches}"'. \n\nDiff:\n '"${escaped_diff}"'"
+        "content": "Given the following git diff, suggest a concise, kebab-case branch name that describes the changes (max 5 words).\n\nReply only with the branch name, nothing else. \n\nDo not use any of these names: '"${branches}"'. \n\nDiff:\n '"${escaped_diff}"'"
       }]
     }')"
 
