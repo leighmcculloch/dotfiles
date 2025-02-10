@@ -30,3 +30,7 @@ export ZSH="$HOME/.oh-my-zsh"
 if [ ! -d "$ZSH" ]; then
   git clone https://github.com/robbyrussell/oh-my-zsh "$ZSH"
 fi
+
+# install brew and minimal tools
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+./install-deps.sh
