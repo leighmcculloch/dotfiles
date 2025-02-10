@@ -1,6 +1,6 @@
 # helper paths
-export DOTFILES="$HOME/.dotfiles"
-export SCRIPTS="$HOME/.scripts"
+export DOTFILES="${0:a:h}"
+export SCRIPTS="$DOTFILES/.scripts"
 
 # for homebrew
 export HOMEBREW_NO_ANALYTICS=1
