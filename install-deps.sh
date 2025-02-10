@@ -26,7 +26,6 @@ imagemagick \
 jless \
 jq \
 node \
-openssl@1.1 \
 sccache \
 stellar-cli \
 stellar-core \
