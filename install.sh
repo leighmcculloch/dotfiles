@@ -32,5 +32,5 @@ if [ ! -d "$ZSH" ]; then
 fi
 
 # install brew and minimal tools
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 ./install-deps.sh
