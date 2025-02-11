@@ -31,6 +31,9 @@ if [ ! -d "$ZSH" ]; then
   git clone https://github.com/robbyrussell/oh-my-zsh "$ZSH"
 fi
 
+# install vim plugins
+vim +PlugInstall +qall
+
 # install brew and minimal tools
 NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 ./install-deps.sh
