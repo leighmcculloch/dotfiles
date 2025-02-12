@@ -51,6 +51,12 @@ alias gsp="git stash pop"
 alias gid="git rev-parse HEAD"
 unalias gc
 
+function gbm() {
+  local branch="$(git branch --format='%(refname:short)' --show-current)"
+  local new_name="$(gum input --width 50 --char-limit 50 --prompt '| ' --value "$branch")"
+  git branch -m "$branch" "$new_name"
+}
+
 function gbb() {
   if [ -z "$ANTHROPIC_API_KEY" ]; then
     echo "Error: ANTHROPIC_API_KEY environment variable is not set"
