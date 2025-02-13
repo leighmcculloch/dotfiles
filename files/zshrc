@@ -228,6 +228,15 @@ $why" \
     $@
 }
 
+# code alias to code-insiders if code doesn't exist
+function code() {
+  if [ -e "$(command -v code &> /dev/null)" ]; then
+    command code "$@"
+  else
+    command code-insiders "$@"
+  fi
+}
+
 # zsh opts
 unsetopt HIST_VERIFY
 
