@@ -184,7 +184,7 @@ function gprd() {
       "system": "You are a senior software engineer.",
       "messages": [{
         "role": "user",
-        "content": "Given the following log and diff, suggest a concise pull request title (max 50 characters) and description, where the description is separated into two sections. The first section is under the heading \"What\" and describes in present tense with imperative mood what has changed. The second section is under the heading \"Why\" and describes why the change is being made. Be concise with why, and avoid generic statements.\n\nReply only with the title, what, and why in valid JSON format {\"title\":\"\",\"what\":\"\",\"why\":\"\"}, on a single line, nothing else. Start the title with a capital letter but do not end with a full stop. Use full sentences for what and why. Avoid generic phrases. \n\nLog with Diff:\n '"${escaped_diff}"'"
+        "content": "Given the following log and diff, suggest a concise pull request title (max 50 characters) and description, where the description is separated into two sections.\n\nThe first section is under the heading \"What\" and describes what has changed. Use imperative mood. Do not lead with a plural. e.g. Upgrade vs upgrades. Enable vs enables. Add vs adds.\n\nThe second section is under the heading \"Why\" and describes why the change is being made. Be concise with why, and avoid generic statements.\n\nReply only with the title, what, and why in valid JSON format {\"title\":\"\",\"what\":\"\",\"why\":\"\"}, on a single line, nothing else. Start the title with a capital letter but do not end with a full stop. Use full sentences for what and why. Avoid generic phrases. \n\nLog with Diff:\n '"${escaped_diff}"'"
       }]
     }')"
 
