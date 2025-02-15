@@ -143,7 +143,7 @@ function gc() {
       "system": "You are a senior software engineer.",
       "messages": [{
         "role": "user",
-        "content": "Given the following git diff, suggest a concise, commit message that says in present tense what has changed without saying why (max 50 characters).\n\nReply only with the commit message, nothing else. Do not use convention commit format. Start the commit message with a lower case letter and do not end with a full stop. Avoid generic phrases. \n\nBranch: '"${branch}"' \n\nDiff:\n '"${escaped_diff}"'"
+        "content": "Given the following git diff, suggest a concise, commit message that says in present tense with imperative mood what has changed without saying why (max 50 characters).\n\nReply only with the commit message, nothing else. Do not use convention commit format. Start the commit message with a lower case letter and do not end with a full stop. Avoid generic phrases. \n\nBranch: '"${branch}"' \n\nDiff:\n '"${escaped_diff}"'"
       }]
     }')"
 
@@ -184,7 +184,7 @@ function gprd() {
       "system": "You are a senior software engineer.",
       "messages": [{
         "role": "user",
-        "content": "Given the following log and diff, suggest a concise pull request title (max 50 characters) and description, where the description is separated into two sections. The first section is under the heading \"What\" and describes in present tense what has changed. The second section is under the heading \"Why\" and describes why the change is being made.\n\nReply only with the title, what, and why in valid JSON format {\"title\":\"\",\"what\":\"\",\"why\":\"\"}, on a single line, nothing else. Start the title with a capital letter but do not end with a full stop. Use full sentences for what and why. Avoid generic phrases. \n\nLog with Diff:\n '"${escaped_diff}"'"
+        "content": "Given the following log and diff, suggest a concise pull request title (max 50 characters) and description, where the description is separated into two sections. The first section is under the heading \"What\" and describes in present tense with imperative mood what has changed. The second section is under the heading \"Why\" and describes why the change is being made. Be concise with why, and avoid generic statements.\n\nReply only with the title, what, and why in valid JSON format {\"title\":\"\",\"what\":\"\",\"why\":\"\"}, on a single line, nothing else. Start the title with a capital letter but do not end with a full stop. Use full sentences for what and why. Avoid generic phrases. \n\nLog with Diff:\n '"${escaped_diff}"'"
       }]
     }')"
 
