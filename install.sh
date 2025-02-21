@@ -36,4 +36,4 @@ vim +PlugInstall +qall
 
 # install brew and minimal tools
 NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-./install-deps.sh
+$PWD/install-deps.sh

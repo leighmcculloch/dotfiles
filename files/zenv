@@ -1,6 +1,6 @@
 # helper paths
 export DOTFILES="$(dirname "$(dirname "$(readlink -f "$0")")")"
-export SCRIPTS="$DOTFILES/.scripts"
+export SCRIPTS="$DOTFILES/files/scripts"
 
 # for homebrew
 export HOMEBREW_NO_ANALYTICS=1
