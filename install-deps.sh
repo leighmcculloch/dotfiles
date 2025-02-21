@@ -4,6 +4,8 @@ set -o errexit
 set -o pipefail
 set -o nounset
 
+source ~/.zenv_brew
+
 brew install --formula aider \
 automake \
 clang-format \

@@ -1,0 +1,13 @@
+# for homebrew
+export HOMEBREW_NO_ANALYTICS=1
+os="$(uname -s -m)"
+brew=
+case $os in
+  "Darwin x86_64"*) brew=/usr/local/bin/brew ;;
+  "Darwin arm64"*) brew=/opt/homebrew/bin/brew ;;
+  "Linux"*) brew=/home/linuxbrew/.linuxbrew/bin/brew ;;
+  *) ;;
+esac
+if [ -f $brew ] ; then
+  export PATH="$($brew --prefix)/bin:$PATH"
+fi
