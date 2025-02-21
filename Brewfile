@@ -42,10 +42,16 @@ cask "chatgpt"
 cask "claude"
 cask "crystalfetch"
 cask "descript"
+cask "discord"
+cask "doxie"
 cask "ghostty"
 cask "raycast"
 cask "sublime-text"
 cask "utm"
+cask "visual-studio-code@insiders"
+cask "obsidian"
+cask "obs"
+cask "arq"
 
 mas "1Blocker", id: 1365531024
 mas "1Password for Safari", id: 1569813296
@@ -60,6 +66,7 @@ mas "Tailscale", id: 1475387142
 mas "Telegram", id: 747648890
 mas "WhatsApp", id: 310633997
 mas "Subtitly", id: 6673901809
+mas "Slack", id: 803453959
 
 mas "BloonsTD6+", id: 1584423325
 mas "Boggle: Arcade Edition", id: 6453020941
