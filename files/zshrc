@@ -49,6 +49,7 @@ alias gacnf!="ga . && gcn! && gp -f"
 alias gs="git stash"
 alias gsp="git stash pop"
 alias gid="git rev-parse HEAD"
+alias gupp="gup && gp"
 unalias gc
 
 function gbm() {
