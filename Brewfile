@@ -1,6 +1,3 @@
-tap "homebrew/bundle"
-tap "homebrew/core"
-
 brew "aider"
 brew "autoconf"
 brew "automake"
