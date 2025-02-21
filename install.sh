@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env zsh
 
 set -o errexit
 set -o pipefail
@@ -35,5 +35,8 @@ fi
 vim +PlugInstall +qall
 
 # install brew and minimal tools
-NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+if [ -t 0 ]; then; else
+  export NONINTERACTIVE=1
+fi
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 $PWD/install-deps.sh

@@ -18,11 +18,6 @@ export NVM_DIR="$HOME/.nvm"
 # for docker to use buildkit
 export DOCKER_BUILDKIT=1
 
-# sccache for rust
-if [ -f $brew ] ; then
-  export RUSTC_WRAPPER="$($brew --prefix)/bin/sccache"
-fi
-
 # source additional zenvs
 if [ -n "$(find $HOME -maxdepth 1 -name '.zenv_*' -print -quit)" ]; then
   for f in "$HOME/.zenv_"*; do

@@ -11,3 +11,8 @@ esac
 if [ -f $brew ] ; then
   export PATH="$($brew --prefix)/bin:$PATH"
 fi
+
+# sccache for rust
+if [ -f $brew ] ; then
+  export RUSTC_WRAPPER="$($brew --prefix)/bin/sccache"
+fi

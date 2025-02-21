@@ -4,7 +4,7 @@ set -o errexit
 set -o pipefail
 set -o nounset
 
-source $PWD/files/.zenv_brew
+source $PWD/files/zenv_brew
 
 brew install --formula aider \
 automake \
