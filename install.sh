@@ -39,4 +39,6 @@ if [ -t 0 ]; then; else
   export NONINTERACTIVE=1
 fi
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-$PWD/install-deps.sh
+source $PWD/files/zenv_brew
+brew bundle install
+
