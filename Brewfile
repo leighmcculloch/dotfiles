@@ -55,7 +55,6 @@ cask "arq"
 
 mas "1Blocker", id: 1365531024
 mas "1Password for Safari", id: 1569813296
-mas "AI Photo", id: 6444911377
 mas "House Designer", id: 779363176
 mas "NotePlan", id: 1505432629
 mas "Numbers", id: 409203825
