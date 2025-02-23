@@ -32,6 +32,7 @@ if OS.mac?
   brew "stellar-core"
   brew "zig"
   brew "zls"
+  brew "wabt"
   brew "wasm-pack"
 
   cask "font-fira-code"
