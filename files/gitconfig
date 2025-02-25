@@ -1,6 +1,8 @@
 [user]
 	name = Leigh McCulloch
 	email = 351529+leighmcculloch@users.noreply.github.com
+[column]
+	ui = auto
 [init]
 	defaultBranch = main
 [core]
@@ -14,13 +16,32 @@
 	detachedHead = false
 [pager]
 	branch = 
+[branch]
+	sort = -committerdate
+[tag]
+	sort =  version:refname
+[diff]
+	algorithm = histogram
+	colorMoved = plain
+	mnemonicPrefix = true
+	renames = true
 [commit]
 	template = ~/.gitmessage
+	verbose = true
 [push]
 	default = upstream
 	autoSetupRemote = true
+[fetch]
+	prune = true
+	pruneTags = true
+	all = true
 [pull]
 	ff = only
+[merge]
+	conflictStyle = zdiff3
+[rerere]
+	enabled = true
+	autoupdate = true
 [include]
 	path = ~/.gitconfig.local
 [diff "json"]
