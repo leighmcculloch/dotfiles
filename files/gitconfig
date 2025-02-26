@@ -34,7 +34,6 @@
 [fetch]
 	prune = true
 	pruneTags = true
-	all = true
 [pull]
 	ff = only
 [merge]
