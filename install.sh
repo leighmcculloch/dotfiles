@@ -1,5 +1,4 @@
 #!/usr/bin/env zsh
-
 set -o errexit
 set -o pipefail
 set -o nounset
@@ -28,7 +27,13 @@ source $PWD/files/zenv
 # install oh-my-zsh
 export ZSH="$HOME/.oh-my-zsh"
 if [ ! -d "$ZSH" ]; then
-  git clone https://github.com/robbyrussell/oh-my-zsh "$ZSH"
+  mkdir -p "$ZSH"
+  pushd "$ZSH"
+  git init
+  git remote add origin https://github.com/robbyrussell/oh-my-zsh
+  git fetch origin d41ca84af1271e8bfbe26f581cebe3b86521d0db
+  git reset --hard FETCH_HEAD
+  popd
 fi
 
 # install vim plugins
