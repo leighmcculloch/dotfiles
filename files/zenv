@@ -1,3 +1,5 @@
+export XDG_CONFIG_HOME="$HOME/.config"
+
 # helper paths
 export DOTFILES="$(dirname "$(dirname "$(readlink -f "$0")")")"
 export SCRIPTS="$DOTFILES/files/scripts"
