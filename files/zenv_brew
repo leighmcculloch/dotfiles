@@ -1,5 +1,14 @@
 # for homebrew
+
 export HOMEBREW_NO_ANALYTICS=1
+export HOMEBREW_VERBOSE=1
+export HOMEBREW_VERIFY_ATTESTATIONS=1
+export HOMEBREW_NO_INSECURE_REDIRECT=1
+export HOMEBREW_DISPLAY_INSTALL_TIMES=1
+export HOMEBREW_BOOTSNAP=1
+export HOMEBREW_ALLOWED_TAPS=
+export HOMEBREW_CASK_OPTS=--require-sha
+
 os="$(uname -s -m)"
 brew=
 case $os in

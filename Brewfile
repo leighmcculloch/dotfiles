@@ -15,6 +15,7 @@ brew "tig"
 brew "tmux"
 brew "tree"
 brew "vim"
+brew "cloudflare-wrangler"
 
 if OS.mac?
   brew "aider"
