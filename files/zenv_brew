@@ -8,11 +8,13 @@ case $os in
   "Linux"*) brew=/home/linuxbrew/.linuxbrew/bin/brew ;;
   *) ;;
 esac
+
 if [ -f $brew ] ; then
   export PATH="$($brew --prefix)/bin:$PATH"
-fi
 
-# sccache for rust
-if [ -f $brew ] ; then
+  # sccache for rust
   export RUSTC_WRAPPER="$($brew --prefix)/bin/sccache"
+
+  # rustup bin install path
+  export PATH="$(brew --prefix rustup)/bin:$PATH"
 fi
