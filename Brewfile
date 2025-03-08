@@ -36,24 +36,19 @@ if OS.mac?
   brew "wasm-pack"
 
   cask "font-fira-code"
-  cask "font-ibm-plex-mono"
-  cask "font-jetbrains-mono"
   cask "font-monaspace"
 
   cask "chatgpt"
   cask "claude"
-  cask "crystalfetch"
   cask "descript"
   cask "discord"
   cask "doxie"
   cask "ghostty"
   cask "raycast"
   cask "sublime-text"
-  cask "utm"
   cask "visual-studio-code@insiders"
   cask "obsidian"
   cask "obs"
-  cask "arq"
 
   mas "1Blocker", id: 1365531024
   mas "1Password for Safari", id: 1569813296
