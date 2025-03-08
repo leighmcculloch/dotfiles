@@ -14,7 +14,16 @@ if [[ "$TERM_PROGRAM" == "ghostty" ]]; then
 fi
 ZSH_CUSTOM="$DOTFILES/files/oh-my-zsh-custom"
 ZSH_THEME="minimal"
-plugins=(tmux git fzf git-prompt)
+plugins=()
+if (( $+commands[git] )); then
+  plugins+=(git git-prompt)
+fi
+if (( $+commands[fzf] )); then
+  plugins+=(fzf)
+fi
+if (( $+commands[tmux] )); then
+  plugins+=(tmux)
+fi
 DISABLE_AUTO_UPDATE="false"
 source $ZSH/oh-my-zsh.sh
 
