@@ -26,4 +26,7 @@ if [ -f $brew ] ; then
 
   # rustup bin install path
   export PATH="$(brew --prefix rustup)/bin:$PATH"
+
+  # python unversioned (python instead of python3) bin path
+  export PATH="$(brew --prefix python)/libexec/bin:$PATH"
 fi
