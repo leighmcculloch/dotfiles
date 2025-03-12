@@ -66,6 +66,7 @@ alias gscsv="git show --color-words=\"[^[:space:],]+\""
 alias gacnf!="ga . && gcn! && gp -f"
 alias gs="git stash"
 alias gsp="git stash pop"
+alias gsl="git stash list"
 alias gid="git rev-parse HEAD"
 alias gupp="gup && gp"
 unalias gc

@@ -16,6 +16,7 @@
 	detachedHead = false
 [pager]
 	branch = 
+        stash = 
 [branch]
 	sort = -committerdate
 [tag]
