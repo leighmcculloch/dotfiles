@@ -11,7 +11,7 @@ silent! let g:plugs['nerdtree'].commit = '9b465ac'
 silent! let g:plugs['nerdtree-git-plugin'].commit = 'e1fe727'
 silent! let g:plugs['vim-airline'].commit = '7a552f4'
 silent! let g:plugs['vim-auto-save'].commit = '1685175'
-silent! let g:plugs['vim-fugitive'].commit = 'd74a7cf'
+silent! let g:plugs['vim-fugitive'].commit = '4a745ea'
 silent! let g:plugs['vim-monokai-pro'].commit = '6c449e5'
 silent! let g:plugs['vim-signify'].commit = '8670143'
 
