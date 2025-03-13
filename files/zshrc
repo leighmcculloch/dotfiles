@@ -71,6 +71,9 @@ alias gid="git rev-parse HEAD"
 alias gupp="gup && gp"
 unalias gc
 
+alias ghprme="gh pr list --author @me"
+alias ghprco="gh pr checkout"
+
 function gbm() {
   local branch="$(git branch --format='%(refname:short)' --show-current)"
   local new_name="$(gum input --width 50 --char-limit 50 --prompt '| ' --value "$branch")"
