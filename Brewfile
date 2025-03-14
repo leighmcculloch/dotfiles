@@ -1,4 +1,3 @@
-brew "the_silver_searcher" # ag
 brew "deno"
 brew "fzf"
 brew "gh"
@@ -9,6 +8,7 @@ brew "httpie"
 brew "jless"
 brew "jq"
 brew "node"
+brew "ripgrep"
 brew "rustup"
 brew "sccache"
 brew "stellar-cli"

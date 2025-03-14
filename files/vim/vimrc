@@ -60,6 +60,10 @@ noremap <c-q> :bdelete<CR>
 " Pasting retaining register
 xnoremap <expr> p 'pgv"'.v:register.'y'
 
+" Search with ripgrep
+set grepprg=rg\ --vimgrep\ --no-heading\ --smart-case
+set grepformat+=%f:%l:%c:%m
+
 " Search word under cursor
 nnoremap <leader>gw :Ggrep! "\b<C-R><C-W>\b"<CR>:cw<CR>
 
