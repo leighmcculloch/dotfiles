@@ -21,11 +21,12 @@ export NVM_DIR="$HOME/.nvm"
 export DOCKER_BUILDKIT=1
 
 # source additional zenvs
-if [ -n "$(find $HOME -maxdepth 1 -name '.zenv_*' -print -quit)" ]; then
-  for f in "$HOME/.zenv_"*; do
-    [ -f $f ] && . $f
-  done
-fi
+for f in "$HOME/.zenv_"*; do
+  [ -f $f ] && . $f
+done
+
+export FZF_DEFAULT_COMMAND='fd --type f --strip-cwd-prefix --hidden --exclude .git'
+export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
 
 # for folders supplied by dotfiles (must be last)
 export PATH="$SCRIPTS:$PATH"
