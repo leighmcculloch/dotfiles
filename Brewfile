@@ -1,3 +1,4 @@
+brew "the_silver_searcher" # ag
 brew "deno"
 brew "fzf"
 brew "gh"
