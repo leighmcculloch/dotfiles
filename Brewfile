@@ -1,3 +1,4 @@
+brew "asciinema"
 brew "bat"
 brew "deno"
 brew "fd"
