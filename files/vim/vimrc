@@ -13,7 +13,6 @@ Plug 'haya14busa/incsearch.vim'
 
 " For rust
 Plug 'rust-lang/rust.vim'
-Plug 'mrcjkb/rustaceanvim', {'tag': 'v5.25.0'}
 
 " Disabled
 "Plug 'ctrlpvim/ctrlp.vim'
