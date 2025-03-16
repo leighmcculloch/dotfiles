@@ -1,2 +1,8 @@
 containers/
 configstore/
+yarn/
+raycast/
+.wrangler/
+asciinema/install-id
+gh/hosts.yml
+github-copilot/
