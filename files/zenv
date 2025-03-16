@@ -33,7 +33,7 @@ export PATH="$SCRIPTS:$PATH"
 
 # use VSCode as terminal editor
 #export EDITOR='code-insider -w'
-export EDITOR='vim'
+export EDITOR='nvim'
 
 # format of the `time` command in zsh to include memory usage, etc
 if [[ `uname` == Darwin ]]; then
