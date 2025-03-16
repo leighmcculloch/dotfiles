@@ -10,6 +10,7 @@ Plug 'mhinz/vim-signify'
 Plug 'phanviet/vim-monokai-pro'
 Plug 'github/copilot.vim'
 Plug 'haya14busa/incsearch.vim'
+Plug 'neovim/nvim-lspconfig'
 
 " For rust
 Plug 'rust-lang/rust.vim'
