@@ -4,6 +4,8 @@ set -o errexit
 set -o pipefail
 set -o nounset
 
+autoload -U colors && colors
+
 echo "Installing for $(uname -s -p) in $(echo $0)..."
 
 # symlink files
@@ -11,9 +13,19 @@ pushd files
 for f in *; do
   src="$PWD/$f"
   dest="$HOME/.$f"
-  echo "Linking $src at $dest..."
-  [ -L "$dest" ] && rm "$dest"
-  ln -sf "$src" "$dest"
+  echo -n "Linking $src at $dest... "
+  if [ -f "$dest" ] || [ -d "$dest" ]; then
+    if [ -L "$dest" ]; then
+      rm "$dest"
+      ln -s "$src" "$dest"
+      echo "done (replacing symlink)."
+    else
+      echo "$fg[red]skipping because exists$reset_color."
+    fi
+  else
+    ln -sf "$src" "$dest"
+    echo "done."
+  fi
 done
 popd
 
