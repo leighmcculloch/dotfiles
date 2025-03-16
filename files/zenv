@@ -12,6 +12,10 @@ export PATH="$PATH:$HOME/.deno/bin"
 export PATH="$PATH:$HOME/.yarn/bin"
 # for rust
 export PATH="$HOME/.cargo/bin:$PATH"
+# for go
+export GOPATH="$HOME/.local/go"
+export GOBIN="$HOME/.local/go/bin"
+export PATH="$GOBIN:$PATH"
 # for dotnet
 export DOTNET_ROOT="$HOME/.dotnet"
 export PATH="$PATH:$DOTNET_ROOT:$DOTNET_ROOT/tools"
