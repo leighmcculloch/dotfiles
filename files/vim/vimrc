@@ -1,19 +1,24 @@
 call plug#begin('~/.vim/plugged')
 Plug 'vim-airline/vim-airline'
-"Plug 'ctrlpvim/ctrlp.vim'
 Plug 'junegunn/fzf'
 Plug 'junegunn/fzf.vim'
 Plug 'scrooloose/nerdtree'
 Plug 'Xuyuanp/nerdtree-git-plugin'
-"Plug 'maralla/completor.vim' "requires python
 Plug 'vim-scripts/vim-auto-save'
 Plug 'tpope/vim-fugitive'
 Plug 'mhinz/vim-signify'
-"Plug 'mbbill/undotree'
-"Plug 'kaicataldo/material.vim'
 Plug 'phanviet/vim-monokai-pro'
 Plug 'github/copilot.vim'
 Plug 'haya14busa/incsearch.vim'
+
+" For rust
+Plug 'mrcjkb/rustaceanvim', {'tag': 'v5.25.0'}
+
+" Disabled
+"Plug 'ctrlpvim/ctrlp.vim'
+"Plug 'maralla/completor.vim' "requires python
+"Plug 'mbbill/undotree'
+"Plug 'kaicataldo/material.vim'
 "Plug 'neoclide/coc.nvim', {'branch': 'release'}
 "Plug 'neoclide/coc-json'
 call plug#end()
