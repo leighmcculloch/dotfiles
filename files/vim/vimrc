@@ -1,5 +1,4 @@
 call plug#begin('~/.vim/plugged')
-Plug 'vim-airline/vim-airline'
 Plug 'junegunn/fzf'
 Plug 'junegunn/fzf.vim'
 Plug 'scrooloose/nerdtree'
@@ -11,17 +10,17 @@ Plug 'phanviet/vim-monokai-pro'
 Plug 'github/copilot.vim'
 Plug 'haya14busa/incsearch.vim'
 Plug 'neovim/nvim-lspconfig'
+Plug 'nvim-lualine/lualine.nvim'
+Plug 'nvim-tree/nvim-web-devicons'
+Plug 'catppuccin/nvim', { 'as': 'catppuccin' }
 
 " For rust
 Plug 'rust-lang/rust.vim'
 
 " Disabled
-"Plug 'ctrlpvim/ctrlp.vim'
 "Plug 'maralla/completor.vim' "requires python
 "Plug 'mbbill/undotree'
 "Plug 'kaicataldo/material.vim'
-"Plug 'neoclide/coc.nvim', {'branch': 'release'}
-"Plug 'neoclide/coc-json'
 call plug#end()
 
 runtime vimrc.lock
@@ -33,7 +32,7 @@ set nomore
 set termguicolors
 
 set background=dark
-silent! colorscheme monokai_pro
+silent! colorscheme catppuccin-macchiato
 
 set backspace=indent,eol,start
 
@@ -103,9 +102,9 @@ let g:auto_save_in_insert_mode = 0
 let g:auto_save_silent = 1
 let g:auto_save_no_updatetime = 0
 
-let g:airline_highlighting_cache = 1
-let g:airline_extensions = ['tabline']
-let g:airline#extensions#tabline#formatter = 'unique_tail_improved'
+"let g:airline_highlighting_cache = 1
+"let g:airline_extensions = ['tabline']
+"let g:airline#extensions#tabline#formatter = 'unique_tail_improved'
 
 let g:ctrlp_show_hidden = 1
 let g:ctrlp_user_command = ['.git', 'cd %s && git ls-files -co --exclude-standard']
