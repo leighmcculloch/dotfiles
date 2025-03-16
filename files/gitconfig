@@ -58,5 +58,8 @@
 	helper = 
 	helper = !gh auth git-credential
 [delta]
+	line-numbers = true
+	hyperlinks = true
 	navigate = true
 	dark = true
+	hunk-header-style = omit
