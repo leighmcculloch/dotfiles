@@ -33,6 +33,9 @@ fi
 if (( $+commands[rustc] )); then
   plugins+=(rust)
 fi
+if (( $+commands[stellar] )); then
+  plugins+=(stellar)
+fi
 DISABLE_AUTO_UPDATE="false"
 source $ZSH/oh-my-zsh.sh
 
