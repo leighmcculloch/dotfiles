@@ -128,14 +128,4 @@ endfun
 nmap <c-e> :call NERDTreeFindOrToggle()<cr>
 au FileType nerdtree nmap <buffer> <c-e> :NERDTreeClose<cr>
 
-"let g:completor_filetype_map = {}
-"let g:completor_filetype_map.rust = {
-"      \   'ft': 'lsp',
-"      \   'cmd': 'rust-analyzer',
-"      \   'options': {
-"      \     'format': {
-"      \       'tabSize': 4,
-"      \       'insertSpaces': v:true
-"      \     }
-"      \   }
-"      \ }
+au FileType rust nmap <buffer> tt :RustTest<CR>
