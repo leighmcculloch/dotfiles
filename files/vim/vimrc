@@ -6,19 +6,28 @@ Plug 'Xuyuanp/nerdtree-git-plugin'
 Plug 'vim-scripts/vim-auto-save'
 Plug 'tpope/vim-fugitive'
 Plug 'mhinz/vim-signify'
-Plug 'phanviet/vim-monokai-pro'
 Plug 'github/copilot.vim'
 Plug 'haya14busa/incsearch.vim'
 Plug 'neovim/nvim-lspconfig'
 Plug 'nvim-lualine/lualine.nvim'
 Plug 'nvim-tree/nvim-web-devicons'
-Plug 'catppuccin/nvim', { 'as': 'catppuccin' }
+Plug 'preservim/vim-markdown'
+Plug 'sheerun/vim-polyglot'
+
+" Completion
+Plug 'hrsh7th/cmp-nvim-lsp'
+Plug 'hrsh7th/cmp-path'
+"Plug 'hrsh7th/cmp-buffer'
+"Plug 'hrsh7th/cmp-cmdline'
+Plug 'hrsh7th/nvim-cmp'
+
+" Themes
+Plug 'sainnhe/sonokai'
 
 " For rust
 Plug 'rust-lang/rust.vim'
 
 " Disabled
-"Plug 'maralla/completor.vim' "requires python
 "Plug 'mbbill/undotree'
 "Plug 'kaicataldo/material.vim'
 call plug#end()
@@ -32,7 +41,7 @@ set nomore
 set termguicolors
 
 set background=dark
-silent! colorscheme catppuccin-macchiato
+silent! colorscheme sonokai
 
 set backspace=indent,eol,start
 
