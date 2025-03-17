@@ -102,12 +102,10 @@ let g:auto_save_in_insert_mode = 0
 let g:auto_save_silent = 1
 let g:auto_save_no_updatetime = 0
 
-"let g:airline_highlighting_cache = 1
-"let g:airline_extensions = ['tabline']
-"let g:airline#extensions#tabline#formatter = 'unique_tail_improved'
-
-let g:ctrlp_show_hidden = 1
-let g:ctrlp_user_command = ['.git', 'cd %s && git ls-files -co --exclude-standard']
+imap <m-i> <Plug>(copilot-suggest)
+imap <m-j> <Plug>(copilot-next)
+imap <m-k> <Plug>(copilot-previous)
+imap <m-l> <Plug>(copilot-accept-word)
 
 nmap <Leader>nt :NERDTreeToggle<cr>
 nmap <Leader>nf :NERDTreeFind<cr>
