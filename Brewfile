@@ -21,7 +21,6 @@ brew "stellar-cli"
 brew "tig"
 brew "tmux"
 brew "tree"
-brew "vim"
 brew "cloudflare-wrangler"
 
 brew "gopls"
