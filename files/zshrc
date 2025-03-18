@@ -40,7 +40,9 @@ DISABLE_AUTO_UPDATE="false"
 source $ZSH/oh-my-zsh.sh
 
 # neovim
-alias n=nvim
+if (( $+commands[nvim] )); then
+  alias vim=nvim
+fi
 
 function git() {
   command git config core.hooksPath no-hooks
