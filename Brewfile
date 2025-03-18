@@ -1,4 +1,5 @@
 brew "asciinema"
+brew "agg"
 brew "bat"
 brew "deno"
 brew "fd"
