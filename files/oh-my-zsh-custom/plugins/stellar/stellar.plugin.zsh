@@ -1,3 +1,5 @@
+source <(stellar completion --shell zsh)
+
 function stellar_prompt() {
   local s=~/.cargo/bin/stellar
   local n=$($s env STELLAR_NETWORK 2&>/dev/null || true)
