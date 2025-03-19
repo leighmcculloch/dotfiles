@@ -1,9 +1,8 @@
 source <(stellar completion --shell zsh)
 
 function stellar_prompt() {
-  local s=~/.cargo/bin/stellar
-  local n=$($s env STELLAR_NETWORK 2&>/dev/null || true)
-  local a=$($s env STELLAR_ACCOUNT 2&>/dev/null || true)
+  local n=$(stellar env STELLAR_NETWORK 2&>/dev/null || true)
+  local a=$(stellar env STELLAR_ACCOUNT 2&>/dev/null || true)
   if ! [ -z "$n" ]; then
     echo -n "n=$n"
   fi
