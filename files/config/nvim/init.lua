@@ -77,3 +77,6 @@ require'lspconfig'.denols.setup{
 require'lspconfig'.lua_ls.setup {
   capabilities = capabilities,
 }
+require'lspconfig'.jsonls.setup {
+  capabilities = capabilities,
+}
