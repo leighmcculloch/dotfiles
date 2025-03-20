@@ -115,7 +115,7 @@ function gbb() {
     -H "x-api-key: $ANTHROPIC_API_KEY" \
     -H "anthropic-version: 2023-06-01" \
     -d '{
-      "model": "claude-3-5-sonnet-20241022",
+      "model": "claude-3-7-sonnet-20250219",
       "max_tokens": 50,
       "system": "You are a senior software engineer.",
       "messages": [{
@@ -175,7 +175,7 @@ function gc() {
     -H "x-api-key: $ANTHROPIC_API_KEY" \
     -H "anthropic-version: 2023-06-01" \
     -d '{
-      "model": "claude-3-5-sonnet-20241022",
+      "model": "claude-3-7-sonnet-20250219",
       "max_tokens": 50,
       "system": "You are a senior software engineer.",
       "messages": [{
@@ -216,7 +216,7 @@ function gprd() {
     -H "x-api-key: $ANTHROPIC_API_KEY" \
     -H "anthropic-version: 2023-06-01" \
     -d '{
-      "model": "claude-3-5-sonnet-20241022",
+      "model": "claude-3-7-sonnet-20250219",
       "max_tokens": 500,
       "system": "You are a senior software engineer.",
       "messages": [{
