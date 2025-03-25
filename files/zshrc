@@ -43,6 +43,9 @@ source $ZSH/oh-my-zsh.sh
 
 # tmux
 alias t=tmux
+if [ "$TMUX" ]; then
+  alias clear="tmux send-keys C-l \; send-keys -R \; clear-history"
+fi
 
 # neovim
 if (( $+commands[nvim] )); then
