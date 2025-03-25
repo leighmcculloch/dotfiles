@@ -19,8 +19,6 @@ export PATH="$GOBIN:$PATH"
 # for dotnet
 export DOTNET_ROOT="$HOME/.dotnet"
 export PATH="$PATH:$DOTNET_ROOT:$DOTNET_ROOT/tools"
-# for nvm/node
-export NVM_DIR="$HOME/.nvm"
 # for docker to use buildkit
 export DOCKER_BUILDKIT=1
 
