@@ -1,3 +1,5 @@
+Include /Users/leighmcculloch/.config/colima/ssh_config
+
 Host dev
     User root
     StrictHostKeyChecking no
