@@ -20,6 +20,7 @@ esac
 
 if [ -f $brew ] ; then
   export PATH="$($brew --prefix)/bin:$PATH"
+  fpath=($fpath "$(brew --prefix)"/share/zsh/site-functions/)
 
   # sccache for rust
   export RUSTC_WRAPPER="$($brew --prefix)/bin/sccache"
