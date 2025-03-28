@@ -41,6 +41,11 @@ fi
 DISABLE_AUTO_UPDATE="false"
 source $ZSH/oh-my-zsh.sh
 
+# Use a simplified prompt when recording in asciinema
+if [ $ASCIINEMA_REC ]; then
+  PROMPT="$ "
+fi
+
 # tmux
 alias t=tmux
 if [ "$TMUX" ]; then
