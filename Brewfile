@@ -50,6 +50,7 @@ if OS.mac?
   brew "wasm-pack"
 
   cask "font-fira-code"
+  cask "font-fira-code-nerd-font"
 
   cask "chatgpt"
   cask "claude"

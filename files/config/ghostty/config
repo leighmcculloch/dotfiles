@@ -1,5 +1,10 @@
-font-family = "Fira Code"
+font-family = "Fira Code Nerd Font"
 font-style = Retina
 font-size = 15
-background = #1e0e0e
+background = #1e1e1e
+bold-is-bright = true
 shell-integration-features = no-cursor
+macos-option-as-alt = true
+window-height = 40
+window-width = 128
+title = " "
