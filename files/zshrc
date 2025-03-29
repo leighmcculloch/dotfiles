@@ -1,3 +1,7 @@
+if [ "$ZSH_PROF" ]; then
+  zmodload zsh/zprof
+fi
+
 # make c-p/c-n work exactly like up/down arrows
 bindkey "^P" up-line-or-search
 bindkey "^N" down-line-or-search
@@ -299,3 +303,7 @@ function print-exit-code() {
 autoload -Uz add-zsh-hook
 add-zsh-hook preexec track-exec-command
 add-zsh-hook precmd print-exit-code
+
+if [ "$ZSH_PROF" ]; then
+  zprof
+fi
