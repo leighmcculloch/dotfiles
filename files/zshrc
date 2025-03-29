@@ -1,4 +1,4 @@
-if [ "$ZSH_PROF" ]; then
+if [ "$ZPROF" ]; then
   zmodload zsh/zprof
 fi
 
@@ -304,6 +304,6 @@ autoload -Uz add-zsh-hook
 add-zsh-hook preexec track-exec-command
 add-zsh-hook precmd print-exit-code
 
-if [ "$ZSH_PROF" ]; then
+if [ "$ZPROF" ]; then
   zprof
 fi
