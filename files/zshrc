@@ -95,7 +95,6 @@ alias gsp="git stash pop"
 alias gsl="git stash list"
 alias gid="git rev-parse HEAD"
 alias gupp="gup && gp"
-unalias gc
 
 alias ghprme="gh pr list --author @me"
 alias ghprco="gh pr checkout"
@@ -147,6 +146,7 @@ function gbb() {
   git checkout -b "$name" $@
 }
 
+unalias gc >/dev/null 2>&1
 function gc() {
   local message=""
   while [[ $# -gt 0 ]]; do
