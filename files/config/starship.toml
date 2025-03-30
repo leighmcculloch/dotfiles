@@ -1,0 +1,54 @@
+"$schema" = 'https://starship.rs/config-schema.json'
+
+add_newline = false
+
+format = """
+$status\
+$cmd_duration\
+$line_break\
+$directory\
+$git_branch\
+$git_commit\
+$git_state\
+$git_status\
+$git_metrics\
+$jobs\
+$line_break\
+\\$ """
+
+[status]
+disabled = false
+format = "[❌ exit status $status](bold red)\n"
+
+[cmd_duration]
+format = "⚠️ [took $duration](bold yellow)\n"
+min_time = 1_000
+show_milliseconds = true
+
+[git_branch]
+format = '[ $branch(:$remote_branch)](bold purple) '
+
+[git_commit]
+format = '([$tag](bold blue) )[$hash](bold green) '
+only_detached = false
+tag_disabled = false
+tag_symbol = ''
+
+[git_metrics]
+disabled = false
+format = '\(([+$added](bold green) )([-$deleted]($deleted_style))\)'
+only_nonzero_diffs = false
+
+[git_status]
+format = '([$all_status$ahead_behind]($style) )'
+up_to_date = ''
+conflicted = ''
+untracked = 'U${count}'
+stashed = '⚑${count}'
+modified = 'M${count}'
+staged = 'S${count}'
+renamed = '»${count}'
+deleted = '✘${count}'
+ahead = '↑${count}'
+diverged = '↑${ahead_count}↓${behind_count}'
+behind = '↓${count}'
