@@ -66,16 +66,16 @@ behind = '↓$count'
 [custom.stellar-cli]
 when = "which stellar"
 command = "arr=(v$(stellar version | head -n1 | cut -f2 -d' ' | cut -f1 -d'.') $(stellar env STELLAR_NETWORK) $(stellar env STELLAR_ACCOUNT)); print -R ${(j| |)arr}"
-format = "[\ueb44 ($output )](bold blue)"
+format = "[\ueb44 $output](bold blue) "
 
 [rust]
-format = "([\ue68b $toolchain](bold red) )"
+format = "[\ue68b $toolchain](bold red) "
 
 [golang]
 format = "[\ue627](bold #8ed2f9) "
 
 [deno]
-format = "[🦖](bold #98fcb6) "
+format = '[🦖](bold #98fcb6) '
 
 [nodejs]
 format = '[](bold #90b96e) '
