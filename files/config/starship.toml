@@ -47,10 +47,8 @@ tag_symbol = ''
 format = """\
 ([$conflicted](bold #ed6b7a) )\
 ([$staged](bold #ff964f) )\
-([$modified$renamed$typechanged$deleted$untracked](bold #97d1ef)\
-[$diverged](bold #ed6b7a)\
-[$ahead_behind](bold #ed6b7a)\
-[$ahead](bold #b3dd84) )\
+([$modified$renamed$typechanged$deleted$untracked](bold #97d1ef) )\
+([$diverged](bold #ed6b7a)[$ahead_behind](bold #b3dd84) )\
 ([$stashed](bold yellow) )\
 """
 stashed = '⚑$count'
