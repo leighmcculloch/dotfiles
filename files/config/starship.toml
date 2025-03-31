@@ -22,7 +22,7 @@ $line_break\
 
 [status]
 disabled = false
-format = "[❌ exit status $status](bold red)\n"
+format = "[❌ exit status $status](bold #ed6b7a)\n"
 
 [cmd_duration]
 format = "⚠️ [took $duration](bold yellow)\n"
@@ -30,6 +30,7 @@ min_time = 1_000
 show_milliseconds = true
 
 [directory]
+format = '[$path](bold #97d1ef) '
 truncation_length = 2
 truncate_to_repo = false
 
@@ -37,19 +38,19 @@ truncate_to_repo = false
 format = '[ $branch(:$remote_branch)](bold purple) '
 
 [git_commit]
-format = '([$tag](bold blue) )[$hash](bold green) '
+format = '([$tag](bold #97d1ef) )[$hash](bold #b3dd84) '
 only_detached = false
 tag_disabled = false
 tag_symbol = ''
 
 [git_status]
 format = """\
-([$conflicted](bold red) )\
+([$conflicted](bold #ed6b7a) )\
 ([$staged](bold #ff964f) )\
 ([$modified$renamed$typechanged$deleted$untracked](bold cyan)\
-[$diverged](bold red)\
-[$behind](bold red)\
-[$ahead](bold green) )\
+[$diverged](bold #ed6b7a)\
+[$behind](bold #ed6b7a)\
+[$ahead](bold #b3dd84) )\
 ([$stashed](bold yellow) )\
 """
 stashed = '⚑$count'
@@ -67,10 +68,10 @@ behind = '↓$count'
 when = "which stellar"
 shell = ["/bin/zsh", "-f"]
 command = "arr=(v$(stellar version | head -n1 | cut -f2 -d' ' | cut -f1 -d'.') $(stellar env STELLAR_NETWORK) $(stellar env STELLAR_ACCOUNT)); print -R ${(j| |)arr}"
-format = "[\ueb44 $output](bold blue) "
+format = "[\ueb44 $output](bold #97d1ef) "
 
 [rust]
-format = "[\ue68b $toolchain](bold red) "
+format = "[\ue68b $toolchain](bold #ed6b7a) "
 
 [golang]
 format = "[\ue627](bold #8ed2f9) "
