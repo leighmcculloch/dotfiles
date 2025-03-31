@@ -12,13 +12,13 @@ $git_commit\
 $git_state\
 $git_status\
 $jobs\
-${custom.stellar-cli}\
 $rust\
 $golang\
 $deno\
 $nodejs\
 $line_break\
 [\\$ ](bold #555555)"""
+#${custom.stellar-cli}\
 
 [status]
 disabled = false
