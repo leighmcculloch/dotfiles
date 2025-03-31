@@ -11,10 +11,14 @@ $git_branch\
 $git_commit\
 $git_state\
 $git_status\
-$git_metrics\
 $jobs\
+${custom.stellar-cli}\
+$rust\
+$golang\
+$deno\
+$nodejs\
 $line_break\
-\\$ """
+[\\$ ](bold #555555)"""
 
 [status]
 disabled = false
@@ -25,6 +29,10 @@ format = "⚠️ [took $duration](bold yellow)\n"
 min_time = 1_000
 show_milliseconds = true
 
+[directory]
+truncation_length = 2
+truncate_to_repo = false
+
 [git_branch]
 format = '[ $branch(:$remote_branch)](bold purple) '
 
@@ -34,21 +42,40 @@ only_detached = false
 tag_disabled = false
 tag_symbol = ''
 
-[git_metrics]
-disabled = false
-format = '\(([+$added](bold green) )([-$deleted]($deleted_style))\)'
-only_nonzero_diffs = false
-
 [git_status]
-format = '([$all_status$ahead_behind]($style) )'
-up_to_date = ''
-conflicted = ''
-untracked = 'U${count}'
-stashed = '⚑${count}'
-modified = 'M${count}'
-staged = 'S${count}'
-renamed = '»${count}'
-deleted = '✘${count}'
-ahead = '↑${count}'
-diverged = '↑${ahead_count}↓${behind_count}'
-behind = '↓${count}'
+format = """\
+([$conflicted](bold red) )\
+([$staged](bold #ff964f) )\
+([$modified$renamed$typechanged$deleted$untracked](bold cyan)\
+[$diverged](bold red)\
+[$behind](bold red)\
+[$ahead](bold green) )\
+([$stashed](bold yellow) )\
+"""
+stashed = '⚑$count'
+conflicted = 'C$count'
+modified = 'M$count'
+staged = 'S$count'
+renamed = 'R$count'
+deleted = 'D$count'
+untracked = 'U$count'
+ahead = '↑$count'
+diverged = '↑$ahead_count↓$behind_count'
+behind = '↓$count'
+
+[custom.stellar-cli]
+when = "which stellar"
+command = "arr=(v$(stellar version | head -n1 | cut -f2 -d' ' | cut -f1 -d'.') $(stellar env STELLAR_NETWORK) $(stellar env STELLAR_ACCOUNT)); print -R ${(j| |)arr}"
+format = "[\ueb44 ($output )](bold blue)"
+
+[rust]
+format = "([\ue68b $toolchain](bold red) )"
+
+[golang]
+format = "[\ue627](bold #8ed2f9) "
+
+[deno]
+format = "[🦖](bold #98fcb6) "
+
+[nodejs]
+format = '[](bold #90b96e) '
