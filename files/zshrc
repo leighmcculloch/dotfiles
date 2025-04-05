@@ -169,6 +169,11 @@ function gc() {
     return
   fi
 
+  if git rev-parse -q --verify MERGE_HEAD >/dev/null 2>&1; then
+    git commit "$@"
+    return
+  fi
+
   if [ -z "$ANTHROPIC_API_KEY" ]; then
     echo "Error: ANTHROPIC_API_KEY environment variable is not set"
     return 1

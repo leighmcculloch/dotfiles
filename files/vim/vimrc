@@ -47,9 +47,6 @@ set backspace=indent,eol,start
 
 set number
 
-nmap cn :lnext<cr>
-nmap cp :lprevious<cr>
-
 autocmd FileType * setlocal expandtab shiftwidth=2 softtabstop=2 tabstop=2
 autocmd FileType go setlocal noexpandtab shiftwidth=4 softtabstop=4 tabstop=4
 autocmd FileType make setlocal noexpandtab shiftwidth=4 softtabstop=4 tabstop=4
@@ -71,6 +68,10 @@ noremap <c-l> :bnext<CR>
 " CTRL-J/K to iterate through quickfix list errors
 noremap <c-k> :cprev<CR>
 noremap <c-j> :cnext<CR>
+
+" Iterate through location list
+nmap cn :lnext<cr>
+nmap cp :lprevious<cr>
 
 " CTRL-P mapping to fzf
 noremap <c-p> :FZF<CR>
