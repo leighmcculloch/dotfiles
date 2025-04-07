@@ -7,6 +7,11 @@ source ~/.vim/vimrc
 require('lualine').setup{
   options = {
     theme = 'sonokai',
+    extensions = {'nvim-tree'},
+    disabled_filetypes = {
+      statusline = {},
+      NvimTree = {},
+    },
   },
   sections = {
     lualine_a = {'mode'},
@@ -36,11 +41,10 @@ require('lualine').setup{
           separator = ' ',
         },
         ignore_lsp = {'GitHub Copilot'},
-      },
-      'filetype',
+      }
     },
-    lualine_y = {'progress'},
-    lualine_z = {'location'}
+    lualine_y = {'filetype'},
+    lualine_z = {'progress', 'location'}
   }
 }
 
@@ -65,18 +69,32 @@ cmp.setup({
 
 local capabilities = require('cmp_nvim_lsp').default_capabilities()
 
-require'lspconfig'.rust_analyzer.setup{
+require('lspconfig').rust_analyzer.setup{
   capabilities = capabilities,
 }
-require'lspconfig'.gopls.setup{
+require('lspconfig').gopls.setup{
   capabilities = capabilities,
 }
-require'lspconfig'.denols.setup{
+require('lspconfig').denols.setup{
   capabilities = capabilities,
 }
-require'lspconfig'.lua_ls.setup {
+require('lspconfig').lua_ls.setup {
   capabilities = capabilities,
 }
-require'lspconfig'.jsonls.setup {
+require('lspconfig').jsonls.setup {
   capabilities = capabilities,
 }
+
+vim.keymap.set('n', 'gk', function()
+  local on = not vim.diagnostic.config().virtual_lines
+  vim.diagnostic.config({ virtual_lines = on })
+end, { desc = 'toggle diagnostic virtual_lines' })
+
+require("nvim-tree").setup {
+  on_attach = function(bufnr)
+    local api = require "nvim-tree.api"
+    api.config.mappings.default_on_attach(bufnr)
+    vim.keymap.set('n', '<c-e>', api.tree.close, { desc = "nvim-tree: close", buffer = bufnr, noremap = true, silent = true, nowait = true })
+  end
+}
+

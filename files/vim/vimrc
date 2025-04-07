@@ -1,8 +1,7 @@
 call plug#begin('~/.vim/plugged')
 Plug 'junegunn/fzf'
 Plug 'junegunn/fzf.vim'
-Plug 'scrooloose/nerdtree'
-Plug 'Xuyuanp/nerdtree-git-plugin'
+Plug 'nvim-tree/nvim-tree.lua'
 Plug 'vim-scripts/vim-auto-save'
 Plug 'tpope/vim-fugitive'
 Plug 'mhinz/vim-signify'
@@ -17,8 +16,8 @@ Plug 'sheerun/vim-polyglot'
 " Completion
 Plug 'hrsh7th/cmp-nvim-lsp'
 Plug 'hrsh7th/cmp-path'
-"Plug 'hrsh7th/cmp-buffer'
-"Plug 'hrsh7th/cmp-cmdline'
+Plug 'hrsh7th/cmp-buffer'
+Plug 'hrsh7th/cmp-cmdline'
 Plug 'hrsh7th/nvim-cmp'
 
 " Themes
@@ -26,10 +25,6 @@ Plug 'sainnhe/sonokai'
 
 " For rust
 Plug 'rust-lang/rust.vim'
-
-" Disabled
-"Plug 'mbbill/undotree'
-"Plug 'kaicataldo/material.vim'
 call plug#end()
 
 runtime vimrc.lock
@@ -37,11 +32,13 @@ runtime vimrc.lock
 filetype plugin on
 
 set nomore
-
 set termguicolors
 
 set background=dark
 silent! colorscheme sonokai
+
+let g:loaded_netrw       = 1
+let g:loaded_netrwPlugin = 1
 
 set backspace=indent,eol,start
 
@@ -113,10 +110,6 @@ map #  <Plug>(incsearch-nohl-#)
 map g* <Plug>(incsearch-nohl-g*)
 map g# <Plug>(incsearch-nohl-g#)
 
-set undodir=~/.vim/undodir
-set undofile
-nmap <Leader>nu :UndotreeToggle<cr>
-
 let g:auto_save = 1
 let g:auto_save_in_insert_mode = 0
 let g:auto_save_silent = 1
@@ -127,16 +120,8 @@ imap <m-j> <Plug>(copilot-next)
 imap <m-k> <Plug>(copilot-previous)
 imap <m-l> <Plug>(copilot-accept-word)
 
-nmap <Leader>nt :NERDTreeToggle<cr>
-nmap <Leader>nf :NERDTreeFind<cr>
-function! NERDTreeFindOrToggle()
-  if @% == ""
-    NERDTreeToggle
-  else
-    NERDTreeFind
-  endif
-endfun
-nmap <c-e> :call NERDTreeFindOrToggle()<cr>
-au FileType nerdtree nmap <buffer> <c-e> :NERDTreeClose<cr>
+nmap <c-e> :NvimTreeFindFile<cr>
+autocmd VimEnter * hi NvimTreeNormal guibg=NONE
+autocmd VimEnter * hi NvimTreeNormalNC guibg=NONE
 
 au FileType rust nmap <buffer> tt :RustTest<CR>
