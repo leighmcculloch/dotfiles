@@ -41,6 +41,8 @@ if OS.mac?
   brew "colima"
   brew "coreutils"
   brew "docker"
+  brew "docker-credential-helper"
+  brew "docker-buildx"
   brew "duckdb"
   brew "ffmpeg"
   brew "flyctl"
