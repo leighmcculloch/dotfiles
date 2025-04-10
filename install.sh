@@ -49,9 +49,6 @@ if [ ! -d "$ZSH" ]; then
   popd
 fi
 
-# install vim plugins
-vim +PlugInstall +qall
-
 # install brew and minimal tools
 if (( ! $+commands[brew] )); then
   if [ -t 0 ]; then; else
@@ -62,3 +59,5 @@ fi
 source $PWD/files/zenv_brew
 brew bundle install
 
+# install vim plugins
+nvim +PlugInstall +qall
