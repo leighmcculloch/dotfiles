@@ -53,10 +53,12 @@ fi
 vim +PlugInstall +qall
 
 # install brew and minimal tools
-if [ -t 0 ]; then; else
-  export NONINTERACTIVE=1
+if (( ! $+commands[brew] )); then
+  if [ -t 0 ]; then; else
+    export NONINTERACTIVE=1
+  fi
+  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 fi
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 source $PWD/files/zenv_brew
 brew bundle install
 
