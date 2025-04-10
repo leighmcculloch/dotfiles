@@ -4,20 +4,6 @@ let &packpath = &runtimepath
 source ~/.vim/vimrc
 ]])
 
-require('kanagawa').setup({
-    dimInactive = true,
-    colors = {
-        theme = {
-            all = {
-                ui = {
-                    bg_gutter = "none"
-                }
-            }
-        }
-    },
-})
-vim.cmd("colorscheme kanagawa")
-
 local bufferline = require("bufferline")
 bufferline.setup {
   options = {
@@ -26,7 +12,7 @@ bufferline.setup {
     tab_size = 10,
     diagnostics = "nvim_lsp",
     diagnostics_update_on_event = true, -- use nvim's diagnostic handler
-    offsets = { { filetype = "NvimTree", text = 'Files', text_align = 'left' } },
+    --offsets = { { filetype = "NvimTree", text = 'Files', text_align = 'left' } },
     sort_by = 'relative_directory',
   }
 }
@@ -115,6 +101,18 @@ end, { desc = 'toggle diagnostic virtual_lines' })
 require("nvim-tree").setup {
   view = {
     signcolumn = 'no',
+    float = {
+      enable = true,
+      quit_on_focus_loss = true,
+      open_win_config = {
+        relative = "editor",
+        border = "rounded",
+        width = 30,
+        height = 30,
+        row = 2,
+        col = 3,
+      },
+    },
   },
   on_attach = function(bufnr)
     local api = require "nvim-tree.api"
