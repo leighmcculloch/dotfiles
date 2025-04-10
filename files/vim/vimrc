@@ -12,6 +12,7 @@ Plug 'nvim-lualine/lualine.nvim'
 Plug 'nvim-tree/nvim-web-devicons'
 Plug 'preservim/vim-markdown'
 Plug 'sheerun/vim-polyglot'
+Plug 'akinsho/bufferline.nvim', { 'tag': '*' }
 
 " Completion
 Plug 'hrsh7th/cmp-nvim-lsp'
@@ -21,7 +22,7 @@ Plug 'hrsh7th/cmp-cmdline'
 Plug 'hrsh7th/nvim-cmp'
 
 " Themes
-Plug 'sainnhe/sonokai'
+Plug 'rebelot/kanagawa.nvim'
 
 " For rust
 Plug 'rust-lang/rust.vim'
@@ -35,7 +36,7 @@ set nomore
 set termguicolors
 
 set background=dark
-silent! colorscheme sonokai
+"silent! colorscheme kanagawa-wave
 
 let g:loaded_netrw       = 1
 let g:loaded_netrwPlugin = 1
@@ -121,7 +122,5 @@ imap <m-k> <Plug>(copilot-previous)
 imap <m-l> <Plug>(copilot-accept-word)
 
 nmap <c-e> :NvimTreeFindFile<cr>
-autocmd VimEnter * hi NvimTreeNormal guibg=NONE
-autocmd VimEnter * hi NvimTreeNormalNC guibg=NONE
 
 au FileType rust nmap <buffer> tt :RustTest<CR>

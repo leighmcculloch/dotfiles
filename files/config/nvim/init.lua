@@ -4,10 +4,34 @@ let &packpath = &runtimepath
 source ~/.vim/vimrc
 ]])
 
+require('kanagawa').setup({
+    colors = {
+        theme = {
+            all = {
+                ui = {
+                    bg_gutter = "none"
+                }
+            }
+        }
+    },
+})
+
+vim.cmd("colorscheme kanagawa")
+
+local bufferline = require("bufferline")
+bufferline.setup {
+  options = {
+    indicator = { style = 'none' },
+    tab_size = 10,
+    diagnostics = "nvim_lsp",
+    diagnostics_update_on_event = true, -- use nvim's diagnostic handler
+    offsets = { { filetype = "NvimTree" } },
+    sort_by = 'relative_directory',
+  }
+}
+
 require('lualine').setup{
   options = {
-    theme = 'sonokai',
-    extensions = {'nvim-tree'},
     disabled_filetypes = {
       statusline = {},
       NvimTree = {},
