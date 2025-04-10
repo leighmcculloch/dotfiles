@@ -5,6 +5,7 @@ source ~/.vim/vimrc
 ]])
 
 require('kanagawa').setup({
+    dimInactive = true,
     colors = {
         theme = {
             all = {
@@ -15,27 +16,24 @@ require('kanagawa').setup({
         }
     },
 })
-
 vim.cmd("colorscheme kanagawa")
 
 local bufferline = require("bufferline")
 bufferline.setup {
   options = {
     indicator = { style = 'none' },
+    separator_style = 'slant',
     tab_size = 10,
     diagnostics = "nvim_lsp",
     diagnostics_update_on_event = true, -- use nvim's diagnostic handler
-    offsets = { { filetype = "NvimTree" } },
+    offsets = { { filetype = "NvimTree", text = 'Files', text_align = 'left' } },
     sort_by = 'relative_directory',
   }
 }
 
 require('lualine').setup{
   options = {
-    disabled_filetypes = {
-      statusline = {},
-      NvimTree = {},
-    },
+    extensions = {'nvim-tree'},
   },
   sections = {
     lualine_a = {'mode'},
@@ -115,10 +113,12 @@ vim.keymap.set('n', 'gk', function()
 end, { desc = 'toggle diagnostic virtual_lines' })
 
 require("nvim-tree").setup {
+  view = {
+    signcolumn = 'no',
+  },
   on_attach = function(bufnr)
     local api = require "nvim-tree.api"
     api.config.mappings.default_on_attach(bufnr)
     vim.keymap.set('n', '<c-e>', api.tree.close, { desc = "nvim-tree: close", buffer = bufnr, noremap = true, silent = true, nowait = true })
   end
 }
-
