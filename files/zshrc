@@ -284,6 +284,27 @@ $why" \
     $@
 }
 
+function devup() {
+  devcontainer up \
+    --workspace-folder . \
+    --override-config <(echo '{
+      "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+      "runArgs": [
+        "--platform=linux/amd64"
+      ]
+    }') \
+    --dotfiles-repository https://github.com/leighmcculloch/dotfiles
+}
+
+function devin() {
+  local id="$(docker ps -aqf "label=devcontainer.local_folder=$PWD")"
+  if [ -z "$id" ]; then
+    echo "No devcontainer found for this folder. Run devup first."
+    return 1
+  fi
+  docker exec -it "$id" /bin/zsh
+}
+
 # code alias to code-insiders if code doesn't exist
 function code() {
   if [ -e "$(command -v code &> /dev/null)" ]; then
