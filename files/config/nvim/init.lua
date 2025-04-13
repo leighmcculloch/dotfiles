@@ -4,15 +4,13 @@ let &packpath = &runtimepath
 source ~/.vim/vimrc
 ]])
 
-local bufferline = require("bufferline")
-bufferline.setup {
+require("bufferline").setup {
   options = {
     indicator = { style = 'none' },
     separator_style = 'slant',
     tab_size = 10,
     diagnostics = "nvim_lsp",
     diagnostics_update_on_event = true, -- use nvim's diagnostic handler
-    --offsets = { { filetype = "NvimTree", text = 'Files', text_align = 'left' } },
     sort_by = 'relative_directory',
   }
 }
@@ -77,6 +75,24 @@ cmp.setup({
 
 local capabilities = require('cmp_nvim_lsp').default_capabilities()
 
+require('lspconfig').lua_ls.setup {
+  capabilities = capabilities,
+  on_init = function(client)
+    if client.workspace_folders then
+      local path = client.workspace_folders[1].name
+      if path ~= vim.fn.stdpath('config') and (vim.uv.fs_stat(path..'/.luarc.json') or vim.uv.fs_stat(path..'/.luarc.jsonc')) then
+        return
+      end
+    end
+    client.config.settings.Lua = vim.tbl_deep_extend('force', client.config.settings.Lua, {
+      runtime = { version = 'LuaJIT' },
+      workspace = { checkThirdParty = false, library = { vim.env.VIMRUNTIME } }
+    })
+  end,
+  settings = {
+    Lua = {}
+  }
+}
 require('lspconfig').rust_analyzer.setup{
   capabilities = capabilities,
 }
@@ -84,9 +100,6 @@ require('lspconfig').gopls.setup{
   capabilities = capabilities,
 }
 require('lspconfig').denols.setup{
-  capabilities = capabilities,
-}
-require('lspconfig').lua_ls.setup {
   capabilities = capabilities,
 }
 require('lspconfig').jsonls.setup {
@@ -133,3 +146,5 @@ require("nvim-tree").setup {
     vim.keymap.set('n', '<c-e>', api.tree.close, { desc = "nvim-tree: close", buffer = bufnr, noremap = true, silent = true, nowait = true })
   end
 }
+
+require('fzf-lua').register_ui_select()
