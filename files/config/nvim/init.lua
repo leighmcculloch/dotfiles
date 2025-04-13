@@ -146,5 +146,3 @@ require("nvim-tree").setup {
     vim.keymap.set('n', '<c-e>', api.tree.close, { desc = "nvim-tree: close", buffer = bufnr, noremap = true, silent = true, nowait = true })
   end
 }
-
-require('fzf-lua').register_ui_select()
