@@ -84,6 +84,7 @@ if OS.mac?
   mas "WhatsApp", id: 310633997
   mas "Subtitly", id: 6673901809
   mas "Slack", id: 803453959
+  mas "Calm Radio", id: 112902545
 
   mas "BloonsTD6+", id: 1584423325
   mas "Boggle: Arcade Edition", id: 6453020941
