@@ -10,13 +10,6 @@ map("n", "<c-l>", "<s-l>", { remap = true, desc = "Change to right buffer" })
 map("n", "<c-p>", "<leader> ", { remap = true, desc = "Open file picker" })
 map("n", "<c-q>", "<leader>bD", { remap = true, desc = "Close buffer and window" })
 map("n", "<c-e>", "<leader>e", { remap = true, desc = "Reveal file in file explorer" })
---map("n", "<c-e>", function()
---  if vim.bo.filetype == "snacks_picker_list" then
---    vim.cmd("close")
---  else
---    Snacks.explorer.reveal()
---  end
---end, { remap = true, desc = "Reveal file in file explorer" })
 
 map("n", "gk", function()
   local on = not vim.diagnostic.config().virtual_lines
