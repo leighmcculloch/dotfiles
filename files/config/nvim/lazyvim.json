@@ -12,6 +12,7 @@
     "lazyvim.plugins.extras.lang.toml",
     "lazyvim.plugins.extras.lang.typescript",
     "lazyvim.plugins.extras.lang.zig",
+    "lazyvim.plugins.extras.ui.edgy",
     "lazyvim.plugins.extras.util.rest"
   ],
   "install_version": 8,
