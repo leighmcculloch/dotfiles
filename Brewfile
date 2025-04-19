@@ -34,6 +34,7 @@ brew "vscode-langservers-extracted"
 brew "gopls"
 
 if OS.mac?
+  brew "act"
   brew "autoconf"
   brew "automake"
   brew "clang-format"
