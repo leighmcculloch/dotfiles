@@ -1,3 +1,4 @@
+brew "aider"
 brew "asciinema"
 brew "agg"
 brew "bat"
