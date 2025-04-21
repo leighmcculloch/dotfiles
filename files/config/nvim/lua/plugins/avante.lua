@@ -7,26 +7,30 @@ return {
       "ibhagwan/fzf-lua",
     },
     opts = {
+      build = "make BUILD_FROM_SOURCE=true",
       hints = { enabled = false },
+      behaviour = {
+        auto_suggestions = true,
+        auto_apply_diff_after_generation = true,
+        minimize_diff = true,
+      },
 
       ---@alias AvanteProvider "claude" | "openai" | "azure" | "gemini" | "cohere" | "copilot" | string
       provider = "gemini",
-      auto_suggestions_provider = "gemini",
+      auto_suggestions_provider = "claude",
+      cursor_applying_provider = "copilot",
+      copilot = {
+        model = "claude-3-7-sonnet",
+      },
       claude = {
-        endpoint = "https://api.anthropic.com",
         model = "claude-3-7-sonnet-20250219",
-        temperature = 0,
-        max_tokens = 4096,
       },
       gemini = {
-        endpoint = "https://gemini.research.google.com",
-        model = "gemini-2.5-pro",
-        temperature = 0,
-        max_tokens = 4096,
+        model = "gemini-2.5-pro-exp-03-25",
       },
 
       --- @alias FileSelectorProvider "native" | "fzf" | "mini.pick" | "snacks" | "telescope" | string
-      file_selector = {
+      selector = {
         provider = "snacks",
         provider_opts = {},
       },
