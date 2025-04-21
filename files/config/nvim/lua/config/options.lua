@@ -4,3 +4,6 @@
 
 vim.opt.relativenumber = false
 vim.opt.cursorline = false
+
+-- Automatically read changed files
+vim.opt.autoread = true
