@@ -59,8 +59,7 @@ fi
 source $PWD/files/zenv_brew
 brew bundle install
 
-# intall gh extensions
+# install plugins/extensions
 ./install-gh-extensions.sh
-
-# install vim plugins
+./install-docker-cli-plugins.sh
 nvim +PlugInstall +qall
