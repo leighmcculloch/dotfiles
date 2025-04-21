@@ -1,0 +1,24 @@
+#! /usr/bin/env zsh
+
+# Print issues assigned or involving me in a table format. Sort issues assigned
+# to me first then involving me after, both ordered by updated.
+
+export GH_PAGER=
+
+# Issues assigned to me.
+assigned="$(gh issue list -L 7 \
+  --search 'sort:updated-desc assignee:@me' \
+  --json number,title,assignees,updatedAt)"
+
+# Issues involving me not assigned to me.
+involved="$(gh issue list -L 7 \
+  --search 'sort:updated-desc involves:@me -assignee:@me' \
+  --json number,title,assignees,updatedAt)"
+
+jq \
+  --argjson assigned "$assigned" \
+  --argjson involved "$involved" \
+  -n \
+  -r \
+  '$assigned + $involved | map([.number, .title, (.assignees|map(.login)|join(",")), .updatedAt]) | .[] | @tsv' \
+  | column -s$'\t' -t
