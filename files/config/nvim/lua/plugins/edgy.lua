@@ -16,13 +16,14 @@ return {
         pinned = true,
         open = "Outline",
       },
-      {
-        ft = "copilot-chat",
-        title = "Copilot Chat",
-        size = { width = 50 },
-        pinned = true,
-        open = "CopilotChat",
-      },
+      --For CopilotC-Nvim/CopilotChat.nvim
+      --{
+      --  ft = "copilot-chat",
+      --  title = "Copilot Chat",
+      --  size = { width = 50 },
+      --  pinned = true,
+      --  open = "CopilotChat",
+      --},
     },
     animate = {
       enabled = false,
