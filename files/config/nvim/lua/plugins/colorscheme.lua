@@ -1,11 +1,6 @@
 return {
   --{ "ellisonleao/gruvbox.nvim" },
-  --{
-  --  "LazyVim/LazyVim",
-  --  opts = {
-  --    colorscheme = "gruvbox",
-  --  },
-  --},
+  { "sainnhe/sonokai" },
   {
     "folke/tokyonight.nvim",
     opts = {
@@ -15,7 +10,9 @@ return {
   {
     "LazyVim/LazyVim",
     opts = {
-      colorscheme = "tokyonight",
+      --colorscheme = "gruvbox",
+      colorscheme = "sonokai",
+      --colorscheme = "tokyonight",
     },
   },
 }

@@ -4,3 +4,5 @@
 
 vim.opt.relativenumber = false
 vim.opt.cursorline = false
+vim.g.lazyvim_rust_diagnostics = "bacon-ls"
+vim.g.autoformat = false
