@@ -1,7 +1,9 @@
 # for aider
 
 export AIDER_MODEL=gemini/gemini-2.5-pro-preview-03-25
-export AIDER_EDITOR_MODEL=anthropic/claude-3-7-sonnet-20250219
+# Use Claude 3.5 because folks say it is more reliable editor.
+export AIDER_EDITOR_MODEL=anthropic/claude-3-5-sonnet-20241022
+#export AIDER_EDITOR_MODEL=anthropic/claude-3-7-sonnet-20250219
 export AIDER_ARCHITECT=True
 export AIDER_AUTO_ACCEPT_ARCHITECT=True
 
