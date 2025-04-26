@@ -1,0 +1,3 @@
+# for mcp-github
+
+export GITHUB_PERSONAL_ACCESS_TOKEN="$(gh auth token)"

@@ -62,4 +62,5 @@ brew bundle install
 # install plugins/extensions
 ./install-gh-extensions.sh
 ./install-docker-cli-plugins.sh
+./install-mcp-servers.sh
 nvim +PlugInstall +qall
