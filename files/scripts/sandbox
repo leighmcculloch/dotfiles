@@ -89,13 +89,57 @@ read -r -d '' policy << EOS
   (sysctl-name-prefix "hw.perflevel")
 )
 
+; Other options configured
 EOS
 
+if [[ "$#" -eq 0 ]]; then
+  set -- "help"
+fi
+
 # Add directories allowed writing to.
+verbose=0
+help=0
 while [[ "$#" -gt 0 ]]; do 
   case "$1" in
     help|-h|--help)
-      >&2 echo "Usage: sandbox [OPTIONS] -- <COMMAND> <ARG>...
+      help=1
+      shift;;
+
+    -v|--verbose)
+      verbose=1
+      shift;;
+
+    --allow-network)
+      policy="$policy
+(allow network*)"
+      shift;;
+
+    --deny-file-read)
+      policy="$policy
+(deny file-read* (subpath \"$(realpath $2)\"))"
+      shift;shift;;
+
+    --deny-file-write)
+      policy="$policy
+(deny file-write* (subpath \"$(realpath $2)\"))"
+      shift;shift;;
+
+    --allow-file-write)
+      policy="$policy
+(allow file-write* (subpath \"$(realpath $2)\"))"
+      shift;shift;;
+
+    --)
+      shift;break;;
+
+    *)
+      break;;
+  esac
+done
+
+if [[ "$help" -eq 1 ]]; then
+  >&2 cat <<- EOS
+Usage: sandbox [OPTIONS] -- <COMMAND> <ARG>...
 
 Examples:
     sandbox ls
@@ -104,31 +148,31 @@ Examples:
 
 Options:
     --allow-network
+
+    --deny-file-read <PATH>
+
     --allow-file-write <PATH>
+    --deny-file-write <PATH>
 
 Use -- to disambiguate options from commands to be executed.
+EOS
+  if [[ "$verbose" -eq 1 ]]; then
+    >&2 cat <<- EOS
 
-View the policy that will be in use by ommitting the <COMMAND>.
-"
-      exit;;
-    --allow-network)
-      policy="$policy
-(allow network*)"
-      shift;;
-    --allow-file-write)
-      policy="$policy
-(allow file-write* (subpath \"$2\"))"
-      shift;shift;;
-    --)
-      shift;break;;
-    *)
-      break;;
-  esac
-done
+Default policy:
 
-if [[ "$#" -eq 0 ]]; then
-  >&2 echo "No command provided, so echoing policy that will be used when a command is passed:"
+$policy
+EOS
+  fi
+  exit
+fi
+
+if [[ "$verbose" -eq 1 ]]; then
+  >&2 echo ℹ️ Policy:
   >&2 echo "$policy"
+  >&2 echo
+  >&2 echo ℹ️ Command:
+  >&2 echo sandbox-exec -p \"\$policy\" -- $@
 fi
 
 sandbox-exec -p "$policy" -- $@
