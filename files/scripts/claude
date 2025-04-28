@@ -14,7 +14,6 @@ Bash(rustc --version)
 
 Bash(go list:*)
 
-
 Bash(deno add:*)
 Bash(deno check:*)
 Bash(deno doc:*)
