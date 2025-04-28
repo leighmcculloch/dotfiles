@@ -4,10 +4,6 @@
 
 If `mcp-gemini` is connected, chat to Gemini, ask it to come up with a plan, ask it questions and iterate on the plan with Gemini until it is ready to implement. Chat to Gemini in follow up as the plan needs to evolve. Chat to Gemini and ask it to provide reviews of the implementation. 
 
-## Bash Commands
-
-Run all commands with the `sandbox --allow-file-write . -- ` prefix.
-
 ## Git Branch
 
 When starting work on a new issue, always create a new branch first. Use a concise, kebab-case branch name that describes the changes (max 5 words).
