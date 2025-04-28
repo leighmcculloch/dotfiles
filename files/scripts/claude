@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+
+set -o nounset
+
+read -r -d '' allowedTools << EOS
+Bash(sandbox:*)
+
+Bash(cargo --version)
+Bash(cargo check:*)
+Bash(cargo doc:*)
+Bash(cargo init:*)
+Bash(cargo:*)
+Bash(rustc --version)
+
+Bash(go list:*)
+
+
+Bash(deno add:*)
+Bash(deno check:*)
+Bash(deno doc:*)
+Bash(deno info:*)
+Bash(deno run:*)
+Bash(deno task:*)
+Bash(deno test)
+
+Bash(git add:*)
+Bash(git commit:*)
+
+Bash(curl:*)
+Bash(grep:*)
+Bash(ls:*)
+Bash(mkdir:*)
+Bash(touch:*)
+
+WebFetchTool(domain:developers.stellar.org)
+WebFetchTool(domain:github.com)
+
+mcp__mcp-gemini__chat
+
+mcp__mcp-github__get_issue
+mcp__mcp-github__get_me
+mcp__mcp-github__search_issues
+
+mcp__mcp-stellar-xdr-json__xdr_guess
+mcp__mcp-stellar-xdr-json__xdr_decode
+mcp__mcp-stellar-xdr-json__xdr_decode_transaction
+EOS
+
+"$(npm root -g)/@anthropic-ai/claude-code/cli.js" \
+  --allowedTools "$allowedTools"
