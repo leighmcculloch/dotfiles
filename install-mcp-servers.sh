@@ -32,3 +32,10 @@ claude mcp add \
   mcp-github \
   -- \
   go run github.com/github/github-mcp-server/cmd/github-mcp-server@latest stdio
+
+claude mcp add \
+  --transport stdio \
+  --scope user \
+  mcp-perplexity \
+  -- \
+  npx -y server-perplexity-ask
