@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+set -o nounset
+
+green='\033[0;32m'
+reset='\033[0m'
+
+dir="$(basename $1)"
+gitdir="${dir}/.git"
+
+>&2 printf "${green}Cloning $1 into ${gitdir}${reset}.\n"
+mkdir -p "$dir"
+gh repo clone "$1" "${gitdir}" -- --bare
+
+>&2 printf "${green}Use 'git worktree add <BRANCH>' in ${dir} to create new working directories.\n"
