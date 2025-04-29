@@ -45,5 +45,10 @@ mcp__mcp-stellar-xdr-json__xdr_decode
 mcp__mcp-stellar-xdr-json__xdr_decode_transaction
 EOS
 
-"$(npm root -g)/@anthropic-ai/claude-code/cli.js" \
-  --allowedTools "$allowedTools"
+if [ $# -eq 0 ]; then
+  "$(npm root -g)/@anthropic-ai/claude-code/cli.js" \
+    --allowedTools "$allowedTools"
+else
+  "$(npm root -g)/@anthropic-ai/claude-code/cli.js" $@
+fi
+
