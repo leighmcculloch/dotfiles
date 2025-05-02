@@ -2,6 +2,13 @@
 
 set -o nounset
 
+#export ANTHROPIC_MODEL=$(cat <<- EOS | gum choose
+#claude-3-7-sonnet-20250219
+#claude-3-5-sonnet-20241022
+#claude-3-5-haiku-20241022
+#EOS
+#)
+
 read -r -d '' allowedTools << EOS
 Bash(sandbox:*)
 
@@ -34,15 +41,15 @@ Bash(touch:*)
 WebFetchTool(domain:developers.stellar.org)
 WebFetchTool(domain:github.com)
 
-mcp__mcp-gemini__chat
+mcp__gemini__chat
 
-mcp__mcp-github__get_issue
-mcp__mcp-github__get_me
-mcp__mcp-github__search_issues
+mcp__github__get_issue
+mcp__github__get_me
+mcp__github__search_issues
 
-mcp__mcp-stellar-xdr-json__xdr_guess
-mcp__mcp-stellar-xdr-json__xdr_decode
-mcp__mcp-stellar-xdr-json__xdr_decode_transaction
+mcp__stellar-xdr-json__xdr_guess
+mcp__stellar-xdr-json__xdr_decode
+mcp__stellar-xdr-json__xdr_decode_transaction
 EOS
 
 if [ $# -eq 0 ]; then

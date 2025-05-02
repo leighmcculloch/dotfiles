@@ -1,0 +1,11 @@
+{
+  "type": "stdio",
+  "command": "deno",
+  "args": [
+    "run",
+    "--allow-read",
+    "--allow-env",
+    "--allow-net=generativelanguage.googleapis.com:443",
+    "https://github.com/leighmcculloch/mcp-gemini/raw/refs/heads/main/mcp-gemini.ts"
+  ]
+}
