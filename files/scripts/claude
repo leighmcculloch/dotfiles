@@ -56,7 +56,6 @@ mcp__stellar-xdr-json__xdr_decode_transaction
 EOS
 
 allowedTools=$(echo "$allowedTools" | tr '\n' ',' | sed 's/,,/,/g')
-echo $allowedTools
 
 if [ $# -eq 0 ]; then
   "$(npm root -g)/@anthropic-ai/claude-code/cli.js" \
