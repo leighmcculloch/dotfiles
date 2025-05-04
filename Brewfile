@@ -67,6 +67,7 @@ if OS.mac?
   cask "discord"
   cask "doxie"
   cask "ghostty"
+  cask "motion"
   cask "raycast"
   cask "sublime-text"
   cask "visual-studio-code@insiders"
