@@ -60,6 +60,7 @@ allowedTools=$(echo "$allowedTools" | tr '\n' ',' | sed 's/,,/,/g')
 
 if [ $# -eq 0 ]; then
   "$(npm root -g)/@anthropic-ai/claude-code/cli.js" \
+    --mcp-config "$HOME/.claude/mcp.json" \
     --allowedTools "$allowedTools"
 else
   "$(npm root -g)/@anthropic-ai/claude-code/cli.js" $@
