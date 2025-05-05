@@ -73,7 +73,7 @@ if OS.mac?
   cask "visual-studio-code@insiders"
   cask "obsidian"
   cask "obs"
-  case "akiflow"
+  cask "akiflow"
 
   mas "1Blocker", id: 1365531024
   mas "1Password for Safari", id: 1569813296
