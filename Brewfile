@@ -34,6 +34,8 @@ brew "rust-analyzer"
 brew "vscode-langservers-extracted"
 brew "gopls"
 
+brew "dagger/tap/dagger"
+
 if OS.mac?
   brew "act"
   brew "autoconf"
