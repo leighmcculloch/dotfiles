@@ -68,17 +68,6 @@ function git() {
   command git $@
 }
 
-# pull pr alias
-function gfpr() {
-  local prnum="$1"
-  local refspec="pull/$prnum/head:pr$prnum"
-  if git config remote.upstream.url; then
-    git fetch upstream "$refspec"
-  else
-    git fetch origin "$refspec"
-  fi
-}
-
 # general aliases
 alias l="ls -lah"
 
