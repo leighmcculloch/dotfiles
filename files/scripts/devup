@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+set -o nounset
+
+devcontainer up \
+  --workspace-folder . \
+  --override-config <(echo '{
+    "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+    "runArgs": [
+      "--platform=linux/amd64"
+    ]
+  }') \
+  --dotfiles-repository https://github.com/leighmcculloch/dotfiles

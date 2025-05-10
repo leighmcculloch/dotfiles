@@ -1,0 +1,72 @@
+#!/usr/bin/env zsh
+
+set -o nounset
+
+function {
+  if [ -z "$ANTHROPIC_API_KEY" ]; then
+    echo "Error: ANTHROPIC_API_KEY environment variable is not set"
+    return 1
+  fi
+
+  local default_branch="$(gh repo view --json defaultBranchRef --jq .defaultBranchRef.name)"
+  local diff="$(git log --patch $default_branch..)"
+  if [ -z "$diff" ]; then
+    echo "No changes detected in working directory"
+    return 1
+  fi
+
+  local escaped_diff="${${$(echo "$diff" | jq -R -s '.')%\"}#\"}"
+
+  local response="$(curl -s https://api.anthropic.com/v1/messages \
+    -H "Content-Type: application/json" \
+    -H "x-api-key: $ANTHROPIC_API_KEY" \
+    -H "anthropic-version: 2023-06-01" \
+    -d '{
+      "model": "claude-3-7-sonnet-20250219",
+      "max_tokens": 500,
+      "system": "You are a senior software engineer.",
+      "messages": [{
+        "role": "user",
+        "content": "Given the following log and diff, suggest a concise pull request title (max 50 characters) and description, where the description is separated into two sections. Be direct, eliminate filler words and phrases. Think like a journalist.\n\nThe first section is under the heading \"What\" and describes what has changed. Use imperative mood. Do not lead with a plural. e.g. Upgrade vs upgrades. Enable vs enables. Add vs adds.\n\nThe second section is under the heading \"Why\" and describes why the change is being made. Be concise with why, and avoid generic statements.\n\nReply only with the title, what, and why in valid JSON format {\"title\":\"\",\"what\":\"\",\"why\":\"\"}, on a single line, nothing else. Start the title with a capital letter but do not end with a full stop. Use full sentences for what and why. Avoid generic phrases. \n\nLog with Diff:\n '"${escaped_diff}"'"
+      }]
+    }')"
+
+  local suggestion=$(echo "$response" | jq -r '.content[0].text')
+  if [ -z "$suggestion" ]; then
+    echo "Error: Failed to get commit message from Anthropic API"
+    return 1
+  fi
+
+  local suggestion_title=$(echo "$suggestion" | jq -r '.title')
+  local suggestion_what=$(echo "$suggestion" | jq -r '.what')
+  local suggestion_why=$(echo "$suggestion" | jq -r '.why')
+
+  echo "Title:"
+  local title="$(gum input --width 50 --prompt '| ' --value "$suggestion_title")"
+  echo "$title"
+
+  echo "What:"
+  local what="$(gum write --width 80 --prompt '| ' --value "$suggestion_what")"
+  echo "$what"
+
+  echo "Why:"
+  local why="$(gum write --width 80 --char-limit 99999 --prompt '| ' --value "$suggestion_why")"
+  echo "$why"
+
+  echo "Reviewer:"
+  local reviewer="$(gum choose --no-limit \
+    $(gh api '/repos/{owner}/{repo}/contributors' --jq '.[].login')
+  )"
+  echo "$reviewer"
+
+  gh pr create \
+    --draft \
+    --title "$title" \
+    --body "### What
+  $what
+
+  ### Why
+  $why" \
+    --reviewer "$(echo -n "$reviewer" | tr '\n' ',')" \
+    $@
+}

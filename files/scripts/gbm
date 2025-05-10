@@ -1,0 +1,9 @@
+#!/usr/bin/env zsh
+
+set -o nounset
+
+function {
+  local branch="$(git branch --format='%(refname:short)' --show-current)"
+  local new_name="$(gum input --width 50 --char-limit 50 --prompt '| ' --value "$branch")"
+  git branch -m "$branch" "$new_name"
+}

@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+set -o nounset
+
+id="$(docker ps -aqf "label=devcontainer.local_folder=$PWD")"
+if [ -z "$id" ]; then
+  echo "No devcontainer found for this folder. Run devup first."
+  return 1
+fi
+docker kill "$id"

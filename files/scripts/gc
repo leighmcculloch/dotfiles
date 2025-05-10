@@ -1,0 +1,68 @@
+#!/usr/bin/env zsh
+
+set -o nounset
+
+function {
+  local message=""
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      -m)
+        if [[ -n "$2" ]]; then
+          message="$2"
+          shift 2
+          break
+        fi
+        ;;
+    esac
+    shift
+  done
+
+  if [[ -n "$message" ]]; then
+    git commit -m "$message" "$@"
+    return
+  fi
+
+  if git rev-parse -q --verify MERGE_HEAD >/dev/null 2>&1; then
+    git commit "$@"
+    return
+  fi
+
+  if [ -z "$ANTHROPIC_API_KEY" ]; then
+    echo "Error: ANTHROPIC_API_KEY environment variable is not set"
+    return 1
+  fi
+
+  local branch="${${$(git branch --format='%(refname:short)' --show-current | jq -R -s '.')%\"}#\"}"
+
+  local diff="$(git diff --staged)"
+  if [ -z "$diff" ]; then
+    echo "No staged changes"
+    return 1
+  fi
+
+  local escaped_diff="${${$(echo "$diff" | jq -R -s '.')%\"}#\"}"
+
+  local response="$(curl -s -X POST https://api.anthropic.com/v1/messages \
+    -H "Content-Type: application/json" \
+    -H "x-api-key: $ANTHROPIC_API_KEY" \
+    -H "anthropic-version: 2023-06-01" \
+    -d '{
+      "model": "claude-3-5-haiku-latest",
+      "max_tokens": 50,
+      "system": "You are a senior software engineer.",
+      "messages": [{
+        "role": "user",
+        "content": "Given the following git diff, suggest a concise, commit message that says in present tense with imperative mood what has changed without saying why (max 50 characters).\n\nReply only with the commit message, nothing else. Do not use convention commit format. Start the commit message with a lower case letter and do not end with a full stop. Avoid generic phrases. \n\nBranch: '"${branch}"' \n\nDiff:\n '"${escaped_diff}"'"
+      }]
+    }')"
+
+  local suggestion=$(echo "$response" | jq -r '.content[0].text')
+  if [ -z "$suggestion" ]; then
+    echo "Error: Failed to get commit message from Anthropic API"
+    return 1
+  fi
+
+  local message="$(gum write --width 80 --char-limit 99999 --prompt '| ' --value "$suggestion")"
+
+  git commit -m "$message" $@
+}

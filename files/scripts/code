@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+set -o nounset
+
+if [ -e "$(command -v code &> /dev/null)" ]; then
+  command code "$@"
+else
+  command code-insiders "$@"
+fi
