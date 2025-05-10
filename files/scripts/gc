@@ -4,6 +4,7 @@ set -o nounset
 
 function {
   local message=""
+  local yes=0
   while [[ $# -gt 0 ]]; do
     case "$1" in
       -m)
@@ -12,6 +13,10 @@ function {
           shift 2
           break
         fi
+        ;;
+      -y)
+        yes=1
+        echo "Committing and pushing without waiting..."
         ;;
     esac
     shift
@@ -56,13 +61,12 @@ function {
       }]
     }')"
 
-  local suggestion=$(echo "$response" | jq -r '.content[0].text')
-  if [ -z "$suggestion" ]; then
-    echo "Error: Failed to get commit message from Anthropic API"
-    return 1
+  message="."
+  message=$(echo "$response" | jq -r '.content[0].text')
+
+  if (( yes == 0 )); then
+    message="$(gum write --width 80 --char-limit 99999 --prompt '| ' --value "$message")"
   fi
 
-  local message="$(gum write --width 80 --char-limit 99999 --prompt '| ' --value "$suggestion")"
-
   git commit -m "$message" $@
-}
+} "$@"
