@@ -16,7 +16,6 @@ function {
         ;;
       -y)
         yes=1
-        echo "Committing and pushing without waiting..."
         ;;
     esac
     shift
