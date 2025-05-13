@@ -69,11 +69,12 @@ if OS.mac?
   cask "discord"
   cask "doxie"
   cask "ghostty"
-  cask "motion"
   cask "sublime-text"
 #  cask "visual-studio-code@insiders"
   cask "obsidian"
   cask "obs"
+
+  cask "motion"
 
   mas "1Blocker", id: 1365531024
   mas "1Password for Safari", id: 1569813296
