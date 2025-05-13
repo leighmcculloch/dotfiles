@@ -9,59 +9,9 @@ set -o nounset
 #EOS
 #)
 
-read -r -d '' allowedTools << EOS
-Bash(sandbox:*)
-
-Bash(cargo --version)
-Bash(cargo check:*)
-Bash(cargo doc:*)
-Bash(cargo init:*)
-Bash(cargo:*)
-Bash(rustc --version)
-
-Bash(go list:*)
-
-Bash(deno add:*)
-Bash(deno check:*)
-Bash(deno doc:*)
-Bash(deno info:*)
-Bash(deno run:*)
-Bash(deno task:*)
-Bash(deno test)
-
-Bash(git add:*)
-Bash(git commit:*)
-
-Bash(curl:*)
-Bash(grep:*)
-Bash(ls:*)
-Bash(mkdir:*)
-Bash(touch:*)
-
-WebFetchTool(domain:developers.stellar.org)
-WebFetchTool(domain:github.com)
-
-mcp__gemini__chat
-mcp__claude-3-7-sonnet__Task                                                                                                 │
-mcp__claude-3-5-sonnet__Task
-mcp__claude-3-5-haiku__Task                                                                                                  │
-
-mcp__github__get_issue
-mcp__github__get_me
-mcp__github__search_issues
-mcp__github__get_file_contents
-
-mcp__stellar-xdr-json__xdr_guess
-mcp__stellar-xdr-json__xdr_decode
-mcp__stellar-xdr-json__xdr_decode_transaction
-EOS
-
-allowedTools=$(echo "$allowedTools" | tr '\n' ',' | sed 's/,,/,/g')
-
 if [ $# -eq 0 ]; then
   "$(npm root -g)/@anthropic-ai/claude-code/cli.js" \
-    --mcp-config "$HOME/.claude/mcp.json" \
-    --allowedTools "$allowedTools"
+    --mcp-config "$HOME/.claude/mcp.json"
 else
   "$(npm root -g)/@anthropic-ai/claude-code/cli.js" $@
 fi

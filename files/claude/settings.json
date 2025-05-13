@@ -1,0 +1,60 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cargo --version)",
+      "Bash(cargo check:*)",
+      "Bash(cargo doc:*)",
+      "Bash(cargo init:*)",
+      "Bash(cargo update:*)",
+      "Bash(cargo:*)",
+      "Bash(rustc --version)",
+
+      "Bash(go list:*)",
+
+      "Bash(deno add:*)",
+      "Bash(deno check:*)",
+      "Bash(deno doc:*)",
+      "Bash(deno info:*)",
+      "Bash(deno run:*)",
+      "Bash(deno task:*)",
+      "Bash(deno test:*)",
+
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git checkout:*)",
+
+      "Bash(curl:*)",
+      "Bash(grep:*)",
+      "Bash(ls:*)",
+      "Bash(mkdir:*)",
+      "Bash(touch:*)",
+
+      "Bash(gh api:*)",
+      "Bash(gh pr:*)",
+      "Bash(gh pr create:*)",
+      "Bash(gh pr edit:*)",
+      "Bash(gh pr view:*)",
+      "Bash(gh pr checks:*)",
+      "Bash(gh run view:*)",
+
+      "mcp__gemini__chat",
+      "mcp__claude-3-7-sonnet__Task",
+      "mcp__claude-3-5-sonnet__Task",
+      "mcp__claude-3-5-haiku__Task",
+
+      "mcp__github__get_issue",
+      "mcp__github__get_me",
+      "mcp__github__search_issues",
+      "mcp__github__get_file_contents",
+      "mcp__github__get_issue_comments",
+
+      "mcp__stellar-xdr-json__xdr_guess",
+      "mcp__stellar-xdr-json__xdr_decode",
+      "mcp__stellar-xdr-json__xdr_decode_transaction",
+
+      "WebFetchTool(domain:developers.stellar.org)",
+      "WebFetchTool(domain:github.com)"
+    ],
+    "deny": []
+  }
+}
