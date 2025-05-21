@@ -20,6 +20,7 @@ brew "stellar-cli"
 brew "tig"
 brew "tmux"
 brew "tree"
+brew "zstd"
 
 brew "node"
 brew "deno"
