@@ -19,6 +19,8 @@
       "Bash(deno task:*)",
       "Bash(deno test:*)",
 
+      "Bash(git fetch:*)",
+      "Bash(git grep:*)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "Bash(git checkout:*)",
