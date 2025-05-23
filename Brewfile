@@ -92,6 +92,8 @@ if OS.mac?
   mas "Slack", id: 803453959
   mas "Calm Radio", id: 112902545
   mas "Jomo", id: 1609960918
+  mas "Plash", id: 1494023538
+  mas "Day Progress", id: 6450280202
 
   mas "BloonsTD6+", id: 1584423325
   mas "Boggle: Arcade Edition", id: 6453020941
