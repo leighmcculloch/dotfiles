@@ -1,9 +1,0 @@
-{
-  "type": "stdio",
-  "command": "deno",
-  "args": [
-    "run",
-    "--allow-read",
-    "https://github.com/leighmcculloch/mcp-stellar-xdr-json/raw/refs/heads/main/mcp-stellar-xdr-json.ts"
-  ]
-}

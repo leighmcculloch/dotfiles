@@ -1,8 +1,0 @@
-{
-  "type": "stdio",
-  "command": "npx",
-  "args": ["-y", "@modelcontextprotocol/server-memory"],
-  "env": {
-    "MEMORY_FILE_PATH": "~/.dotfiles/files/claude/memory.json"
-  }
-}

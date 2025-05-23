@@ -1,8 +1,0 @@
-{
-  "type": "stdio",
-  "command": "npx",
-  "args": [
-    "-y",
-    "server-perplexity-ask"
-  ]
-}

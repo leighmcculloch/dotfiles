@@ -1,9 +1,0 @@
-{
-  "type": "stdio",
-  "command": "go",
-  "args": [
-    "run",
-    "github.com/github/github-mcp-server/cmd/github-mcp-server@latest",
-    "stdio"
-  ]
-}

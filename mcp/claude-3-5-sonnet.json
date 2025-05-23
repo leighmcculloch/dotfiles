@@ -1,8 +1,0 @@
-{
-  "type": "stdio",
-  "command": "claude",
-  "args": ["mcp", "serve"],
-  "env": {
-    "ANTHROPIC_MODEL": "claude-3-5-sonnet-20241022"
-  }
-}
