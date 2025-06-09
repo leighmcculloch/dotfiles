@@ -65,7 +65,7 @@ behind = '↓$count'
 [custom.stellar-cli]
 when = "which stellar >/dev/null"
 shell = ["/bin/zsh", "-f"]
-command = "arr=(v$(stellar version | head -n1 | cut -f2 -d' ' | cut -f1 -d'.') $(stellar env STELLAR_NETWORK) $(stellar env STELLAR_ACCOUNT)); print -R ${(j| |)arr}"
+command = "arr=(v$(stellar version --only-version-major) $(stellar env STELLAR_NETWORK) $(stellar env STELLAR_ACCOUNT)); print -R ${(j| |)arr}"
 format = "[\ueb44 $output](bold #e4db82) "
 
 [rust]
