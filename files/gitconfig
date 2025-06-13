@@ -24,6 +24,7 @@
         stash = 
 [branch]
 	sort = -committerdate
+	autoSetupMerge = always
 [tag]
 	sort =  version:refname
 [diff]
@@ -63,3 +64,5 @@
 	navigate = true
 	dark = true
 	hunk-header-style = omit
+[worktree]
+	guessRemote = true
