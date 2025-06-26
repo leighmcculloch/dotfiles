@@ -35,7 +35,7 @@ brew "rust-analyzer"
 brew "vscode-langservers-extracted"
 brew "gopls"
 
-brew "dagger/tap/dagger"
+brew "gemini-cli"
 
 if OS.mac?
   brew "act"
