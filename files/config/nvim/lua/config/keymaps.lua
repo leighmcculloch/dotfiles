@@ -11,6 +11,8 @@ map("n", "<c-p>", "<leader>fF", { remap = true, desc = "Open file picker" })
 map("n", "<c-q>", "<leader>bD", { remap = true, desc = "Close buffer and window" })
 map("n", "<c-e>", "<leader>e", { remap = true, desc = "Reveal file in file explorer" })
 
+map("n", "<space>/", "<space>sG", { remap = true, desc = "Grep (cwd)" })
+
 map("n", "gk", function()
   local on = not vim.diagnostic.config().virtual_lines
   vim.diagnostic.config({ virtual_lines = on })
