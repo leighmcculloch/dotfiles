@@ -4,3 +4,5 @@ set diff-options = --show-signature
 set main-view-date = custom
 set main-view-date-local = true
 set main-view-date-format = "%a %F %R %Z"
+
+bind generic y @sh -c "printf %(commit) | pbcopy"
