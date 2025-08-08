@@ -2,7 +2,7 @@
 
 ## Planning
 
-Come up with a plan. Ask questions, and iterate on the plan, until it is well formed. Self review the plan and implementation during implementation.
+If `mcp-gemini` is connected, chat to Gemini, ask it to come up with a plan, ask it questions and iterate on the plan with Gemini until it is ready to implement. Chat to Gemini in follow up as the plan needs to evolve. Chat to Gemini and ask it to provide reviews of the implementation. 
 
 ## Git Branch
 
