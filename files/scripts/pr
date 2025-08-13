@@ -1,0 +1,14 @@
+#!/usr/bin/env zsh
+
+set -o nounset
+
+function {
+  local json="$(gh pr view --json title,number,additions,deletions,headRepository,headRepositoryOwner)"
+  local fmt="$(echo "$json" | jq -r '":github-rainbow: \(.title) [\(.headRepository.name)#\(.number)](https://github.com/\(.headRepositoryOwner.login)/\(.headRepository.name)/\(.number)) `+\(.additions) -\(.deletions)`"')"
+  echo "$fmt"
+  if [ -t 1 ] ; then
+    if (( $+commands[pbcopy] )); then
+      echo "$fmt" | pbcopy
+    fi
+  fi
+}
