@@ -20,6 +20,7 @@ brew "stellar-cli"
 brew "tig"
 brew "tmux"
 brew "tree"
+brew "watchexec"
 brew "zstd"
 
 brew "node"
