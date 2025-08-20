@@ -78,6 +78,7 @@ alias gwa="git worktree add"
 alias gwr="git worktree remove"
 alias gwl="git worktree list"
 alias gwp="git worktree prune"
+alias grbs="git rebase --exec 'git commit --amend --no-edit -n -S' -i"
 
 alias ghprme="gh pr list --author @me"
 alias ghprco="gh pr checkout"
