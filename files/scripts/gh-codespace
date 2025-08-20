@@ -1,0 +1,9 @@
+#! /usr/bin/env zsh
+
+# Open a GitHub Codespace for the current branch, join it, then delete on exit.
+
+gh codespace create -b $(git symbolic-ref --short HEAD)
+
+gh codespace ssh
+
+gh codespace delete
