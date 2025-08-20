@@ -57,6 +57,12 @@ if (( ! $+commands[brew] )); then
   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 fi
 source $PWD/files/zenv_brew
+
+# if a gh personal access token is configured in an env var, as is the case in
+# GitHub Codespaces, then use that as the Homebrew token.
+if [ -n "$GITHUB_PERSONAL_ACCESS_TOKEN" ]; then
+  export HOMEBREW_GITHUB_API_TOKEN=$GITHUB_PERSONAL_ACCESS_TOKEN
+fi
 brew bundle install
 
 # install plugins/extensions

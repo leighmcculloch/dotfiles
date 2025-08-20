@@ -7,7 +7,7 @@ branch="$(git symbolic-ref --short HEAD)"
 machine="basicLinux32gb" # smallest machine
 
 echo "Creating GitHub Codespace for $repo # $branch..."
-gh codespace create -d "$branch" -R "$repo" -b "$branch" -m "$machine"
+gh codespace create -s -d "$branch" -R "$repo" -b "$branch" -m "$machine"
 
 name="$(gh codespace list --json name,displayName | jq -r '.[] | select(.displayName == "'"$branch"'") | .name')"
 
