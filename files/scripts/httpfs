@@ -7,14 +7,18 @@ port=8080
 
 deno -ENR jsr:@std/http/file-server --host $host --port $port --no-dotfiles --cors --verbose &
 
+echo "Commands:"
+echo " (o) Open in browser"
+echo " (x) Exit"
+echo
+
 sleep 1
+
+echo
 
 open http://$host:$port
 
 while true; do
-  echo "Commands:"
-  echo " (o) Open in browser"
-  echo " (x) Exit"
   read -n 1 key
   case "$key" in
     o) open http://$host:$port ;;
