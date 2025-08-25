@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+
+trap "trap - SIGTERM && kill -- -$$" SIGINT SIGTERM EXIT
+
+host=localhost
+port=8080
+
+deno -ENR jsr:@std/http/file-server --host $host --port $port --no-dotfiles --cors --verbose &
+
+sleep 1
+
+open http://$host:$port
+
+while true; do
+  echo "Commands:"
+  echo " (o) Open in browser"
+  echo " (x) Exit"
+  read -n 1 key
+  case "$key" in
+    o) open http://$host:$port ;;
+    x) exit ;;
+  esac
+done
+
+wait
