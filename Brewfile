@@ -81,7 +81,6 @@ if OS.mac?
   mas "1Blocker", id: 1365531024
   mas "1Password for Safari", id: 1569813296
   mas "House Designer", id: 779363176
-  mas "NotePlan", id: 1505432629
   mas "Numbers", id: 409203825
   mas "Pages", id: 409201541
   mas "Perplexity", id: 6714467650
@@ -89,10 +88,8 @@ if OS.mac?
   mas "Tailscale", id: 1475387142
   mas "Telegram", id: 747648890
   mas "WhatsApp", id: 310633997
-  mas "Subtitly", id: 6673901809
   mas "Slack", id: 803453959
   mas "Calm Radio", id: 112902545
-  mas "Jomo", id: 1609960918
   mas "Plash", id: 1494023538
   mas "Day Progress", id: 6450280202
 
