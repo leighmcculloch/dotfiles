@@ -105,6 +105,5 @@ if OS.mac?
   mas "Kingdom Rush Vengeance+", id: 1610130712
   mas "Iron Marines+", id: 1670387512
   mas "junkworld", id: 6448185316
-  mas "Samorost 3+", id: 1611529849
   mas "Skate City NY", id: 6448986810
 end
