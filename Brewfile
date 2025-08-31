@@ -90,20 +90,16 @@ if OS.mac?
   mas "Telegram", id: 747648890
   mas "WhatsApp", id: 310633997
   mas "Slack", id: 803453959
-  mas "Calm Radio", id: 112902545
   mas "Plash", id: 1494023538
   mas "Day Progress", id: 6450280202
 
   mas "BloonsTD6+", id: 1584423325
   mas "Boggle: Arcade Edition", id: 6453020941
   mas "Boop", id: 1518425043
-  mas "Cypher", id: 1586958842
-  mas "Spire Blast", id: 1532717034
   mas "Mini Motorways", id: 1456188526
   mas "LEGO Star Wars Battles", id: 1563174698
   mas "Kingdom Rush Frontiers+", id: 1579364157
   mas "Kingdom Rush Vengeance+", id: 1610130712
-  mas "Iron Marines+", id: 1670387512
   mas "junkworld", id: 6448185316
   mas "Skate City NY", id: 6448986810
 end
