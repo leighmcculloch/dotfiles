@@ -61,6 +61,7 @@ if OS.mac?
   brew "wabt"
   brew "wasm-pack"
   brew "vhs"
+  brew "jj"
 
   cask "font-fira-code"
   cask "font-fira-code-nerd-font"
