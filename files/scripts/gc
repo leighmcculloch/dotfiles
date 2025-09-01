@@ -46,22 +46,42 @@ function {
 
   local escaped_diff="${${$(echo "$diff" | jq -R -s '.')%\"}#\"}"
 
-  local response="$(curl -s -X POST https://api.anthropic.com/v1/messages \
+  #local response="$(curl -s -X POST https://api.anthropic.com/v1/messages \
+  #  -H "Content-Type: application/json" \
+  #  -H "x-api-key: $ANTHROPIC_API_KEY" \
+  #  -H "anthropic-version: 2023-06-01" \
+  #  -d '{
+  #    "model": "claude-3-5-haiku-latest",
+  #    "max_tokens": 50,
+  #    "system": "You are a senior software engineer.",
+  #    "messages": [{
+  #      "role": "user",
+  #      "content": "Given the following git diff, suggest a concise, commit message that says in present tense with imperative mood what has changed without saying why (max 50 characters).\n\nReply only with the commit message, nothing else. Do not use convention commit format. Start the commit message with a lower case letter and do not end with a full stop. Avoid generic phrases. \n\nBranch: '"${branch}"' \n\nDiff:\n '"${escaped_diff}"'"
+  #    }]
+  #  }')"
+
+  local response="$(curl -s https://api.x.ai/v1/chat/completions \
     -H "Content-Type: application/json" \
-    -H "x-api-key: $ANTHROPIC_API_KEY" \
-    -H "anthropic-version: 2023-06-01" \
+    -H "Authorization: Bearer $X_AI_API_KEY" \
     -d '{
-      "model": "claude-3-5-haiku-latest",
-      "max_tokens": 50,
-      "system": "You are a senior software engineer.",
-      "messages": [{
-        "role": "user",
-        "content": "Given the following git diff, suggest a concise, commit message that says in present tense with imperative mood what has changed without saying why (max 50 characters).\n\nReply only with the commit message, nothing else. Do not use convention commit format. Start the commit message with a lower case letter and do not end with a full stop. Avoid generic phrases. \n\nBranch: '"${branch}"' \n\nDiff:\n '"${escaped_diff}"'"
-      }]
+      "model": "grok-code-fast-1",
+      "stream": false,
+      "temperature": 0,
+      "messages": [
+        {
+          "role": "system", 
+          "content": "You are a senior software engineer."
+        },
+        {
+          "role": "user",
+          "content": "Given the following git diff, suggest a concise, commit message that says in present tense with imperative mood what has changed without saying why (max 50 characters).\n\nReply only with the commit message, nothing else. Do not use convention commit format. Start the commit message with a lower case letter and do not end with a full stop. Avoid generic phrases. \n\nBranch: '"${branch}"' \n\nDiff:\n '"${escaped_diff}"'"
+        }
+      ]
     }')"
 
   message="."
-  message=$(echo "$response" | jq -r '.content[0].text')
+  #message=$(echo "$response" | jq -r '.content[0].text')
+  message=$(echo "$response" | jq -r '.choices[0].message.content')
 
   if (( yes == 0 )); then
     message="$(gum write --width 80 --char-limit 99999 --prompt '| ' --value "$message")"
