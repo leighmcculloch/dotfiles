@@ -69,7 +69,6 @@ if OS.mac?
   cask "chatgpt"
   cask "claude"
   cask "descript"
-  cask "thebrowsercompany-dia"
   cask "discord"
   cask "doxie"
   cask "ghostty"
