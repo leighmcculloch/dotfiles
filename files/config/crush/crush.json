@@ -1,0 +1,36 @@
+{
+  "$schema": "https://charm.land/crush.json",
+  "lsp": {
+    "rust": {
+      "command": "rust-analyzer"
+    },
+    "go": {
+      "command": "gopls",
+      "env": {
+        "GOTOOLCHAIN": "go1.24.5"
+      }
+    },
+    "deno": {
+      "command": "deno",
+      "args": ["lsp"]
+    }
+  },
+  "mcp": {
+    "perplexity": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "server-perplexity-ask"],
+      "env": {}
+    },
+    "deepwiki": {
+      "type": "sse",
+      "url": "https://mcp.deepwiki.com/sse"
+    },
+    "github": {
+      "type": "stdio",
+      "command": "go",
+      "args": ["run", "github.com/github/github-mcp-server/cmd/github-mcp-server@latest", "stdio"],
+      "env": {}
+    }
+  }
+}
