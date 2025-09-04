@@ -46,6 +46,7 @@ function {
 
   local escaped_diff="${${$(echo "$diff" | jq -R -s '.')%\"}#\"}"
 
+  # Use Claude
   #local response="$(curl -s -X POST https://api.anthropic.com/v1/messages \
   #  -H "Content-Type: application/json" \
   #  -H "x-api-key: $ANTHROPIC_API_KEY" \
@@ -59,7 +60,9 @@ function {
   #      "content": "Given the following git diff, suggest a concise, commit message that says in present tense with imperative mood what has changed without saying why (max 50 characters).\n\nReply only with the commit message, nothing else. Do not use convention commit format. Start the commit message with a lower case letter and do not end with a full stop. Avoid generic phrases. \n\nBranch: '"${branch}"' \n\nDiff:\n '"${escaped_diff}"'"
   #    }]
   #  }')"
+  #message=$(echo "$response" | jq -r '.content[0].text')
 
+  # Use Grok
   local response="$(curl -s https://api.x.ai/v1/chat/completions \
     -H "Content-Type: application/json" \
     -H "Authorization: Bearer $X_AI_API_KEY" \
@@ -78,10 +81,17 @@ function {
         }
       ]
     }')"
-
-  message="."
-  #message=$(echo "$response" | jq -r '.content[0].text')
   message=$(echo "$response" | jq -r '.choices[0].message.content')
+
+  # Use local Ollama
+  #local response="$(curl -s http://localhost:11434/api/generate \
+  #  -H "Content-Type: application/json" \
+  #  -d '{
+  #    "model": "wizardlm2:7b",
+  #    "prompt": "You are a senior software engineer.\n\nGiven the following git diff, suggest a concise, commit message that says in present tense with imperative mood what has changed without saying why (max 50 characters).\n\nReply only with the commit message, nothing else. Do not surround the message with quotes or whitespace. Do not use convention commit format. Start the commit message with a lower case letter. Do not end with a full stop. Avoid generic phrases. \n\nBranch: '"${branch}"' \n\nDiff:\n '"${escaped_diff}"'",
+  #    "stream": false
+  #  }')"
+  #message=$(echo "$response" | jq -r '.response')
 
   if (( yes == 0 )); then
     message="$(gum write --width 80 --char-limit 99999 --prompt '| ' --value "$message")"
