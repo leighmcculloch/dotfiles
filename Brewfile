@@ -65,8 +65,6 @@ if OS.mac?
   cask "font-fira-code"
   cask "font-fira-code-nerd-font"
 
-  cask "chatgpt"
-  cask "claude"
   cask "descript"
   cask "discord"
   cask "doxie"
@@ -75,6 +73,11 @@ if OS.mac?
 #  cask "visual-studio-code@insiders"
   cask "obsidian"
   cask "obs"
+
+  cask "chatgpt"
+  cask "claude"
+  cask "ollama-app"
+  cask "lm-studio"
 
   cask "motion"
 
