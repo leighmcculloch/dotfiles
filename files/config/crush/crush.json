@@ -1,5 +1,16 @@
 {
   "$schema": "https://charm.land/crush.json",
+  "providers": {
+    "ollama": {
+      "name": "Ollama",
+      "base_url": "http://localhost:11434/v1/",
+      "type": "openai",
+      "models": [
+        { "name": "gpt-oss:20b", "id": "gpt-oss:20b", "context_window": 256000, "default_max_tokens": 20000 },
+        { "name": "wizardlm2:7b", "id": "wizardlm2:7b", "context_window": 256000, "default_max_tokens": 20000 }
+      ]
+    }
+  },
   "lsp": {
     "rust": {
       "command": "rust-analyzer"
