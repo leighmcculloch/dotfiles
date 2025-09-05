@@ -116,6 +116,13 @@
       "command": "go",
       "args": ["run", "github.com/github/github-mcp-server/cmd/github-mcp-server@latest", "stdio"],
       "env": {}
+    },
+    "context7": {
+      "type": "http",
+      "url": "https://mcp.context7.com/mcp",
+      "headers": {
+        "CONTEXT7_API_KEY": "$(echo $CONTEXT7_API_KEY)"
+      }
     }
   }
 }
