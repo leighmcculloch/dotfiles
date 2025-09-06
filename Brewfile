@@ -3,7 +3,6 @@ brew "agg"
 brew "bat"
 brew "cloudflare-wrangler"
 brew "csvlens"
-brew "devcontainer"
 brew "fd"
 brew "fzf"
 brew "gh"
@@ -36,10 +35,7 @@ brew "rust-analyzer"
 brew "vscode-langservers-extracted"
 brew "gopls"
 
-brew "gemini-cli"
-
 if OS.mac?
-  brew "act"
   brew "autoconf"
   brew "automake"
   brew "clang-format"
@@ -70,14 +66,10 @@ if OS.mac?
   cask "doxie"
   cask "ghostty"
   cask "sublime-text"
-#  cask "visual-studio-code@insiders"
-  cask "obsidian"
-  cask "obs"
   cask "nordvpn"
 
   cask "chatgpt"
   cask "claude"
-  cask "ollama-app"
   cask "lm-studio"
 
   cask "motion"
@@ -93,16 +85,5 @@ if OS.mac?
   mas "Telegram", id: 747648890
   mas "WhatsApp", id: 310633997
   mas "Slack", id: 803453959
-  mas "Plash", id: 1494023538
   mas "Day Progress", id: 6450280202
-
-  mas "BloonsTD6+", id: 1584423325
-  mas "Boggle: Arcade Edition", id: 6453020941
-  mas "Boop", id: 1518425043
-  mas "Mini Motorways", id: 1456188526
-  mas "LEGO Star Wars Battles", id: 1563174698
-  mas "Kingdom Rush Frontiers+", id: 1579364157
-  mas "Kingdom Rush Vengeance+", id: 1610130712
-  mas "junkworld", id: 6448185316
-  mas "Skate City NY", id: 6448986810
 end
