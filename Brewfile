@@ -68,8 +68,6 @@ if OS.mac?
   cask "sublime-text"
   cask "nordvpn"
 
-  cask "chatgpt"
-  cask "claude"
   cask "lm-studio"
 
   cask "motion"
