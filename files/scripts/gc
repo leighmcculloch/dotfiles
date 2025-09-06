@@ -97,7 +97,7 @@ function {
   local response="$(curl -s http://localhost:1234/v1/chat/completions \
     -H "Content-Type: application/json" \
     -d '{
-      "model": "wizardlm-2-7b",
+      "model": "qwen/qwen3-coder-30b",
       "stream": false,
       "messages": [
         {
