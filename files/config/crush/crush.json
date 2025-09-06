@@ -61,7 +61,10 @@
       "mcp_github_search_orgs",
       "mcp_github_search_pull_requests",
       "mcp_github_search_repositories",
-      "mcp_github_search_users"
+      "mcp_github_search_users",
+
+      "mcp_stellar-xdr_xdr_guess",
+      "mcp_stellar-xdr_xdr_decode"
     ]
   },
   "providers": {
@@ -123,6 +126,11 @@
       "headers": {
         "CONTEXT7_API_KEY": "$(echo $CONTEXT7_API_KEY)"
       }
+    },
+    "stellar-xdr": {
+      "type": "stdio",
+      "command": "deno",
+      "args": ["run", "--allow-read", "https://github.com/leighmcculloch/mcp-stellar-xdr/raw/refs/heads/main/mcp-stellar-xdr.ts"]
     }
   }
 }
