@@ -70,8 +70,8 @@
       "base_url": "http://localhost:11434/v1/",
       "type": "openai",
       "models": [
-        { "name": "gpt-oss:20b", "id": "gpt-oss:20b", "context_window": 256000, "default_max_tokens": 20000 },
-        { "name": "wizardlm2:7b", "id": "wizardlm2:7b", "context_window": 256000, "default_max_tokens": 20000 }
+        { "name": "gpt-oss:20b", "id": "gpt-oss:20b", "context_window": 4096, "default_max_tokens": 4096 },
+        { "name": "wizardlm2:7b", "id": "wizardlm2:7b", "context_window": 4096, "default_max_tokens": 4096 }
       ]
     },
     "lmstudio": {
@@ -79,9 +79,9 @@
       "base_url": "http://localhost:1234/v1/",
       "type": "openai",
       "models": [
-        { "name": "Qwen 3 30B", "id": "qwen/qwen3-30b-a3b-2507", "context_window": 256000, "default_max_tokens": 20000 },
-        { "name": "Mistral wizardlm-2-7b", "id": "wizardlm-2-7b", "context_window": 256000, "default_max_tokens": 20000 },
-        { "name": "OpenAI gpt-oss-20b", "id": "openai/gpt-oss-20b", "context_window": 256000, "default_max_tokens": 20000 }
+        { "name": "Qwen 3 30B", "id": "qwen/qwen3-30b-a3b-2507", "context_window": 4096, "default_max_tokens": 4096 },
+        { "name": "Mistral wizardlm-2-7b", "id": "wizardlm-2-7b", "context_window": 4096, "default_max_tokens": 4096 },
+        { "name": "OpenAI gpt-oss-20b", "id": "openai/gpt-oss-20b", "context_window": 4096, "default_max_tokens": 4096 }
       ]
     }
   },

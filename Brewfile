@@ -73,6 +73,7 @@ if OS.mac?
 #  cask "visual-studio-code@insiders"
   cask "obsidian"
   cask "obs"
+  cask "nordvpn"
 
   cask "chatgpt"
   cask "claude"
