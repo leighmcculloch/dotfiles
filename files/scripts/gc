@@ -122,7 +122,6 @@ function {
         }
       }
     }')"
-  echo $response
   message=$(echo "$response" | jq -r '.choices[0].message.content | fromjson | .commit_message')
 
   if (( yes == 0 )); then
