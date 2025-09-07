@@ -40,7 +40,7 @@ if OS.mac?
   brew "automake"
   brew "clang-format"
   brew "cmake"
-  brew "colima"
+  brew "orbstack"
   brew "coreutils"
   brew "docker"
   brew "docker-credential-helper"
