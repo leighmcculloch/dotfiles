@@ -77,7 +77,6 @@ if OS.mac?
   mas "House Designer", id: 779363176
   mas "Numbers", id: 409203825
   mas "Pages", id: 409201541
-  mas "Perplexity", id: 6714467650
   mas "Prime Video", id: 545519333
   mas "Tailscale", id: 1475387142
   mas "Telegram", id: 747648890
