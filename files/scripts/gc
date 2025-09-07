@@ -94,7 +94,7 @@ function {
   #message=$(echo "$response" | jq -r '.response')
 
   # Use local LM Studio
-  local response="$(curl -s http://localhost:1234/v1/chat/completions \
+  local response="$(curl -s http://concrete:1234/v1/chat/completions \
     -H "Content-Type: application/json" \
     -d '{
       "model": "qwen/qwen3-coder-30b",
