@@ -40,7 +40,6 @@ if OS.mac?
   brew "automake"
   brew "clang-format"
   brew "cmake"
-  brew "orbstack"
   brew "coreutils"
   brew "docker"
   brew "docker-credential-helper"
@@ -61,6 +60,7 @@ if OS.mac?
   cask "font-fira-code"
   cask "font-fira-code-nerd-font"
 
+  cask "orbstack"
   cask "descript"
   cask "discord"
   cask "doxie"
