@@ -60,7 +60,6 @@ alias l="ls -lah"
 # git aliases (in addition to oh-my-zsh git plugin)
 unalias gc >/dev/null 2>&1
 alias ga.="git add ."
-alias ga="git add ."
 alias gap="git add -p"
 alias gacn!="ga. && gcn!"
 alias gac="ga. && gc -y"
