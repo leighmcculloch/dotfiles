@@ -1,3 +1,0 @@
-# for golang
-
-export GOFLAGS='-buildvcs=false'
