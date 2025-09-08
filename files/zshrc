@@ -60,6 +60,7 @@ alias l="ls -lah"
 # git aliases (in addition to oh-my-zsh git plugin)
 unalias gc >/dev/null 2>&1
 alias ga.="git add ."
+alias ga="git add ."
 alias gap="git add -p"
 alias gacn!="ga. && gcn!"
 alias gac="ga. && gc -y"
@@ -80,6 +81,7 @@ alias gwl="git worktree list"
 alias gwp="git worktree prune"
 alias grbs="git rebase --exec 'git commit --amend --no-edit -n -S' -i"
 
+alias ghco="gh co"
 alias ghprme="gh pr list --author @me"
 alias ghprco="gh pr checkout"
 

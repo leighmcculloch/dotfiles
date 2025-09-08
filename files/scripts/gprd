@@ -3,11 +3,6 @@
 set -o nounset
 
 function {
-  if [ -z "$ANTHROPIC_API_KEY" ]; then
-    echo "Error: ANTHROPIC_API_KEY environment variable is not set"
-    return 1
-  fi
-
   local default_branch="$(gh repo view --json defaultBranchRef --jq .defaultBranchRef.name)"
   local diff="$(git log --patch $default_branch..)"
   if [ -z "$diff" ]; then
@@ -17,6 +12,7 @@ function {
 
   local escaped_diff="${${$(echo "$diff" | jq -R -s '.')%\"}#\"}"
 
+  # Use Claude
   #local response="$(curl -s https://api.anthropic.com/v1/messages \
   #  -H "Content-Type: application/json" \
   #  -H "x-api-key: $ANTHROPIC_API_KEY" \
@@ -30,28 +26,60 @@ function {
   #      "content": "Given the following log and diff, suggest a concise pull request title (max 50 characters) and description, where the description is separated into two sections. Be direct, eliminate filler words and phrases. Think like a journalist.\n\nThe first section is under the heading \"What\" and describes what has changed. Use imperative mood. Do not lead with a plural. e.g. Upgrade vs upgrades. Enable vs enables. Add vs adds.\n\nThe second section is under the heading \"Why\" and describes why the change is being made. Be concise with why, and avoid generic statements.\n\nReply only with the title, what, and why in valid JSON format {\"title\":\"\",\"what\":\"\",\"why\":\"\"}, on a single line, nothing else. Start the title with a capital letter but do not end with a full stop. Use full sentences for what and why. Avoid generic phrases. \n\nLog with Diff:\n '"${escaped_diff}"'"
   #    }]
   #  }')"
+  #local suggestion=$(echo "$response" | jq -r '.content[0].text')
 
-  local response="$(curl -s https://api.x.ai/v1/chat/completions \
+  # Use Grok
+  #local response="$(curl -s https://api.x.ai/v1/chat/completions \
+  #  -H "Content-Type: application/json" \
+  #  -H "Authorization: Bearer $X_AI_API_KEY" \
+  #  -d '{
+  #    "model": "grok-code-fast-1",
+  #    "stream": false,
+  #    "temperature": 0,
+  #    "messages": [
+  #      {
+  #        "role": "system", 
+  #        "content": "You are a senior software engineer."
+  #      },
+  #      {
+  #        "role": "user",
+  #        "content": "Given the following log and diff, suggest a concise pull request title (max 50 characters) and description, where the description is separated into two sections. Be direct, eliminate filler words and phrases. Think like a journalist.\n\nThe first section is under the heading \"What\" and describes what has changed. Use imperative mood. Do not lead with a plural. e.g. Upgrade vs upgrades. Enable vs enables. Add vs adds.\n\nThe second section is under the heading \"Why\" and describes why the change is being made. Be concise with why, and avoid generic statements.\n\nReply only with the title, what, and why in valid JSON format {\"title\":\"\",\"what\":\"\",\"why\":\"\"}, on a single line, nothing else. Start the title with a capital letter but do not end with a full stop. Use full sentences for what and why. Avoid generic phrases. \n\nLog with Diff:\n '"${escaped_diff}"'"
+  #      }
+  #    ]
+  #  }')"
+  #local suggestion=$(echo "$response" | jq -r '.choices[0].message.content')
+
+  # Use local LM Studio
+  local response="$(curl -s http://concrete:1234/v1/chat/completions \
     -H "Content-Type: application/json" \
-    -H "Authorization: Bearer $X_AI_API_KEY" \
     -d '{
-      "model": "grok-code-fast-1",
+      "model": "qwen/qwen3-coder-30b",
       "stream": false,
-      "temperature": 0,
       "messages": [
-        {
-          "role": "system", 
-          "content": "You are a senior software engineer."
-        },
         {
           "role": "user",
           "content": "Given the following log and diff, suggest a concise pull request title (max 50 characters) and description, where the description is separated into two sections. Be direct, eliminate filler words and phrases. Think like a journalist.\n\nThe first section is under the heading \"What\" and describes what has changed. Use imperative mood. Do not lead with a plural. e.g. Upgrade vs upgrades. Enable vs enables. Add vs adds.\n\nThe second section is under the heading \"Why\" and describes why the change is being made. Be concise with why, and avoid generic statements.\n\nReply only with the title, what, and why in valid JSON format {\"title\":\"\",\"what\":\"\",\"why\":\"\"}, on a single line, nothing else. Start the title with a capital letter but do not end with a full stop. Use full sentences for what and why. Avoid generic phrases. \n\nLog with Diff:\n '"${escaped_diff}"'"
         }
-      ]
+      ],
+      "response_format": {
+        "type": "json_schema",
+        "json_schema": {
+          "name": "pull_request_response",
+          "strict": true,
+          "schema": {
+            "type": "object",
+            "properties": {
+              "title_what_why_json": {
+                "type": "string"
+              }
+            },
+            "required": ["title_what_why_json"]
+          }
+        }
+      }
     }')"
+  local suggestion=$(echo "$response" | jq -r '.choices[0].message.content | fromjson | .title_what_why_json')
 
-  #local suggestion=$(echo "$response" | jq -r '.content[0].text')
-  local suggestion=$(echo "$response" | jq -r '.choices[0].message.content')
   if [ -z "$suggestion" ]; then
     echo "Error: Failed to get commit message from Anthropic API"
     return 1

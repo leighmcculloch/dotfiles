@@ -3,11 +3,6 @@
 set -o nounset
 
 function {
-  if [ -z "$ANTHROPIC_API_KEY" ]; then
-    echo "Error: ANTHROPIC_API_KEY environment variable is not set"
-    return 1
-  fi
-
   local branches="${${$(git branch --all --format='%(refname:short)' | jq -R -s '.')%\"}#\"}"
 
   local diff="$(git diff HEAD)"
@@ -18,6 +13,7 @@ function {
 
   local escaped_diff="${${$(echo "$diff" | jq -R -s '.')%\"}#\"}"
 
+  # Use Claude
   #local response="$(curl -s -X POST https://api.anthropic.com/v1/messages \
   #  -H "Content-Type: application/json" \
   #  -H "x-api-key: $ANTHROPIC_API_KEY" \
@@ -31,28 +27,60 @@ function {
   #      "content": "Given the following git diff, suggest a concise, kebab-case branch name that describes the changes (max 5 words).\n\nReply only with the branch name, nothing else. \n\nDo not use any of these names: '"${branches}"'. \n\nDiff:\n '"${escaped_diff}"'"
   #    }]
   #  }')"
+  #local name=$(echo "$response" | jq -r '.content[0].text' | tr '[:upper:] ' '[:lower:]-')
 
-  local response="$(curl -s https://api.x.ai/v1/chat/completions \
+  # Use Grok
+  #local response="$(curl -s https://api.x.ai/v1/chat/completions \
+  #  -H "Content-Type: application/json" \
+  #  -H "Authorization: Bearer $X_AI_API_KEY" \
+  #  -d '{
+  #    "model": "grok-code-fast-1",
+  #    "stream": false,
+  #    "temperature": 0,
+  #    "messages": [
+  #      {
+  #        "role": "system", 
+  #        "content": "You are a senior software engineer."
+  #      },
+  #      {
+  #        "role": "user",
+  #        "content": "Given the following git diff, suggest a concise, kebab-case branch name that describes the changes (max 5 words).\n\nReply only with the branch name, nothing else. \n\nDo not use any of these names: '"${branches}"'. \n\nDiff:\n '"${escaped_diff}"'"
+  #      }
+  #    ]
+  #  }')"
+  #local name=$(echo "$response" | jq -r '.choices[0].message.content' | tr '[:upper:] ' '[:lower:]-')
+
+  # Use local LM Studio
+  local response="$(curl -s http://concrete:1234/v1/chat/completions \
     -H "Content-Type: application/json" \
-    -H "Authorization: Bearer $X_AI_API_KEY" \
     -d '{
-      "model": "grok-code-fast-1",
+      "model": "qwen/qwen3-coder-30b",
       "stream": false,
-      "temperature": 0,
       "messages": [
-        {
-          "role": "system", 
-          "content": "You are a senior software engineer."
-        },
         {
           "role": "user",
           "content": "Given the following git diff, suggest a concise, kebab-case branch name that describes the changes (max 5 words).\n\nReply only with the branch name, nothing else. \n\nDo not use any of these names: '"${branches}"'. \n\nDiff:\n '"${escaped_diff}"'"
         }
-      ]
+      ],
+      "response_format": {
+        "type": "json_schema",
+        "json_schema": {
+          "name": "branch_name_response",
+          "strict": true,
+          "schema": {
+            "type": "object",
+            "properties": {
+              "branch_name": {
+                "type": "string"
+              }
+            },
+            "required": ["branch_name"]
+          }
+        }
+      }
     }')"
+  local name=$(echo "$response" | jq -r '.choices[0].message.content | fromjson | .branch_name')
 
-  #local name=$(echo "$response" | jq -r '.content[0].text' | tr '[:upper:] ' '[:lower:]-')
-  local name=$(echo "$response" | jq -r '.choices[0].message.content' | tr '[:upper:] ' '[:lower:]-')
   if [ -z "$name" ]; then
     echo "Error: Failed to get branch name from Anthropic API"
     return 1

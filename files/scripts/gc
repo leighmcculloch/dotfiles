@@ -31,11 +31,6 @@ function {
     return
   fi
 
-  if [ -z "$ANTHROPIC_API_KEY" ]; then
-    echo "Error: ANTHROPIC_API_KEY environment variable is not set"
-    return 1
-  fi
-
   local branch="${${$(git branch --format='%(refname:short)' --show-current | jq -R -s '.')%\"}#\"}"
 
   local diff="$(git diff --staged)"
@@ -82,16 +77,6 @@ function {
   #    ]
   #  }')"
   #message=$(echo "$response" | jq -r '.choices[0].message.content')
-
-  # Use local Ollama
-  #local response="$(curl -s http://localhost:11434/api/generate \
-  #  -H "Content-Type: application/json" \
-  #  -d '{
-  #    "model": "wizardlm2:7b",
-  #    "prompt": "You are a senior software engineer.\n\nGiven the following git diff, suggest a concise, commit message that says in present tense with imperative mood what has changed without saying why (max 50 characters).\n\nReply only with the commit message, nothing else. Do not surround the message with quotes or whitespace. Do not use convention commit format. Start the commit message with a lower case letter. Do not end with a full stop. Avoid generic phrases. \n\nBranch: '"${branch}"' \n\nDiff:\n '"${escaped_diff}"'",
-  #    "stream": false
-  #  }')"
-  #message=$(echo "$response" | jq -r '.response')
 
   # Use local LM Studio
   local response="$(curl -s http://concrete:1234/v1/chat/completions \
