@@ -1,5 +1,11 @@
 {
   "$schema": "https://charm.land/crush.json",
+  "options": {
+    "tui": {
+      "compact_mode": true,
+      "diff_mode": "unified"
+    }
+  },
   "permissions": {
     "allowed_tools": [
       "view",
@@ -63,8 +69,11 @@
       "mcp_github_search_repositories",
       "mcp_github_search_users",
 
-      "mcp_stellar-xdr_xdr_guess",
-      "mcp_stellar-xdr_xdr_decode"
+      "mcp_stellar-xdr_types",
+      "mcp_stellar-xdr_json_schema",
+      "mcp_stellar-xdr_guess",
+      "mcp_stellar-xdr_decode",
+      "mcp_stellar-xdr_encode"
     ]
   },
   "providers": {
