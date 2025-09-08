@@ -66,12 +66,12 @@ if OS.mac?
   cask "doxie"
   cask "ghostty"
   cask "sublime-text"
-  cask "nordvpn"
 
   cask "lm-studio"
 
   cask "motion"
 
+  mas "NordVPN", id: 905953485
   mas "1Blocker", id: 1365531024
   mas "1Password for Safari", id: 1569813296
   mas "House Designer", id: 779363176
