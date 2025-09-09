@@ -1,0 +1,12 @@
+#!/usr/bin/env zsh
+
+set -o nounset
+
+function {
+  local url="$(echo '.' | gh gist create -)"
+  echo "$url" | pbcopy
+  echo "$url"
+  git remote remove gist
+  git remote add gist "$url"
+  git push -f gist HEAD
+} "$@"
