@@ -115,10 +115,11 @@
       "url": "https://mcp.deepwiki.com/sse"
     },
     "github": {
-      "type": "stdio",
-      "command": "go",
-      "args": ["run", "github.com/github/github-mcp-server/cmd/github-mcp-server@latest", "stdio"],
-      "env": {}
+      "type": "http",
+      "url": "https://api.githubcopilot.com/mcp/",
+      "headers": {
+        "Authorization": "Bearer $(gh auth token)"
+      }
     },
     "context7": {
       "type": "http",
