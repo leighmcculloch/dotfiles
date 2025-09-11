@@ -81,7 +81,7 @@ if OS.mac?
 end
 
 if OS.mac? && `hostname`.chomp == "Concrete.local"
-  mas "NordLayer", id: 1488888843 
+  cask "nordlayer"
 else
   cask "nordvpn"
 end
