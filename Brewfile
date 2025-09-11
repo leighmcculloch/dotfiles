@@ -24,8 +24,8 @@ brew "zstd"
 
 brew "node"
 brew "deno"
-brew "sccache"
 brew "rustup"
+brew "sccache"
 brew "go"
 brew "uv"
 
@@ -59,19 +59,15 @@ if OS.mac?
 
   cask "font-fira-code"
   cask "font-fira-code-nerd-font"
-
   cask "orbstack"
   cask "descript"
   cask "discord"
   cask "doxie"
   cask "ghostty"
   cask "sublime-text"
-
   cask "lm-studio"
-
   cask "motion"
 
-  mas "NordVPN", id: 905953485
   mas "1Blocker", id: 1365531024
   mas "1Password for Safari", id: 1569813296
   mas "House Designer", id: 779363176
@@ -83,4 +79,10 @@ if OS.mac?
   mas "WhatsApp", id: 310633997
   mas "Slack", id: 803453959
   mas "Day Progress", id: 6450280202
+end
+
+if OS.mac? && `hostname`.chomp == "Concrete.local"
+  mas "NordLayer", id: 1488888843 
+else
+  mas "NordVPN", id: 905953485
 end
