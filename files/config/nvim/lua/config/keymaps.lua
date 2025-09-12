@@ -17,3 +17,12 @@ map("n", "gk", function()
   local on = not vim.diagnostic.config().virtual_lines
   vim.diagnostic.config({ virtual_lines = on })
 end, { desc = "Toggle diagnostic virtual lines" })
+
+map("n", "yp", function()
+  vim.fn.setreg("+", vim.fn.expand("%"))
+end, { desc = "Copy relative file path to clipboard" })
+
+map("n", "yP", function()
+  vim.fn.setreg("+", vim.fn.expand("%:p"))
+end, { desc = "Copy absolute file path to clipboard" })
+
