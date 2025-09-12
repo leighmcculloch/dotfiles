@@ -80,8 +80,7 @@ if OS.mac?
 end
 
 cask "tailscale-app"
+cask "nordvpn"
 if OS.mac? && `hostname`.chomp == "Concrete.local"
   cask "nordlayer"
-else
-  cask "nordvpn"
 end
