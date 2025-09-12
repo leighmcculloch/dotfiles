@@ -50,7 +50,7 @@ function {
   #local suggestion=$(echo "$response" | jq -r '.choices[0].message.content')
 
   # Use local LM Studio
-  local response="$(curl -s http://concrete:1234/v1/chat/completions \
+  local response="$(curl -s http://${${$(hostname) == "Concrete.local" && echo "127.0.0.1" || echo "concrete"}:1234}/v1/chat/completions \
     -H "Content-Type: application/json" \
     -d '{
       "model": "qwen/qwen3-coder-30b",
