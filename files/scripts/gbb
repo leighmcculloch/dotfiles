@@ -51,7 +51,9 @@ function {
   #local name=$(echo "$response" | jq -r '.choices[0].message.content' | tr '[:upper:] ' '[:lower:]-')
 
   # Use local LM Studio
-  local response="$(curl -s http://${${$(hostname) == "Concrete.local" && echo "127.0.0.1" || echo "concrete"}:1234}/v1/chat/completions \
+  local host="concrete"
+  [[ "$(hostname)" == "Concrete.local" ]] && host="127.0.0.1"
+  local response="$(curl -s http://${host}:1234/v1/chat/completions \
     -H "Content-Type: application/json" \
     -d '{
       "model": "qwen/qwen3-coder-30b",
