@@ -69,16 +69,16 @@ function {
           "schema": {
             "type": "object",
             "properties": {
-              "title_what_why_json": {
-                "type": "string"
-              }
+              "title": { "type": "string" },
+              "what": { "type": "string" },
+              "why": { "type": "string" }
             },
             "required": ["title_what_why_json"]
           }
         }
       }
     }')"
-  local suggestion=$(echo "$response" | jq -r '.choices[0].message.content | fromjson | .title_what_why_json')
+  local suggestion=$(echo "$response" | jq -r '.choices[0].message.content')
 
   if [ -z "$suggestion" ]; then
     echo "Error: Failed to get commit message from Anthropic API"
