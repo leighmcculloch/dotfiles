@@ -73,13 +73,13 @@ if OS.mac?
   mas "Numbers", id: 409203825
   mas "Pages", id: 409201541
   mas "Prime Video", id: 545519333
-  mas "Tailscale", id: 1475387142
   mas "Telegram", id: 747648890
   mas "WhatsApp", id: 310633997
   mas "Slack", id: 803453959
   mas "Day Progress", id: 6450280202
 end
 
+cask "tailscale-app"
 if OS.mac? && `hostname`.chomp == "Concrete.local"
   cask "nordlayer"
 else
