@@ -80,8 +80,8 @@ if OS.mac?
   mas "Day Progress", id: 6450280202
 end
 
-#if OS.mac? && `hostname`.chomp == "Concrete.local"
-#  cask "nordlayer"
-#else
+if OS.mac? && `hostname`.chomp == "Concrete.local"
+  cask "nordlayer"
+else
   cask "nordvpn"
-#end
+end
