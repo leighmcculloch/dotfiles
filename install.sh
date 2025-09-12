@@ -63,7 +63,7 @@ source $PWD/files/zenv_brew
 if [ -n "$GITHUB_PERSONAL_ACCESS_TOKEN" ]; then
   export HOMEBREW_GITHUB_API_TOKEN=$GITHUB_PERSONAL_ACCESS_TOKEN
 fi
-brew bundle install
+brew bundle install --no-upgrades
 
 # install plugins/extensions
 ./install-gh-extensions.sh
