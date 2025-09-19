@@ -134,8 +134,13 @@
       "args": ["run", "--allow-read", "/Users/leighmcculloch/Code/mcp-stellar-xdr/mcp-stellar-xdr.ts"]
     },
     "openzeppelin-stellar-contracts": {
-        "type": "http",
-        "url": "https://mcp.openzeppelin.com/contracts/stellar/mcp"
+      "type": "http",
+      "url": "https://mcp.openzeppelin.com/contracts/stellar/mcp"
+    },
+    "playwright": {
+      "type": "stdio",
+      "command": "deno",
+      "args": ["run", "--allow-env", "--allow-sys", "npm:@playwright/mcp"]
     }
   }
 }
