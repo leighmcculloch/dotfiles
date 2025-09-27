@@ -106,8 +106,8 @@
   "mcp": {
     "perplexity": {
       "type": "stdio",
-      "command": "npx",
-      "args": ["-y", "server-perplexity-ask"],
+      "command": "deno",
+      "args": ["run", "--allow-env=PERPLEXITY_API_KEY", "--allow-net=api.perplexity.ai:443", "npm:server-perplexity-ask"],
       "env": {}
     },
     "deepwiki": {
