@@ -17,7 +17,7 @@ if [ -z "$NOOMZ" ]; then
   DISABLE_AUTO_UPDATE="true"
   if [[ "$TERM_PROGRAM" == "ghostty" ]]; then
     ZSH_TMUX_AUTOSTART=true
-    ZSH_TMUX_AUTOQUIT=true
+    ZSH_TMUX_AUTOQUIT=false
     ZSH_TMUX_UNICODE=true
   fi
   ZSH_CUSTOM="$DOTFILES/files/oh-my-zsh-custom"
