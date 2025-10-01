@@ -26,3 +26,19 @@ map("n", "yP", function()
   vim.fn.setreg("+", vim.fn.expand("%:p"))
 end, { desc = "Copy absolute file path to clipboard" })
 
+map("v", "yp", function()
+  local relative_path = vim.fn.expand('%')
+  local start_line = vim.fn.line("v")
+  local end_line = vim.fn.line(".")
+  if start_line > end_line then
+    start_line, end_line = end_line, start_line
+  end
+  local result
+  if start_line == end_line then
+    result = string.format('%s:%d', relative_path, start_line)
+  else
+    result = string.format('%s:%d,%d', relative_path, start_line, end_line)
+  end
+  vim.fn.setreg('+', result)
+  vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes('<Esc>', true, false, true), 'n', false)
+end, { desc = 'Copy file path and range' })
