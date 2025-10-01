@@ -24,6 +24,7 @@ if [ -f $brew ] ; then
 
   # sccache for rust
   export RUSTC_WRAPPER="$($brew --prefix)/bin/sccache"
+  export SCCACHE_CACHE_SIZE="50G"
 
   # rustup bin install path
   export PATH="$(brew --prefix rustup)/bin:$PATH"
