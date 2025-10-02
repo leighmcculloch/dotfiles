@@ -42,3 +42,14 @@ map("v", "yp", function()
   vim.fn.setreg('+', result)
   vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes('<Esc>', true, false, true), 'n', false)
 end, { desc = 'Copy file path and range' })
+
+map("n", "<leader>ga", function()
+  vim.cmd("terminal gaacyp")
+  vim.api.nvim_create_autocmd("TermClose", {
+    buffer = 0,
+    once = true,
+    callback = function()
+      vim.cmd("bdelete!")
+    end,
+  })
+end, { desc = "Run gaacyp and close terminal" })
