@@ -44,12 +44,15 @@ map("v", "yp", function()
 end, { desc = 'Copy file path and range' })
 
 map("n", "<leader>ga", function()
+  local original_win = vim.api.nvim_get_current_win()
   vim.cmd("botright 10split | terminal zsh -l -i -c gaacyp")
+  local terminal_buf = vim.api.nvim_get_current_buf()
   vim.api.nvim_create_autocmd("TermClose", {
-    buffer = 0,
+    buffer = terminal_buf,
     once = true,
     callback = function()
-      vim.cmd("bdelete!")
+      vim.api.nvim_buf_delete(terminal_buf, { force = true })
     end,
   })
+  vim.api.nvim_set_current_win(original_win)
 end, { desc = "Run gaacyp and close terminal" })
