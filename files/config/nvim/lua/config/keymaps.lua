@@ -44,7 +44,7 @@ map("v", "yp", function()
 end, { desc = 'Copy file path and range' })
 
 map("n", "<leader>ga", function()
-  vim.cmd("terminal gaacyp")
+  vim.cmd("botright 10split | terminal zsh -l -i -c gaacyp")
   vim.api.nvim_create_autocmd("TermClose", {
     buffer = 0,
     once = true,
