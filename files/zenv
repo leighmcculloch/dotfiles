@@ -6,6 +6,7 @@ export SCRIPTS="$DOTFILES/files/scripts"
 
 # for other general installs
 export PATH="$HOME/.bin:$PATH"
+export PATH="$HOME/.local/bin:$PATH"
 # for deno
 export PATH="$PATH:$HOME/.deno/bin"
 # for yarn
