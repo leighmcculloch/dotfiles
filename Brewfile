@@ -21,6 +21,7 @@ brew "tmux"
 brew "tree"
 brew "watchexec"
 brew "zstd"
+brew "mosh"
 
 brew "node"
 brew "deno"
