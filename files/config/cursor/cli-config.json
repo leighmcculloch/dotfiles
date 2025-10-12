@@ -7,7 +7,10 @@
       "Shell(jq)",
       "Shell(git diff)",
       "Shell(git log)",
-      "Shell(git status)"
+      "Shell(git status)",
+      "Shell(git show)",
+      "Shell(cd)",
+      "Shell(head)"
     ],
     "deny": []
   },
@@ -28,7 +31,7 @@
   "privacyCache": {
     "ghostMode": true,
     "privacyMode": 2,
-    "updatedAt": 1759665175976
+    "updatedAt": 1760310678032
   },
   "network": {
     "useHttp1ForAgent": false
