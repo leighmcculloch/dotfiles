@@ -1,0 +1,26 @@
+#!/bin/bash
+
+# Script to update all open pull requests authored by a specific user
+# Usage: ./update_prs.sh [author]
+# If no author provided, defaults to 'leighmcculloch'
+
+export GH_PAGER=cat
+
+author="$(gh api user --jq .login)"
+
+echo "Updating open pull requests authored by '$author'..."
+
+# Get list of open PR numbers and repositories by author
+pr_list="$(gh search prs --author "$author" --archived=false --state=open --json=url,repository,number --template='{{range .}}{{.url}} {{.repository.nameWithOwner}} {{.number}}{{println}}{{end}}')"
+
+if [ -z "$pr_list" ]; then
+  echo "No open pull requests found for author '$author'."
+  exit 0
+fi
+
+echo "$pr_list" | while read -r url repo number; do
+  echo -n "$url ... "
+  gh api "/repos/$repo/pulls/$number/update-branch" -X PUT 2>/dev/null | jq -r '"\(.status) \(.message)"'
+done
+
+echo "Finished updating pull requests."
