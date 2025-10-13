@@ -10,15 +10,12 @@
     },
     "github": {
       "command": "go",
-      "args": ["run", "github.com/github/github-mcp-server/cmd/github-mcp-server@latest", "stdio"],
-      "env": {
-        "GITHUB_PERSONAL_ACCESS_TOKEN": "$(gh auth token)"
-      }
+      "args": ["run", "github.com/github/github-mcp-server/cmd/github-mcp-server@latest", "stdio"]
     },
     "context7": {
       "url": "https://mcp.context7.com/mcp",
       "headers": {
-        "CONTEXT7_API_KEY": "$(echo $CONTEXT7_API_KEY)"
+        "CONTEXT7_API_KEY": "${env:CONTEXT7_API_KEY}"
       }
     },
     "stellar-xdr": {
