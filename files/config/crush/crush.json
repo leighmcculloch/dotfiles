@@ -142,6 +142,18 @@
       "type": "stdio",
       "command": "deno",
       "args": ["run", "--allow-env", "--allow-sys", "npm:@playwright/mcp"]
+    },
+    "stellar-meta": {
+      "type": "stdio",
+      "command": "deno",
+      "args": [
+        "run",
+        "--allow-read",
+        "--allow-env",
+        "--allow-sys",
+        "--allow-net=aws-public-blockchain.s3.us-east-2.amazonaws.com",
+        "https://github.com/leighmcculloch/mcp-stellar-meta/raw/refs/heads/main/mcp-stellar-meta.js"
+      ]
     }
   }
 }
