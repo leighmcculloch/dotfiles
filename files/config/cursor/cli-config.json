@@ -9,10 +9,15 @@
       "Shell(git log)",
       "Shell(git status)",
       "Shell(git show)",
+      "Shell(git checkout)",
       "Shell(cd)",
-      "Shell(head)"
+      "Shell(head)",
+      "Write()"
     ],
-    "deny": []
+    "deny": [
+      "Shell(rm)",
+      "Read(.env*)"
+    ]
   },
   "version": 1,
   "editor": {
@@ -31,7 +36,7 @@
   "privacyCache": {
     "ghostMode": true,
     "privacyMode": 2,
-    "updatedAt": 1760313615955
+    "updatedAt": 1760514620162
   },
   "network": {
     "useHttp1ForAgent": false
