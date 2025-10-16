@@ -12,7 +12,10 @@
       "Shell(git checkout)",
       "Shell(cd)",
       "Shell(head)",
-      "Write()"
+      "Write()",
+      "Shell(tail)",
+      "Shell(wc)",
+      "Shell(sed)"
     ],
     "deny": [
       "Shell(rm)",
@@ -36,7 +39,7 @@
   "privacyCache": {
     "ghostMode": true,
     "privacyMode": 2,
-    "updatedAt": 1760524529437
+    "updatedAt": 1760593887044
   },
   "network": {
     "useHttp1ForAgent": false
