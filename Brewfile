@@ -26,6 +26,7 @@ brew "git-filter-repo"
 
 brew "node"
 brew "deno"
+brew "oven-sh/bun/bun"
 brew "rustup"
 brew "sccache"
 brew "go"
