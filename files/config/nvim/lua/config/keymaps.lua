@@ -19,7 +19,7 @@ map("n", "gk", function()
 end, { desc = "Toggle diagnostic virtual lines" })
 
 map("n", "yp", function()
-  vim.fn.setreg("+", vim.fn.expand("%"))
+  vim.fn.setreg("+", vim.fn.expand("%:."))
 end, { desc = "Copy relative file path to clipboard" })
 
 map("n", "yP", function()
@@ -27,7 +27,7 @@ map("n", "yP", function()
 end, { desc = "Copy absolute file path to clipboard" })
 
 map("v", "yp", function()
-  local relative_path = vim.fn.expand('%')
+  local relative_path = vim.fn.expand('%:.')
   local start_line = vim.fn.line("v")
   local end_line = vim.fn.line(".")
   if start_line > end_line then
