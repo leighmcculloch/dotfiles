@@ -22,6 +22,7 @@ brew "tree"
 brew "watchexec"
 brew "zstd"
 brew "mosh"
+brew "git-filter-repo"
 
 brew "node"
 brew "deno"
