@@ -20,10 +20,12 @@ end, { desc = "Toggle diagnostic virtual lines" })
 
 map("n", "yp", function()
   vim.fn.setreg("+", vim.fn.expand("%:."))
+  vim.fn.system(string.format('printf %%s %s | tmux load-buffer -', vim.fn.shellescape(vim.fn.expand("%:."))))
 end, { desc = "Copy relative file path to clipboard" })
 
 map("n", "yP", function()
   vim.fn.setreg("+", vim.fn.expand("%:p"))
+  vim.fn.system(string.format('printf %%s %s | tmux load-buffer -', vim.fn.shellescape(vim.fn.expand("%:p"))))
 end, { desc = "Copy absolute file path to clipboard" })
 
 map("v", "yp", function()
@@ -40,6 +42,7 @@ map("v", "yp", function()
     result = string.format('%s:%d,%d', relative_path, start_line, end_line)
   end
   vim.fn.setreg('+', result)
+  vim.fn.system(string.format('printf %%s %s | tmux load-buffer -', vim.fn.shellescape(result)))
   vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes('<Esc>', true, false, true), 'n', false)
 end, { desc = 'Copy file path and range' })
 
