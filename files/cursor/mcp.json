@@ -3,14 +3,19 @@
     "perplexity": {
       "command": "deno",
       "args": ["run", "--allow-env=PERPLEXITY_API_KEY", "--allow-net=api.perplexity.ai:443", "npm:server-perplexity-ask"],
-      "env": {}
-    },
-    "deepwiki": {
-      "url": "https://mcp.deepwiki.com/sse"
+      "env": {
+        "PERPLEXITY_API_KEY": "${env:PERPLEXITY_API_KEY}"
+      }
     },
     "github": {
       "command": "go",
-      "args": ["run", "github.com/github/github-mcp-server/cmd/github-mcp-server@latest", "stdio"]
+      "args": ["run", "github.com/github/github-mcp-server/cmd/github-mcp-server@latest", "stdio"],
+      "env": {
+        "PERPLEXITY_API_KEY": "${env:PERPLEXITY_API_KEY}"
+      }
+    },
+    "deepwiki": {
+      "url": "https://mcp.deepwiki.com/mcp"
     },
     "context7": {
       "url": "https://mcp.context7.com/mcp",
