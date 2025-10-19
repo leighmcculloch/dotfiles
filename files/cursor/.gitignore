@@ -1,3 +1,6 @@
 /projects/
 /chats/
-prompt_history.json
+/extensions/
+/argv.json
+/prompt_history.json
+/shouldUpdate
