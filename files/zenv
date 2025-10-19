@@ -56,4 +56,4 @@ TIMEFMT='%J   %U  user %S system %P cpu %*E total'$'\n'\
 'other page faults:         %R'
 
 # unset DOCKER_HOST if set to colima socket
-[ "$DOCKER_HOST" = "unix://$HOME/.config/colima/default/docker.sock" ] && unset DOCKER_HOST
+[ "${DOCKER_HOST:-}" = "unix://$HOME/.config/colima/default/docker.sock" ] && unset DOCKER_HOST
