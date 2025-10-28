@@ -26,6 +26,9 @@
   "editor": {
     "vimMode": false
   },
+  "display": {
+    "showLineNumbers": false
+  },
   "model": {
     "modelId": "grok-code-fast-1",
     "displayModelId": "grok",
@@ -39,7 +42,7 @@
   "privacyCache": {
     "ghostMode": true,
     "privacyMode": 2,
-    "updatedAt": 1761091054571
+    "updatedAt": 1761314573810
   },
   "network": {
     "useHttp1ForAgent": false
