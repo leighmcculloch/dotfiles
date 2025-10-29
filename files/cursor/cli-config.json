@@ -27,7 +27,7 @@
     "vimMode": false
   },
   "display": {
-    "showLineNumbers": false
+    "showLineNumbers": true
   },
   "model": {
     "modelId": "grok-code-fast-1",
@@ -42,7 +42,7 @@
   "privacyCache": {
     "ghostMode": true,
     "privacyMode": 2,
-    "updatedAt": 1761702602680
+    "updatedAt": 1761717052234
   },
   "network": {
     "useHttp1ForAgent": false
