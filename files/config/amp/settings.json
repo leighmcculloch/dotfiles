@@ -1,0 +1,56 @@
+{
+  "amp.mcpServers": {
+    "perplexity": {
+      "command": "deno",
+      "args": [
+        "run",
+        "--allow-env=PERPLEXITY_API_KEY",
+        "--allow-net=api.perplexity.ai:443",
+        "npm:server-perplexity-ask"
+      ],
+      "env": {
+        "PERPLEXITY_API_KEY": "${PERPLEXITY_API_KEY}"
+      }
+    },
+    "github": {
+      "command": "go",
+      "args": [
+        "run",
+        "github.com/github/github-mcp-server/cmd/github-mcp-server@latest",
+        "stdio"
+      ],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}"
+      }
+    },
+    "deepwiki": {
+      "url": "https://mcp.deepwiki.com/mcp"
+    },
+    "context7": {
+      "url": "https://mcp.context7.com/mcp",
+      "headers": {
+        "CONTEXT7_API_KEY": "${CONTEXT7_API_KEY}"
+      }
+    },
+    "stellar-xdr": {
+      "command": "deno",
+      "args": [
+        "run",
+        "--allow-read",
+        "/Users/leighmcculloch/Code/mcp-stellar-xdr/mcp-stellar-xdr.ts"
+      ]
+    },
+    "openzeppelin-stellar-contracts": {
+      "url": "https://mcp.openzeppelin.com/contracts/stellar/mcp"
+    },
+    "playwright": {
+      "command": "deno",
+      "args": [
+        "run",
+        "--allow-env",
+        "--allow-sys",
+        "npm:@playwright/mcp"
+      ]
+    }
+  }
+}
