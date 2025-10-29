@@ -32,14 +32,6 @@
         "CONTEXT7_API_KEY": "${CONTEXT7_API_KEY}"
       }
     },
-    "stellar-xdr": {
-      "command": "deno",
-      "args": [
-        "run",
-        "--allow-read",
-        "/Users/leighmcculloch/Code/mcp-stellar-xdr/mcp-stellar-xdr.ts"
-      ]
-    },
     "openzeppelin-stellar-contracts": {
       "url": "https://mcp.openzeppelin.com/contracts/stellar/mcp"
     },
