@@ -23,16 +23,24 @@
         "CONTEXT7_API_KEY": "${env:CONTEXT7_API_KEY}"
       }
     },
-    "stellar-xdr": {
-      "command": "deno",
-      "args": ["run", "--allow-read", "/Users/leighmcculloch/Code/mcp-stellar-xdr/mcp-stellar-xdr.ts"]
-    },
     "openzeppelin-stellar-contracts": {
       "url": "https://mcp.openzeppelin.com/contracts/stellar/mcp"
     },
     "playwright": {
       "command": "deno",
       "args": ["run", "--allow-env", "--allow-sys", "npm:@playwright/mcp"]
+    },
+    "lsp-rust": {
+      "command": "go",
+      "args": [ "run", "github.com/isaacphi/mcp-language-server@v0.1.1", "--workspace", ".", "--lsp", "rust-analyzer" ]
+    },
+    "lsp-go": {
+      "command": "go",
+      "args": [ "run", "github.com/isaacphi/mcp-language-server@v0.1.1", "--workspace", ".", "--lsp", "gopls" ]
+    },
+    "lsp-deno": {
+      "command": "go",
+      "args": [ "run", "github.com/isaacphi/mcp-language-server@v0.1.1", "--workspace", ".", "--lsp", "deno", "--", "lsp" ]
     }
   }
 }

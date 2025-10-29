@@ -33,23 +33,14 @@
   "amp.mcpServers": {
     "perplexity": {
       "command": "deno",
-      "args": [
-        "run",
-        "--allow-env=PERPLEXITY_API_KEY",
-        "--allow-net=api.perplexity.ai:443",
-        "npm:server-perplexity-ask"
-      ],
+      "args": [ "run", "--allow-env=PERPLEXITY_API_KEY", "--allow-net=api.perplexity.ai:443", "npm:server-perplexity-ask" ],
       "env": {
         "PERPLEXITY_API_KEY": "${PERPLEXITY_API_KEY}"
       }
     },
     "github": {
       "command": "go",
-      "args": [
-        "run",
-        "github.com/github/github-mcp-server/cmd/github-mcp-server@latest",
-        "stdio"
-      ],
+      "args": [ "run", "github.com/github/github-mcp-server/cmd/github-mcp-server@latest", "stdio" ],
       "env": {
         "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}"
       }
@@ -68,12 +59,19 @@
     },
     "playwright": {
       "command": "deno",
-      "args": [
-        "run",
-        "--allow-env",
-        "--allow-sys",
-        "npm:@playwright/mcp"
-      ]
+      "args": [ "run", "--allow-env", "--allow-sys", "npm:@playwright/mcp" ]
+    },
+    "lsp-rust": {
+      "command": "go",
+      "args": [ "run", "github.com/isaacphi/mcp-language-server@v0.1.1", "--workspace", ".", "--lsp", "rust-analyzer" ]
+    },
+    "lsp-go": {
+      "command": "go",
+      "args": [ "run", "github.com/isaacphi/mcp-language-server@v0.1.1", "--workspace", ".", "--lsp", "gopls" ]
+    },
+    "lsp-deno": {
+      "command": "go",
+      "args": [ "run", "github.com/isaacphi/mcp-language-server@v0.1.1", "--workspace", ".", "--lsp", "deno", "--", "lsp" ]
     }
   }
 }
