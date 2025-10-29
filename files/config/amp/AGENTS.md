@@ -78,6 +78,7 @@
 **Use documentation tools proactively.** When working with external libraries or dependencies:
 - Use librarian to search GitHub repositories and understand how libraries work
 - Use github MCP to read code, search repos, and check issues/PRs
+- Use deepwiki MCP to ask questions about GitHub repositories
 - Use context7 MCP to fetch official documentation for libraries
 - Use perplexity MCP to ask questions about dependencies and best practices
 
