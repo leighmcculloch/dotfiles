@@ -23,6 +23,7 @@ brew "watchexec"
 brew "zstd"
 brew "mosh"
 brew "git-filter-repo"
+brew "prettier"
 
 brew "node"
 brew "deno"
