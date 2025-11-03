@@ -6,6 +6,7 @@ format = """
 $status\
 $cmd_duration\
 $line_break\
+$hostname\
 $directory\
 $line_break\
 $git_branch\
@@ -29,6 +30,9 @@ format = "[❌ exit status $status](bold #ed6b7a)\n"
 format = "⚠️ [took $duration](bold yellow)\n"
 min_time = 1_000
 show_milliseconds = true
+
+[hostname]
+ssh_only = false
 
 [directory]
 format = '[$path](bold #97d1ef) '
