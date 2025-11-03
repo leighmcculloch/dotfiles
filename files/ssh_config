@@ -3,13 +3,6 @@
 # This won't be added again if you remove it.
 Include ~/.orbstack/ssh/config
 
-Include /Users/leighmcculloch/.config/colima/ssh_config
-
-Host dev
-    User root
-    StrictHostKeyChecking no
-    UserKnownHostsFile /dev/null
-
 Host *
     HashKnownHosts no
     StrictHostKeyChecking yes
