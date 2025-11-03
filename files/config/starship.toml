@@ -33,6 +33,7 @@ show_milliseconds = true
 
 [hostname]
 ssh_only = false
+aliases = { "Chisel" = "🏡 Chisel" }
 
 [directory]
 format = '[$path](bold #97d1ef) '
