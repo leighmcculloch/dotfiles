@@ -1,6 +1,8 @@
 {
   "permissions": {
     "allow": [
+      "Write(.)",
+      "Read(.)",
       "Shell(ls)",
       "Shell(gh)",
       "Shell(go)",
@@ -12,7 +14,6 @@
       "Shell(git checkout)",
       "Shell(cd)",
       "Shell(head)",
-      "Write()",
       "Shell(tail)",
       "Shell(wc)",
       "Shell(sed)"
@@ -42,7 +43,7 @@
   "privacyCache": {
     "ghostMode": true,
     "privacyMode": 2,
-    "updatedAt": 1761878267890
+    "updatedAt": 1762207847953
   },
   "network": {
     "useHttp1ForAgent": false
