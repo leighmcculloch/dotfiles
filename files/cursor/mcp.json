@@ -11,15 +11,16 @@
       "command": "go",
       "args": ["run", "github.com/github/github-mcp-server/cmd/github-mcp-server@latest", "stdio"],
       "env": {
-        "GITHUB_PERSONAL_ACCESS_TOKEN": "${env:GITHUB_PERSONAL_ACCESS_TOKEN}"
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${env:GITHUB_TOKEN}"
       }
     },
     "deepwiki": {
       "url": "https://mcp.deepwiki.com/mcp"
     },
     "context7": {
-      "url": "https://mcp.context7.com/mcp",
-      "headers": {
+      "command": "deno",
+      "args": ["run", "--allow-env=CONTEXT7_API_KEY,CLIENT_IP_ENCRYPTION_KEY,NODE_V8_COVERAGE,UNDICI_NO_FG,JEST_WORKER_ID,HTTPS_PROXY,https_proxy,HTTP_PROXY,http_proxy,NO_DEPRECATION,TRACE_DEPRECATION", "npm:@upstash/context7-mcp"],
+      "env": { 
         "CONTEXT7_API_KEY": "${env:CONTEXT7_API_KEY}"
       }
     },
