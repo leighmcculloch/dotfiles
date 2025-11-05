@@ -78,6 +78,7 @@ alias gsp="git stash pop"
 alias gsl="git stash list"
 alias gupp="gup && gp"
 alias gwa="git worktree add"
+alias gwau='() { dir="../${PWD##*/}-${@}" ; git worktree prune ; git worktree add "$dir" && cd "$dir" ; }'
 alias gwr="git worktree remove"
 alias gwl="git worktree list"
 alias gwp="git worktree prune"
