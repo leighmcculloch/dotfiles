@@ -39,8 +39,6 @@ brew "rust-analyzer"
 brew "vscode-langservers-extracted"
 brew "gopls"
 
-brew "codex"
-
 if OS.mac?
   brew "autoconf"
   brew "automake"
