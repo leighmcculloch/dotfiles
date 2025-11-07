@@ -227,6 +227,7 @@ keybinds clear-defaults=true {
         bind "up" { MoveFocus "up"; SwitchToMode "normal"; }
         bind "right" { MoveFocus "right"; SwitchToMode "normal"; }
         bind "space" { NextSwapLayout; }
+        bind "w" { NewPane "stacked"; SwitchToMode "normal"; }
         bind "s" { NewPane "down"; SwitchToMode "normal"; }
         bind "v" { NewPane "right"; SwitchToMode "normal"; }
         bind "," { SwitchToMode "renametab"; }
@@ -249,7 +250,9 @@ keybinds clear-defaults=true {
 // changing these requires a restart to take effect
 plugins {
     about location="zellij:about"
-    compact-bar location="zellij:compact-bar"
+    compact-bar location="zellij:compact-bar" {
+        tooltip "Ctrl Shift h"
+    }
     configuration location="zellij:configuration"
     filepicker location="zellij:strider" {
         cwd "/"
@@ -302,7 +305,7 @@ theme "custom"
 // The name of the default layout to load on startup
 // Default: "default"
 // 
-default_layout "bottom"
+default_layout "compact"
  
 // The folder in which Zellij will look for layouts
 // (Requires restart)
@@ -411,7 +414,7 @@ mirror_session true
 //   - true (default)
 //   - false
 // 
-session_serialization false
+// session_serialization false
  
 // Whether pane viewports are serialized along with the session, default is false
 // Options:
@@ -607,7 +610,7 @@ themes {
             emphasis_3 210 166 255
         }
         frame_unselected {
-            base 51 51 51
+            base 85 85 85
             background 0
             emphasis_0 255 143 64
             emphasis_1 115 184 255
@@ -615,7 +618,7 @@ themes {
             emphasis_3 0
         }
         frame_selected {
-            base 85 85 85
+            base 198 200 198
             background 0
             emphasis_0 255 143 64
             emphasis_1 115 184 255
