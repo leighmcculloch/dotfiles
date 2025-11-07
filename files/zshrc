@@ -35,7 +35,7 @@ fi
 
 if [[ "$TERM_PROGRAM" == "ghostty" ]]; then
   if [[ -z "$ZELLIJ" ]]; then
-    zellij attach -c
+    zellij attach -c main
   else
     zellij_tab_name_update() {
       zellij action rename-tab "$(basename "${PWD/#$HOME/~}")" >/dev/null 2>&1

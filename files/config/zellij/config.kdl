@@ -550,17 +550,17 @@ themes {
             emphasis_3 210 166 255
         }
         ribbon_selected {
-            base 19 23 33
-            background 170 217 76
+            base 32 34 35
+            background 198 200 198
             emphasis_0 240 113 120
             emphasis_1 255 143 64
             emphasis_2 210 166 255
             emphasis_3 89 194 255
         }
         ribbon_unselected {
-            base 19 23 33
-            background 191 189 182
-            emphasis_0 240 113 120
+            base 198 200 198
+            background 38 38 38
+            emphasis_0 198 200 198
             emphasis_1 204 202 194
             emphasis_2 89 194 255
             emphasis_3 210 166 255
