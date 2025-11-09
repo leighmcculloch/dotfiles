@@ -33,16 +33,15 @@ if [ -z "$NOOMZ" ]; then
   source $ZSH/oh-my-zsh.sh
 fi
 
-if [[ "$TERM_PROGRAM" == "ghostty" ]]; then
-  if [[ -z "$ZELLIJ" ]]; then
-    zellij attach -c main
-  else
-    zellij_tab_name_update() {
-      zellij action rename-tab "$(basename "${PWD/#$HOME/~}")" >/dev/null 2>&1
-    }
-    zellij_tab_name_update
-    chpwd_functions+=(zellij_tab_name_update)
-  fi
+if [[ -z "$ZELLIJ" && "$TERM_PROGRAM" == "ghostty" ]]; then
+  zellij attach -c main
+fi
+if [[ -n "$ZELLIJ" ]]; then
+  zellij_tab_name_update() {
+    zellij action rename-tab "$(basename "${PWD/#$HOME/~}")" >/dev/null 2>&1
+  }
+  zellij_tab_name_update
+  chpwd_functions+=(zellij_tab_name_update)
 fi
 
 # Use a simplified prompt when recording in asciinema
