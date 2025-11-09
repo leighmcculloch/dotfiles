@@ -72,7 +72,6 @@ if OS.mac?
   cask "sublime-text"
   cask "lm-studio"
   cask "motion"
-  cask "cursor"
   cask "cursor-cli"
 
   mas "1Blocker", id: 1365531024
@@ -85,6 +84,7 @@ if OS.mac?
   mas "WhatsApp", id: 310633997
   mas "Slack", id: 803453959
   mas "Day Progress", id: 6450280202
+  mas "NetSpot", id: 514951692
 end
 
 cask "tailscale-app"
