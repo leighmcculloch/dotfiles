@@ -36,7 +36,6 @@ brew "uv"
 
 brew "neovim"
 brew "lua-language-server"
-brew "rust-analyzer"
 brew "vscode-langservers-extracted"
 brew "gopls"
 
