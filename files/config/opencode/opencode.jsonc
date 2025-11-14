@@ -1,15 +1,26 @@
-{
-  "$schema": "https://opencode.ai/config.json",
-  "mcp": {
-    "perplexity": {
-      "type": "local",
-      "command": ["npx", "-y", "server-perplexity-ask"],
-      "enabled": true
-    },
-    "deepwiki": {
-      "type": "remote",
-      "url": "https://mcp.deepwiki.com/sse",
-      "enabled": true
-    }
-  }
-}
+ {
+   "$schema": "https://opencode.ai/config.json",
+   "permission": {
+     "bash": {
+       "git add": "deny",
+       "git commit": "deny",
+       "git push": "deny",
+       "git pull": "deny",
+       "git merge": "deny",
+       "git rebase": "deny",
+       "git reset": "deny"
+     }
+   },
+   "mcp": {
+     "perplexity": {
+       "type": "local",
+       "command": ["npx", "-y", "server-perplexity-ask"],
+       "enabled": true
+     },
+     "deepwiki": {
+       "type": "remote",
+       "url": "https://mcp.deepwiki.com/sse",
+       "enabled": true
+     }
+   }
+ }
