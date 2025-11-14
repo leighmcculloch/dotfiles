@@ -11,16 +11,36 @@
        "git reset": "deny"
      }
    },
-   "mcp": {
-     "perplexity": {
-       "type": "local",
-       "command": ["npx", "-y", "server-perplexity-ask"],
-       "enabled": true
-     },
-     "deepwiki": {
-       "type": "remote",
-       "url": "https://mcp.deepwiki.com/sse",
-       "enabled": true
-     }
-   }
+    "mcp": {
+      "perplexity": {
+        "type": "local",
+        "command": ["npx", "-y", "server-perplexity-ask"],
+        "enabled": true
+      },
+      "deepwiki": {
+        "type": "remote",
+        "url": "https://mcp.deepwiki.com/sse",
+        "enabled": true
+      },
+      "github": {
+        "type": "local",
+        "command": ["go", "run", "github.com/github/github-mcp-server/cmd/github-mcp-server@latest", "stdio"],
+        "enabled": true
+      },
+      "context7": {
+        "type": "local",
+        "command": ["deno", "run", "--allow-env=CONTEXT7_API_KEY,CLIENT_IP_ENCRYPTION_KEY,NODE_V8_COVERAGE,UNDICI_NO_FG,JEST_WORKER_ID,HTTPS_PROXY,https_proxy,HTTP_PROXY,http_proxy,NO_DEPRECATION,TRACE_DEPRECATION", "--allow-net", "npm:@upstash/context7-mcp"],
+        "enabled": true
+      },
+      "openzeppelin-stellar-contracts": {
+        "type": "remote",
+        "url": "https://mcp.openzeppelin.com/contracts/stellar/mcp",
+        "enabled": true
+      },
+      "playwright": {
+        "type": "local",
+        "command": ["deno", "run", "--allow-env", "--allow-sys", "npm:@playwright/mcp"],
+        "enabled": true
+      }
+    }
  }
