@@ -2,8 +2,9 @@
    "$schema": "https://opencode.ai/config.json",
    "permission": {
      "bash": {
-       "git add": "deny",
-       "git commit": "deny",
+       "git checkout": "deny",
+       "git add": "allow",
+       "git commit": "allow",
        "git push": "deny",
        "git pull": "deny",
        "git merge": "deny",
