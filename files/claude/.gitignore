@@ -2,4 +2,7 @@ todos/
 statsig/
 projects/
 shell-snapshots/
+debug/
+file-history/
+history.jsonl
 __store.db
