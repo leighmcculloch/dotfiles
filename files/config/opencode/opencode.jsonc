@@ -3,8 +3,8 @@
    "permission": {
      "bash": {
        "git checkout": "deny",
-       "git add": "allow",
-       "git commit": "allow",
+       "git add": "deny",
+       "git commit": "deny",
        "git push": "deny",
        "git pull": "deny",
        "git merge": "deny",
