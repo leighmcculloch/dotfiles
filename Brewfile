@@ -39,6 +39,8 @@ brew "lua-language-server"
 brew "vscode-langservers-extracted"
 brew "gopls"
 
+brew "gemini-cli"
+
 if OS.mac?
   brew "autoconf"
   brew "automake"
