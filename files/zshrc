@@ -61,7 +61,9 @@ if (( $+commands[nvim] )); then
 fi
 
 function git() {
-  command git config core.hooksPath no-hooks
+  if command git rev-parse --git-dir >/dev/null 2>&1; then
+    command git config core.hooksPath no-hooks
+  fi
   command git $@
 }
 
