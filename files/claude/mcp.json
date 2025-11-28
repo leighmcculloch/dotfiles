@@ -46,6 +46,21 @@
         "--allow-sys",
         "npm:@playwright/mcp"
       ]
+    },
+    "lsp-rust": {
+      "type": "stdio",
+      "command": "go",
+      "args": [ "run", "github.com/isaacphi/mcp-language-server@v0.1.1", "-workspace", ".", "-lsp", "rust-analyzer", "--" ]
+    },
+    "lsp-go": {
+      "type": "stdio",
+      "command": "go",
+      "args": [ "run", "github.com/isaacphi/mcp-language-server@v0.1.1", "-workspace", ".", "-lsp", "gopls", "--" ]
+    },
+    "lsp-deno": {
+      "type": "stdio",
+      "command": "go",
+      "args": [ "run", "github.com/isaacphi/mcp-language-server@v0.1.1", "-workspace", ".", "-lsp", "deno", "--", "lsp" ]
     }
   }
 }
