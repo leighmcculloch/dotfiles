@@ -1,64 +1,51 @@
 {
   "mcpServers": {
-    "gemini": {
+    "github": {
+      "type": "stdio",
+      "command": "go",
+      "args": [ "run", "github.com/github/github-mcp-server/cmd/github-mcp-server@latest", "stdio" ]
+    },
+    "perplexity": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [ "-y", "server-perplexity-ask" ]
+    },
+    "deepwiki": {
+      "type": "sse",
+      "url": "https://mcp.deepwiki.com/sse"
+    },
+    "context7": {
       "type": "stdio",
       "command": "deno",
       "args": [
         "run",
-        "--allow-read",
-        "--allow-env",
-        "--allow-net=generativelanguage.googleapis.com:443",
-        "https://github.com/leighmcculloch/mcp-gemini/raw/refs/heads/main/mcp-gemini.ts"
-      ]
-    },
-    "github": {
-      "type": "stdio",
-      "command": "go",
-      "args": [
-        "run",
-        "github.com/github/github-mcp-server/cmd/github-mcp-server@latest",
-        "stdio"
+        "--allow-env=CONTEXT7_API_KEY,CLIENT_IP_ENCRYPTION_KEY,NODE_V8_COVERAGE,UNDICI_NO_FG,JEST_WORKER_ID,HTTPS_PROXY,https_proxy,HTTP_PROXY,http_proxy,NO_DEPRECATION,TRACE_DEPRECATION",
+        "--allow-net",
+        "npm:@upstash/context7-mcp"
       ]
     },
     "memory": {
       "type": "stdio",
       "command": "npx",
-      "args": [
-        "-y",
-        "@modelcontextprotocol/server-memory"
-      ],
+      "args": [ "-y", "@modelcontextprotocol/server-memory" ],
       "env": {
         "MEMORY_FILE_PATH": "~/.dotfiles/files/claude/memory.json"
       }
     },
-    "perplexity": {
-      "type": "stdio",
-      "command": "npx",
-      "args": [
-        "-y",
-        "server-perplexity-ask"
-      ]
-    },
     "sequential-thinking": {
       "type": "stdio",
       "command": "npx",
-      "args": [
-        "-y",
-        "@modelcontextprotocol/server-sequential-thinking"
-      ]
+      "args": [ "-y", "@modelcontextprotocol/server-sequential-thinking" ]
     },
-    "stellar-xdr-json": {
+    "playwright": {
       "type": "stdio",
       "command": "deno",
       "args": [
         "run",
-        "--allow-read",
-        "https://github.com/leighmcculloch/mcp-stellar-xdr-json/raw/refs/heads/main/mcp-stellar-xdr-json.ts"
+        "--allow-env",
+        "--allow-sys",
+        "npm:@playwright/mcp"
       ]
-    },
-    "deepwiki": {
-      "type": "sse",
-      "url": "https://mcp.deepwiki.com/sse"
     }
   }
 }
