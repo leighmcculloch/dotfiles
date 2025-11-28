@@ -46,9 +46,13 @@
       "WebFetchTool(domain:developers.stellar.org)",
       "WebFetchTool(domain:github.com)"
     ],
-    "deny": []
+    "deny": [],
+    "defaultMode": "acceptEdits"
   },
   "feedbackSurveyState": {
     "lastShownTime": 1753919494306
+  },
+  "preferences": {
+    "loadingTips": false
   }
 }
