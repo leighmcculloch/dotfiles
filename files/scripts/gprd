@@ -126,8 +126,16 @@ function {
   echo "$why"
 
   echo "Reviewer:"
+  local owner_info=$(gh api '/repos/{owner}/{repo}' --jq '.owner.login + " " + .owner.type')
+  local owner=$(echo "$owner_info" | cut -d' ' -f1)
+  local owner_type=$(echo "$owner_info" | cut -d' ' -f2)
+  local teams=""
+  if [ "$owner_type" = "Organization" ]; then
+    teams=$(gh api "/orgs/$owner/teams" --jq ".[] | \"$owner/\" + .slug")
+  fi
   local reviewer="$(gum choose --no-limit \
-    $(gh api '/repos/{owner}/{repo}/contributors' --jq '.[].login')
+    $(gh api '/repos/{owner}/{repo}/contributors' --jq '.[].login') \
+    $teams
   )"
   echo "$reviewer"
 
