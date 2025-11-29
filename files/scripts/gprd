@@ -16,7 +16,7 @@ function {
     -H "x-api-key: $ANTHROPIC_API_KEY" \
     -H "anthropic-version: 2023-06-01" \
     -d "$(jq -n --arg diff "$diff" '{
-      "model": "claude-sonnet-4-5",
+      "model": "claude-opus-4-5",
       "max_tokens": 5000,
       "system": "You are a senior software engineer.",
       "tools": [{
@@ -27,15 +27,15 @@ function {
           "properties": {
             "title": {
               "type": "string",
-              "description": "Concise title (max 50 characters)"
+              "description": "Concise title that focuses on the impact of the change. Max 50 characters. Start with a capital letter. End without a full stop. Use imperative mood."
             },
             "what": {
               "type": "string",
-              "description": "Describes what has changed. Use imperative mood. Do not lead with a plural. e.g. Upgrade vs upgrades. Enable vs enables. Add vs adds."
+              "description": "Describes what has changed. Use imperative mood."
             },
             "why": {
               "type": "string",
-              "description": "Describe why the change is being made. Be concisewith why, and avoid generic statements."
+              "description": "Describe why the change is being made. Be concise with why, and avoid generic statements."
             }
           },
           "required": [ "title", "what", "why" ]
@@ -44,7 +44,7 @@ function {
       "tool_choice": {"type": "tool", "name": "pull_request"},
       "messages": [{
         "role": "user",
-        "content": "Given the following log and diff, suggest a concise pull request title (max 50 characters) and description, where the description is separated into two sections. Be direct, eliminate filler words and phrases. Think like a journalist.\n\nThe first section is under the heading \"What\" and describes what has changed. Use imperative mood. Do not lead with a plural. e.g. Upgrade vs upgrades. Enable vs enables. Add vs adds.\n\nThe second section is under the heading \"Why\" and describes why the change is being made. Be concise with why, and avoid generic statements.\n\nStart the title with a capital letter but do not end with a full stop. Use full sentences for what and why. Avoid generic phrases.\n\nReply only with valid JSON, nothing else. Use the JSON format {\"title\":\"<title>\",\"what\":\"<what>\",\"why\":\"<why>\"}, on a single line, nothing else. \n\nLog with Diff:\n "+$diff
+        "content": "Given the following log and diff, suggest a concise pull request title (max 50 characters) and description, where the description is separated into two sections. Use imperative mood, which means do not lead with a plural. e.g. Upgrade vs upgrades. Enable vs enables. Add vs adds. Be direct, eliminate filler words and phrases. Think like a journalist.\n\nThe first section is under the heading \"What\" and describes what has changed. The second section is under the heading \"Why\" and describes why the change is being made. Be concise with why, and avoid generic statements.\n\nStart the title with a capital letter but do not end with a full stop. Use full sentences for what and why. Avoid generic phrases.\n\nReply only with valid JSON, nothing else. Use the JSON format {\"title\":\"<title>\",\"what\":\"<what>\",\"why\":\"<why>\"}, on a single line, nothing else. \n\nLog with Diff:\n "+$diff
       }]
     }')"
   )"
