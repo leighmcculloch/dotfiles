@@ -98,6 +98,7 @@
       "mcp__sequential-thinking__sequentialthinking",
       "WebFetchTool(domain:developers.stellar.org)",
       "WebFetchTool(domain:github.com)",
+      "WebFetchTool(domain:raw.githubusercontent.com)",
       "WebFetchTool(domain:crates.io)",
       "WebFetchTool(domain:docs.rs)"
     ],
