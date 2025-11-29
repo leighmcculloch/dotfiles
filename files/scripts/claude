@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+set -o nounset
+
+if [ $# -eq 0 ]; then
+  "$(npm root -g)/@anthropic-ai/claude-code/cli.js" --mcp-config "$HOME/.claude/mcp.json"
+else
+  "$(npm root -g)/@anthropic-ai/claude-code/cli.js" $@
+fi
