@@ -139,6 +139,6 @@ $what
 
 ### Why
 $why" \
-    --reviewer "$(echo -n "$reviewer" | tr '\n' ',')" \
+    --reviewer "$(echo -n "$reviewer" | tr '\n' ','),copilot" \
     $@
 }
