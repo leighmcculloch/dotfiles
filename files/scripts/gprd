@@ -135,10 +135,10 @@ function {
     --draft \
     --title "$title" \
     --body "### What
-  $what
+$what
 
-  ### Why
-  $why" \
+### Why
+$why" \
     --reviewer "$(echo -n "$reviewer" | tr '\n' ',')" \
     $@
 }
