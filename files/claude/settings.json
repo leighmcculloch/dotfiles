@@ -131,7 +131,8 @@
       "WebFetchTool(domain:developer.mozilla.org)",
       "WebFetchTool(domain:npmjs.com)",
       "WebFetchTool(domain:nodejs.org)",
-      "WebFetchTool(domain:stellar.org)"
+      "WebFetchTool(domain:stellar.org)",
+      "FetchTool(domain:stellar.org)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"
