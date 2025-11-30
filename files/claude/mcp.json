@@ -63,6 +63,16 @@
       "type": "stdio",
       "command": "go",
       "args": [ "run", "github.com/isaacphi/mcp-language-server@v0.1.1", "-workspace", ".", "-lsp", "deno", "--", "lsp" ]
+    },
+    "lsp-json": {
+      "type": "stdio",
+      "command": "go",
+      "args": [ "run", "github.com/isaacphi/mcp-language-server@v0.1.1", "-workspace", ".", "-lsp", "vscode-json-language-server", "--", "--stdio" ]
+    },
+    "lsp-markdown": {
+      "type": "stdio",
+      "command": "go",
+      "args": [ "run", "github.com/isaacphi/mcp-language-server@v0.1.1", "-workspace", ".", "-lsp", "vscode-markdown-language-server", "--", "--stdio" ]
     }
   }
 }
