@@ -2,6 +2,11 @@
   "includeCoAuthoredBy": false,
   "permissions": {
     "allow": [
+      "Bash(claude:*)",
+      "Read(~/.cargo/*)",
+      "Read(~/go/pkg/mod/*)",
+      "Read(~/.cache/deno/*)",
+      "Read(**/node_modules/*)",
       "Bash(git fetch:*)",
       "Bash(git grep:*)",
       "Bash(git add:*)",
@@ -131,8 +136,7 @@
       "WebFetch(developer.mozilla.org)",
       "WebFetch(npmjs.com)",
       "WebFetch(nodejs.org)",
-      "WebFetch(stellar.org)",
-      "Bash(claude:*)"
+      "WebFetch(stellar.org)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"
