@@ -131,7 +131,7 @@
       "WebFetchTool(domain:developer.mozilla.org)",
       "WebFetchTool(domain:npmjs.com)",
       "WebFetchTool(domain:nodejs.org)",
-      "WebFetchTool(domain:https://stellar.org/schema/xdr-json/)"
+      "WebFetchTool(domain:stellar.org)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"
