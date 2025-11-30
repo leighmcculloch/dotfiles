@@ -1,12 +1,4 @@
 {
-  "model": "opusplan",
-  "sandbox": {
-    "enabled": true,
-    "autoAllowBashIfSandboxed": true
-  },
-  "preferences": {
-    "loadingTips": false
-  },
   "includeCoAuthoredBy": false,
   "permissions": {
     "allow": [
@@ -144,6 +136,15 @@
     ],
     "deny": [],
     "defaultMode": "acceptEdits"
+  },
+  "model": "opusplan",
+  "sandbox": {
+    "enabled": true,
+    "autoAllowBashIfSandboxed": true
+  },
+  "alwaysThinkingEnabled": true,
+  "preferences": {
+    "loadingTips": false
   },
   "feedbackSurveyState": {
     "lastShownTime": 1753919494306
