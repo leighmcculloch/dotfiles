@@ -119,7 +119,18 @@
       "WebFetchTool(domain:github.com)",
       "WebFetchTool(domain:raw.githubusercontent.com)",
       "WebFetchTool(domain:crates.io)",
-      "WebFetchTool(domain:docs.rs)"
+      "WebFetchTool(domain:docs.rs)",
+      "WebFetchTool(domain:doc.rust-lang.org)",
+      "WebFetchTool(domain:rust-lang.org)",
+      "WebFetchTool(domain:pkg.go.dev)",
+      "WebFetchTool(domain:go.dev)",
+      "WebFetchTool(domain:golang.org)",
+      "WebFetchTool(domain:deno.land)",
+      "WebFetchTool(domain:docs.deno.com)",
+      "WebFetchTool(domain:jsr.io)",
+      "WebFetchTool(domain:developer.mozilla.org)",
+      "WebFetchTool(domain:npmjs.com)",
+      "WebFetchTool(domain:nodejs.org)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"
