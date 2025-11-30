@@ -1,4 +1,13 @@
 {
+  "model": "opusplan",
+  "sandbox": {
+    "enabled": true,
+    "autoAllowBashIfSandboxed": true
+  },
+  "preferences": {
+    "loadingTips": false
+  },
+  "includeCoAuthoredBy": false,
   "permissions": {
     "allow": [
       "Bash(git fetch:*)",
@@ -131,21 +140,12 @@
       "WebFetchTool(domain:developer.mozilla.org)",
       "WebFetchTool(domain:npmjs.com)",
       "WebFetchTool(domain:nodejs.org)",
-      "WebFetchTool(domain:stellar.org)",
-      "FetchTool(domain:stellar.org)"
+      "WebFetchTool(domain:stellar.org)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"
   },
   "feedbackSurveyState": {
     "lastShownTime": 1753919494306
-  },
-  "preferences": {
-    "loadingTips": false
-  },
-  "sandbox": {
-    "enabled": true,
-    "autoAllowBashIfSandboxed": true
-  },
-  "includeCoAuthoredBy": false
+  }
 }
