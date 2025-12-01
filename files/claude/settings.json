@@ -210,7 +210,6 @@
     "deny": [],
     "defaultMode": "acceptEdits"
   },
-  "model": "opusplan",
   "sandbox": {
     "enabled": true,
     "autoAllowBashIfSandboxed": true
