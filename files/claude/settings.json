@@ -206,7 +206,7 @@
       "WebFetch(domain:lib.rs)"
     ],
     "deny": [],
-    "defaultMode": "acceptEdits"
+    "defaultMode": "plan"
   },
   "sandbox": {
     "enabled": true,
