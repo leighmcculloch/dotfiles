@@ -209,7 +209,10 @@
   },
   "sandbox": {
     "enabled": true,
-    "autoAllowBashIfSandboxed": true
+    "autoAllowBashIfSandboxed": true,
+    "allow": [
+      "api.github.com"
+    ]
   },
   "alwaysThinkingEnabled": true,
   "preferences": {
