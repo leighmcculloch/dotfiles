@@ -113,19 +113,22 @@ function {
   local suggestion_what=$(echo "$suggestion" | jq -r '.what')
   local suggestion_why=$(echo "$suggestion" | jq -r '.why')
 
-  echo "Title:"
+  echo "### Title:"
   local title="$(gum input --width 50 --prompt '| ' --value "$suggestion_title")"
   echo "$title"
+  echo
 
-  echo "What:"
+  echo "### What:"
   local what="$(gum write --width 80 --prompt '| ' --value "$suggestion_what")"
   echo "$what"
+  echo
 
-  echo "Why:"
+  echo "### Why:"
   local why="$(gum write --width 80 --char-limit 99999 --prompt '| ' --value "$suggestion_why")"
   echo "$why"
+  echo
 
-  echo "Reviewer:"
+  echo "### Reviewer:"
   local owner_info=$(gh api '/repos/{owner}/{repo}' --jq '.owner.login + " " + .owner.type')
   local owner=$(echo "$owner_info" | cut -d' ' -f1)
   local owner_type=$(echo "$owner_info" | cut -d' ' -f2)
@@ -138,7 +141,9 @@ function {
     $teams
   )"
   echo "$reviewer"
+  echo
 
+  echo "Creating pull request..."
   gh pr create \
     --draft \
     --title "$title" \
@@ -147,6 +152,9 @@ $what
 
 ### Why
 $why" \
-    --reviewer "$(echo -n "$reviewer" | tr '\n' ','),copilot" \
+    --reviewer "$(echo -n "$reviewer" | tr '\n' ',')" \
     $@
+
+  echo "Requesting review from Copilot..."
+  gh pr edit --add-reviewer 'copilot-pull-request-reviewer[bot]'
 }
