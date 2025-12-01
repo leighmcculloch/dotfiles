@@ -1,0 +1,23 @@
+#!/usr/bin/env zsh
+
+set -o nounset
+
+function {
+  local histfile="${HISTFILE:-$HOME/.zsh_history}"
+  local cmd
+
+  # Read the last line from the history file
+  cmd="$(tail -1 "$histfile" | sed 's/^: [0-9]*:[0-9]*;//; s/^[[:space:]]*//')"
+
+  # If the last command was this script, get the one before it
+  if [[ "$cmd" == "lastc" || "$cmd" == lastc\ * ]]; then
+    cmd="$(tail -2 "$histfile" | head -1 | sed 's/^: [0-9]*:[0-9]*;//; s/^[[:space:]]*//')"
+  fi
+
+  if [ -t 1 ] || [ -t 2 ]; then
+    if (( $+commands[pbcopy] )); then
+      echo -n "$cmd" | pbcopy
+    fi
+  fi
+  echo -n "$cmd" >&2
+}
