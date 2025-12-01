@@ -154,7 +154,9 @@ $what
 $why" \
     --reviewer "$(echo -n "$reviewer" | tr '\n' ',')" \
     $@
+  echo
 
   echo "Requesting review from Copilot..."
   gh pr edit --add-reviewer 'copilot-pull-request-reviewer[bot]'
+  echo
 }
