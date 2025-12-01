@@ -4,7 +4,7 @@
     "allow": [
       "Bash(claude:*)",
       "Read(~/.cargo/*)",
-      "Read(~/go/pkg/mod/*)",
+      "Read(~/.local/go/pkg/mod/*)",
       "Read(~/.cache/deno/*)",
       "Read(**/node_modules/*)",
       "Bash(git fetch:*)",
