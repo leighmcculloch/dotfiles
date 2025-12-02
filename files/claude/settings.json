@@ -208,6 +208,10 @@
     "deny": [],
     "defaultMode": "plan"
   },
+  "statusLine": {
+    "type": "command",
+    "command": "/Users/leighmcculloch/.claude/statusline-command.sh"
+  },
   "sandbox": {
     "enabled": true,
     "autoAllowBashIfSandboxed": true,
@@ -216,6 +220,15 @@
     ]
   },
   "alwaysThinkingEnabled": false,
+  "env": {
+    "DISABLE_NON_ESSENTIAL_MODEL_CALLS": "1",
+    "DISABLE_TELEMETRY": "1",
+    "DISABLE_ERROR_REPORTING": "1",
+    "CLAUDE_CODE_DISABLE_TERMINAL_TITLE": "1",
+    "CLAUDE_CODE_IDE_SKIP_AUTO_INSTALL": "1",
+    "CLAUDE_CODE_SUBAGENT_MODEL": "opus"
+  },
+  "cleanupPeriodDays": 5,
   "preferences": {
     "loadingTips": false
   },

@@ -33,11 +33,15 @@ brew "rustup"
 brew "sccache"
 brew "go"
 brew "uv"
+brew "zig"
 
 brew "neovim"
 brew "lua-language-server"
 brew "vscode-langservers-extracted"
 brew "gopls"
+brew "zls"
+
+brew "stellar-core"
 
 if OS.mac?
   brew "autoconf"
@@ -46,17 +50,10 @@ if OS.mac?
   brew "cmake"
   brew "coreutils"
   brew "docker"
-  brew "docker-credential-helper"
   brew "docker-buildx"
   brew "duckdb"
   brew "ffmpeg"
-  brew "flyctl"
-  brew "glow"
   brew "imagemagick"
-  brew "mas"
-  brew "stellar-core"
-  brew "zig"
-  brew "zls"
   brew "wabt"
   brew "wasm-pack"
   brew "vhs"
@@ -73,6 +70,7 @@ if OS.mac?
   cask "motion"
   cask "voiceink"
 
+  brew "mas"
   mas "1Blocker", id: 1365531024
   mas "1Password for Safari", id: 1569813296
   mas "House Designer", id: 779363176
