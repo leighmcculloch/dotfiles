@@ -203,7 +203,8 @@
       "WebFetch(domain:soroban.stellar.org)",
       "WebFetch(domain:horizon.stellar.org)",
       "WebFetch(domain:docs.github.com)",
-      "WebFetch(domain:lib.rs)"
+      "WebFetch(domain:lib.rs)",
+      "WebSearch"
     ],
     "deny": [],
     "defaultMode": "plan"
