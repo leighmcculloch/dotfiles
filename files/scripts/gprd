@@ -3,8 +3,8 @@
 set -o nounset
 
 function {
-  local default_branch="$(gh repo view --json defaultBranchRef --jq .defaultBranchRef.name)"
-  local diff="$(git log --patch $default_branch..)"
+  local base_branch="$(git rev-parse --abbrev-ref --symbolic-full-name @{upstream} 2>/dev/null || gh repo view --json defaultBranchRef --jq .defaultBranchRef.name)"
+  local diff="$(git log --patch $base_branch..)"
   if [ -z "$diff" ]; then
     echo "No changes detected in working directory"
     return 1
