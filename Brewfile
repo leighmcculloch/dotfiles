@@ -73,13 +73,13 @@ if OS.mac?
 
   #cask "tailscale-app"
 
-  if `hostname`.chomp == "Concrete.local"
+  mdm_enrolled = `profiles status -type enrollment`.include?("Yes")
+
+  if mdm_enrolled
     cask "nordlayer"
     mas "Slack", id: 803453959
     mas "Telegram", id: 747648890
-  end
-
-  if `hostname`.chomp != "Concrete.local"
+  else
     cask "nordvpn"
     cask "doxie"
     brew "cloudflare-wrangler"
