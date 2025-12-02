@@ -8,6 +8,7 @@
       "Read(~/.cache/deno/*)",
       "Read(**/node_modules/*)",
       "Write(~/Library/Caches/go-build/*)",
+      "Write(~/Library/Caches/Mozilla.sccache/*)",
       "Bash(git fetch:*)",
       "Bash(git grep:*)",
       "Bash(git add:*)",
