@@ -58,6 +58,9 @@ if (( ! $+commands[brew] )); then
 fi
 source $PWD/files/zenv_brew
 
+# install gh cli early so it is available for git credential helper
+brew install --formula gh
+
 # if a gh personal access token is configured in an env var, as is the case in
 # GitHub Codespaces, then use that as the Homebrew token.
 if [ -n "$GITHUB_PERSONAL_ACCESS_TOKEN" ]; then
