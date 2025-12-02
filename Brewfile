@@ -39,8 +39,6 @@ brew "lua-language-server"
 brew "vscode-langservers-extracted"
 brew "gopls"
 
-brew "gemini-cli"
-
 if OS.mac?
   brew "autoconf"
   brew "automake"
@@ -73,7 +71,7 @@ if OS.mac?
   cask "sublime-text"
   cask "lm-studio"
   cask "motion"
-  cask "cursor-cli"
+  cask "voiceink"
 
   mas "1Blocker", id: 1365531024
   mas "1Password for Safari", id: 1569813296
