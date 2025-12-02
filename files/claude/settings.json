@@ -215,7 +215,7 @@
       "api.github.com"
     ]
   },
-  "alwaysThinkingEnabled": true,
+  "alwaysThinkingEnabled": false,
   "preferences": {
     "loadingTips": false
   },
