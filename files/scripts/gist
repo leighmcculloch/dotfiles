@@ -3,10 +3,17 @@
 set -o nounset
 
 function {
+  # Initialize git repo if not already in one
+  if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    git init
+    git add .
+    git commit -m "Initial commit"
+  fi
+
   local url="$(echo '.' | gh gist create -)"
   echo "$url" | pbcopy
   echo "$url"
-  git remote remove gist
+  git remote remove gist 2>/dev/null
   git remote add gist "$url"
   git push -f gist HEAD
 } "$@"
