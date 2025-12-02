@@ -2,8 +2,32 @@
 
 set -o nounset
 
-if [ $# -eq 0 ]; then
-  "$(npm root -g)/@anthropic-ai/claude-code/cli.js" --mcp-config "$HOME/.claude/mcp.json"
+# Detect claude binary locations
+declare -A CLAUDES
+
+BREW_PREFIX="$(brew --prefix 2>/dev/null)"
+if [ -n "$BREW_PREFIX" ] && [ -x "$BREW_PREFIX/bin/claude" ]; then
+  CLAUDES["brew"]="$BREW_PREFIX/bin/claude"
+fi
+
+NPM_ROOT="$(npm root -g 2>/dev/null)"
+if [ -n "$NPM_ROOT" ] && [ -x "$NPM_ROOT/@anthropic-ai/claude-code/cli.js" ]; then
+  CLAUDES["npm"]="$NPM_ROOT/@anthropic-ai/claude-code/cli.js"
+fi
+
+# Select which binary to use
+if [ ${#CLAUDES[@]} -eq 0 ]; then
+  echo "Error: Claude Code not found via Homebrew or NPM" >&2
+  exit 1
+elif [ ${#CLAUDES[@]} -eq 1 ]; then
+  CLAUDE_BIN="${CLAUDES[*]}"
 else
-  "$(npm root -g)/@anthropic-ai/claude-code/cli.js" $@
+  CHOICE="$(gum choose "${!CLAUDES[@]}")"
+  CLAUDE_BIN="${CLAUDES[$CHOICE]}"
+fi
+
+if [ $# -eq 0 ]; then
+  "$CLAUDE_BIN" --mcp-config "$HOME/.claude/mcp.json"
+else
+  "$CLAUDE_BIN" "$@"
 fi
