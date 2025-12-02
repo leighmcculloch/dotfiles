@@ -66,6 +66,5 @@ fi
 brew bundle install --no-upgrade
 
 # install plugins/extensions
-./install-gh-extensions.sh
 ./install-docker-cli-plugins.sh
 nvim +PlugInstall +qall
