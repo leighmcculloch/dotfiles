@@ -219,7 +219,10 @@
     "enabled": true,
     "autoAllowBashIfSandboxed": true,
     "allow": [
-      "api.github.com"
+      "api.github.com",
+      "proxy.golang.org",
+      "sum.golang.org",
+      "index.golang.org"
     ]
   },
   "alwaysThinkingEnabled": false,
