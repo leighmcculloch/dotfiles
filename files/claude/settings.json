@@ -205,6 +205,7 @@
       "WebFetch(domain:horizon.stellar.org)",
       "WebFetch(domain:docs.github.com)",
       "WebFetch(domain:lib.rs)",
+      "WebFetch(domain:socket.dev)",
       "WebSearch"
     ],
     "deny": [],
