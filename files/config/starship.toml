@@ -33,7 +33,11 @@ show_milliseconds = true
 
 [hostname]
 ssh_only = false
-aliases = { "Chisel" = "🏡 Chisel" }
+trim_at = "-"
+
+[hostname.aliases]
+"Chisel.local" = "🏡 Chisel"
+leighmcculloch = "🏢 Work"
 
 [directory]
 format = '[$path](bold #97d1ef) '
