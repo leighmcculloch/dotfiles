@@ -14,41 +14,41 @@ function {
   local escaped_diff="${${$(echo "$diff" | jq -R -s '.')%\"}#\"}"
 
   # Use Claude
-  #local response="$(curl -s -X POST https://api.anthropic.com/v1/messages \
-  #  -H "Content-Type: application/json" \
-  #  -H "x-api-key: $ANTHROPIC_API_KEY" \
-  #  -H "anthropic-version: 2023-06-01" \
-  #  -d '{
-  #    "model": "claude-sonnet-4-5",
-  #    "max_tokens": 50,
-  #    "system": "You are a senior software engineer.",
-  #    "messages": [{
-  #      "role": "user",
-  #      "content": "Given the following git diff, suggest a concise, kebab-case branch name that describes the changes (max 5 words).\n\nReply only with the branch name, nothing else. \n\nDo not use any of these names: '"${branches}"'. \n\nDiff:\n '"${escaped_diff}"'"
-  #    }]
-  #  }')"
-  #local name=$(echo "$response" | jq -r '.content[0].text' | tr '[:upper:] ' '[:lower:]-')
+  local response="$(curl -s -X POST https://api.anthropic.com/v1/messages \
+    -H "Content-Type: application/json" \
+    -H "x-api-key: $ANTHROPIC_API_KEY" \
+    -H "anthropic-version: 2023-06-01" \
+    -d '{
+      "model": "claude-sonnet-4-5",
+      "max_tokens": 50,
+      "system": "You are a senior software engineer.",
+      "messages": [{
+        "role": "user",
+        "content": "Given the following git diff, suggest a concise, kebab-case branch name that describes the changes (max 5 words).\n\nReply only with the branch name, nothing else. \n\nDo not use any of these names: '"${branches}"'. \n\nDiff:\n '"${escaped_diff}"'"
+      }]
+    }')"
+  local name=$(echo "$response" | jq -r '.content[0].text' | tr '[:upper:] ' '[:lower:]-')
 
   # Use Grok
-  local response="$(curl -s https://api.x.ai/v1/chat/completions \
-    -H "Content-Type: application/json" \
-    -H "Authorization: Bearer $X_AI_API_KEY" \
-    -d '{
-      "model": "grok-code-fast-1",
-      "stream": false,
-      "temperature": 0,
-      "messages": [
-        {
-          "role": "system", 
-          "content": "You are a senior software engineer."
-        },
-        {
-          "role": "user",
-          "content": "Given the following git diff, suggest a concise, kebab-case branch name that describes the changes (max 5 words).\n\nReply only with the branch name, nothing else. \n\nDo not use any of these names: '"${branches}"'. \n\nDiff:\n '"${escaped_diff}"'"
-        }
-      ]
-    }')"
-  local name=$(echo "$response" | jq -r '.choices[0].message.content' | tr '[:upper:] ' '[:lower:]-')
+  #local response="$(curl -s https://api.x.ai/v1/chat/completions \
+  #  -H "Content-Type: application/json" \
+  #  -H "Authorization: Bearer $X_AI_API_KEY" \
+  #  -d '{
+  #    "model": "grok-code-fast-1",
+  #    "stream": false,
+  #    "temperature": 0,
+  #    "messages": [
+  #      {
+  #        "role": "system", 
+  #        "content": "You are a senior software engineer."
+  #      },
+  #      {
+  #        "role": "user",
+  #        "content": "Given the following git diff, suggest a concise, kebab-case branch name that describes the changes (max 5 words).\n\nReply only with the branch name, nothing else. \n\nDo not use any of these names: '"${branches}"'. \n\nDiff:\n '"${escaped_diff}"'"
+  #      }
+  #    ]
+  #  }')"
+  #local name=$(echo "$response" | jq -r '.choices[0].message.content' | tr '[:upper:] ' '[:lower:]-')
 
   # Use local LM Studio
   #local host="concrete"
