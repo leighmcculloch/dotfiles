@@ -22,7 +22,10 @@ if [ ${#CLAUDES[@]} -eq 0 ]; then
 elif [ ${#CLAUDES[@]} -eq 1 ]; then
   CLAUDE_BIN="${CLAUDES[*]}"
 else
-  CHOICE="$(gum choose "${!CLAUDES[@]}")"
+  CHOICE="$(gum choose "${(k)CLAUDES[@]}")"
+  if [ -z "$CHOICE" ]; then
+    exit 1
+  fi
   CLAUDE_BIN="${CLAUDES[$CHOICE]}"
 fi
 
