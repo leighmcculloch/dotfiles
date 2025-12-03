@@ -38,6 +38,9 @@ brew "vscode-langservers-extracted"
 
 brew "stellar-core"
 
+go "github.com/leighmcculloch/gas/v3"
+go "github.com/leighmcculloch/gate"
+
 if OS.mac?
   brew "autoconf"
   brew "automake"
