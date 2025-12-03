@@ -39,15 +39,10 @@
       "command": "npx",
       "args": [ "-y", "@modelcontextprotocol/server-sequential-thinking" ]
     },
-    "playwright": {
+    "chrome-devtools": {
       "type": "stdio",
       "command": "deno",
-      "args": [
-        "run",
-        "--allow-env",
-        "--allow-sys",
-        "npm:@playwright/mcp"
-      ]
+      "args": [ "run", "-A", "npm:chrome-devtools-mcp@latest" ]
     },
     "lsp-rust": {
       "type": "stdio",
