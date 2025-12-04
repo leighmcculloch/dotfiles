@@ -51,7 +51,7 @@
 [include]
 	path = ~/.gitconfig.local
 [diff "json"]
-	textconv = jq .
+	textconv = sh -c 'jq . \"$0\" 2>/dev/null || cat \"$0\"'
 [credential "https://github.com"]
 	helper = 
 	helper = !gh auth git-credential
