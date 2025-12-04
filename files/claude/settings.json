@@ -214,6 +214,7 @@
       "WebFetch(domain:api.github.com)",
       "WebFetch(domain:raw.githubusercontent.com)",
       "WebFetch(domain:crates.io)",
+      "WebFetch(domain:static.crates.io)",
       "WebFetch(domain:docs.rs)",
       "WebFetch(domain:doc.rust-lang.org)",
       "WebFetch(domain:rust-lang.org)",
@@ -248,7 +249,8 @@
       "api.github.com",
       "proxy.golang.org",
       "sum.golang.org",
-      "index.golang.org"
+      "index.golang.org",
+      "static.crates.io"
     ]
   },
   "alwaysThinkingEnabled": false,
