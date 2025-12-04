@@ -56,6 +56,7 @@ if OS.mac?
   brew "wasm-pack"
   brew "vhs"
 
+  cask "arc"
   cask "font-fira-code"
   cask "font-fira-code-nerd-font"
   cask "orbstack"
@@ -79,12 +80,10 @@ if OS.mac?
   mdm_enrolled = `profiles status -type enrollment`.include?("Yes")
 
   if mdm_enrolled
-    cask "thebrowsercompany-dia"
     cask "nordlayer"
     mas "Slack", id: 803453959
     mas "Telegram", id: 747648890
   else
-    cask "arc"
     cask "nordvpn"
     cask "doxie"
     brew "cloudflare-wrangler"
