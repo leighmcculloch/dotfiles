@@ -26,7 +26,7 @@
 	sort = -committerdate
 	autoSetupMerge = always
 [tag]
-	sort =  version:refname
+	sort = version:refname
 [diff]
 	algorithm = histogram
 	colorMoved = plain
