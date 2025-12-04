@@ -69,6 +69,7 @@ if OS.mac?
   cask "voiceink"
   brew "opencode"
   cask "claude-code"
+  cask "granola"
 
   brew "mas"
   mas "Numbers", id: 409203825
