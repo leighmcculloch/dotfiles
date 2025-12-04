@@ -1,4 +1,28 @@
 {
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "f=$(jq -r '.tool_input.file_path // empty'); [ -n \"$f\" ] && [[ \"$f\" == *.go ]] && go fmt \"$f\" || true",
+            "timeout": 30
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "f=$(jq -r '.tool_input.file_path // empty'); [ -n \"$f\" ] && [[ \"$f\" == *.rs ]] && rustfmt \"$f\" || true",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
+  },
   "includeCoAuthoredBy": false,
   "permissions": {
     "allow": [
