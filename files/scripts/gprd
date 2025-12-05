@@ -154,9 +154,10 @@ function {
   echo
 
   echo "### Reviewer:"
-  local owner_info=$(gh api '/repos/{owner}/{repo}' --jq '.owner.login + " " + .owner.type')
-  local owner=$(echo "$owner_info" | cut -d' ' -f1)
-  local owner_type=$(echo "$owner_info" | cut -d' ' -f2)
+  local repo_info=$(gh api '/repos/{owner}/{repo}')
+  local owner=$(<<< "$repo_info" jq -r '.owner.login')
+  local owner_type=$(<<< "$repo_info" jq -r '.owner.type')
+  local is_private=$(<<< "$repo_info" jq -r '.private')
   local teams=""
   if [ "$owner_type" = "Organization" ]; then
     teams=$(gh api "/orgs/$owner/teams" --jq ".[] | \"$owner/\" + .slug")
@@ -181,7 +182,11 @@ $why" \
     $@
   echo
 
-  echo "Requesting review from Copilot..."
-  gh pr edit --add-reviewer 'copilot-pull-request-reviewer[bot]'
+  if [[ "$owner" == "stellar" && "$is_private" == "true" ]]; then
+    echo "Skipping Copilot review (private stellar repo)"
+  else
+    echo "Requesting review from Copilot..."
+    gh pr edit --add-reviewer 'copilot-pull-request-reviewer[bot]'
+  fi
   echo
 }
