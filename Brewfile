@@ -40,6 +40,7 @@ brew "stellar-core"
 
 go "github.com/leighmcculloch/gas/v3"
 go "github.com/leighmcculloch/gate"
+go "github.com/github/github-mcp-server/cmd/github-mcp-server"
 
 if OS.mac?
   brew "autoconf"

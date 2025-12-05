@@ -1,16 +1,14 @@
 {
   "mcpServers": {
     "github": {
-      "type": "http",
-      "url": "https://api.githubcopilot.com/mcp",
-      "headers": {
-        "Authorization": "Bearer ${GITHUB_TOKEN}"
-      }
+      "type": "stdio",
+      "command": "sh",
+      "args": [ "-c", "source ~/.zenv_apikey_github && github-mcp-server stdio" ]
     },
     "perplexity": {
       "type": "stdio",
-      "command": "npx",
-      "args": [ "-y", "server-perplexity-ask" ]
+      "command": "sh",
+      "args": [ "-c", "source ~/.zenv_apikey_perplexity && deno run --allow-env --allow-net npm:server-perplexity-ask" ]
     },
     "deepwiki": {
       "type": "sse",
@@ -18,13 +16,8 @@
     },
     "context7": {
       "type": "stdio",
-      "command": "deno",
-      "args": [
-        "run",
-        "--allow-env=CONTEXT7_API_KEY,CLIENT_IP_ENCRYPTION_KEY,NODE_V8_COVERAGE,UNDICI_NO_FG,JEST_WORKER_ID,HTTPS_PROXY,https_proxy,HTTP_PROXY,http_proxy,NO_DEPRECATION,TRACE_DEPRECATION",
-        "--allow-net",
-        "npm:@upstash/context7-mcp"
-      ]
+      "command": "sh",
+      "args": [ "-c", "source ~/.zenv_apikey_context7 && deno run --allow-env --allow-net npm:@upstash/context7-mcp" ]
     },
     "memory": {
       "type": "stdio",

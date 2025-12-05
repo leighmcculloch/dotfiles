@@ -28,7 +28,18 @@ export PATH="$BUN_INSTALL/bin:$PATH"
 
 # source additional zenvs
 for f in "$HOME/.zenv_"*; do
-  [ -f $f ] && . $f
+  # skip non-files
+  [ ! -f "$f" ] && continue
+  # skip api keys that get loaded as needed
+  [[ "$f" == "$HOME/.zenv_apikey_"* ]] && continue
+  . "$f"
+done
+
+# unset any api keys or tokens in new shells if they've leaked from a parent shell
+for var in ${(k)parameters}; do
+    if [[ $var == *_API_KEY || $var == *_TOKEN ]]; then
+        unset "$var"
+    fi
 done
 
 export FZF_DEFAULT_COMMAND='fd --type f --strip-cwd-prefix --hidden --exclude .git'
