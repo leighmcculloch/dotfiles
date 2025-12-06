@@ -54,39 +54,28 @@ function {
     return 1
   fi
 
-  # Build context with repo URL and optional issue
+  # Build context as JSON (jq handles escaping automatically, preventing prompt injection)
   local repo_url="$(git remote get-url origin | sed 's/\.git$//')"
-  local context="<repository>
-$repo_url
-</repository>"
+  local context_json=""
   if [[ -n "$issue_number" ]]; then
     echo Issue Number: $issue_number
-    # Escape XML special characters to prevent prompt injection
-    local escape_xml='gsub("&"; "&amp;") | gsub("<"; "&lt;") | gsub(">"; "&gt;") | gsub("\""; "&quot;")'
-    local issue_title="$(gh issue view "$issue_number" --json title --jq ".title | $escape_xml")"
-    local issue_body="$(gh issue view "$issue_number" --json body --jq ".body | $escape_xml")"
-    local issue_comments="$(gh issue view "$issue_number" --json comments --jq "[.comments[] | \"<comment author=\\\"\" + (.author.login | $escape_xml) + \"\\\">\\n\" + (.body | $escape_xml) + \"\\n</comment>\"] | join(\"\\n\\n\")")"
-    context="$context
-
-<issue number=\"$issue_number\">
-<title>$issue_title</title>
-<body>
-$issue_body
-</body>
-</issue>"
-    if [[ -n "$issue_comments" ]]; then
-      context="$context
-
-<issue-comments>
-$issue_comments
-</issue-comments>"
-    fi
+    local issue_json="$(gh issue view "$issue_number" --json title,body,comments)"
+    context_json="$(jq -n --arg repo "$repo_url" --arg issue_num "$issue_number" --argjson issue "$issue_json" '{
+      repository: $repo,
+      issue: {
+        number: $issue_num,
+        title: $issue.title,
+        body: $issue.body,
+        comments: [$issue.comments[] | {author: .author.login, body: .body}]
+      }
+    }')"
+  else
+    context_json="$(jq -n --arg repo "$repo_url" '{repository: $repo}')"
   fi
-    echo Context: $context
 
   # Use Claude
   source ~/.zenv_apikey_anthropic
-  local data="$(jq -n --arg diff "$diff" --arg context "$context" '{
+  local data="$(jq -n --arg diff "$diff" --argjson context "$context_json" '{
     "model": "claude-opus-4-5",
     "max_tokens": 25000,
     "system": "You are a senior software engineer.",
@@ -115,7 +104,7 @@ $issue_comments
     "tool_choice": {"type": "tool", "name": "pull_request"},
     "messages": [{
       "role": "user",
-      "content": "Given the following log and diff, suggest a concise pull request title (max 50 characters) and description, where the description is separated into two sections. Use imperative mood, which means do not lead with a plural. e.g. Upgrade vs upgrades. Enable vs enables. Add vs adds. Be direct, eliminate filler words and phrases. Think like a journalist.\n\nThe first section is under the heading \"What\" and describes what has changed. The second section is under the heading \"Why\" and describes why the change is being made. Be concise with why, and avoid generic statements.\n\nStart the title with a capital letter but do not end with a full stop. Use full sentences for what and why. Avoid generic phrases.\n\nReply only with valid JSON, nothing else. Use the JSON format {\"title\":\"<title>\",\"what\":\"<what>\",\"why\":\"<why>\"}, on a single line, nothing else.\n\n"+$context+"\n\n<git-log-with-diff>\n"+$diff+"\n</git-log-with-diff>"
+      "content": ("Given the following context and git diff, suggest a concise pull request title (max 50 characters) and description, where the description is separated into two sections. Use imperative mood, which means do not lead with a plural. e.g. Upgrade vs upgrades. Enable vs enables. Add vs adds. Be direct, eliminate filler words and phrases. Think like a journalist.\n\nThe first section is under the heading \"What\" and describes what has changed. The second section is under the heading \"Why\" and describes why the change is being made. Be concise with why, and avoid generic statements.\n\nStart the title with a capital letter but do not end with a full stop. Use full sentences for what and why. Avoid generic phrases.\n\nContext:\n" + ($context | tostring) + "\n\nGit log with diff:\n" + $diff)
     }]
   }')"
 echo "$data"
