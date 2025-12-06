@@ -20,8 +20,35 @@ function {
   done
   set -- "${args[@]}"
 
-  local base_branch="$(git rev-parse --abbrev-ref --symbolic-full-name @{upstream} 2>/dev/null || gh repo view --json defaultBranchRef --jq .defaultBranchRef.name)"
-  local diff="$(git log --patch $base_branch..)"
+  # Determine base branch for the PR by finding the closest ancestor commit that
+  # has another branch pointing to it. This identifies where the current branch
+  # diverged from.
+  local current_branch="$(git rev-parse --abbrev-ref HEAD)"
+  local default_branch="$(gh repo view --json defaultBranchRef --jq .defaultBranchRef.name)"
+  # Walk back through commit history to find first commit with another branch
+  local ancestor_branch=""
+  for commit in $(git rev-list HEAD); do
+    ancestor_branch="$(git branch --points-at "$commit" --format='%(refname:short)' | grep -v "^${current_branch}$" | head -1)"
+    if [[ -n "$ancestor_branch" ]]; then
+      break
+    fi
+  done
+
+  # If an ancestor branch was found (and it's not the default), let user choose.
+  # Otherwise just use the default branch.
+  local base_branch=""
+  if [[ -n "$ancestor_branch" && "$ancestor_branch" != "$default_branch" ]]; then
+    local ancestor_count="$(git rev-list --count ${ancestor_branch}..HEAD)"
+    local default_count="$(git rev-list --count ${default_branch}..HEAD)"
+    local choice="$(gum choose --header "Base branch:" "${ancestor_branch} (${ancestor_count} commits)" "${default_branch} (${default_count} commits)")"
+    base_branch="${choice% (*}"
+  else
+    base_branch="$default_branch"
+  fi
+  echo "Base branch: ${base_branch}"
+
+  # Get the diff between base branch and HEAD
+  local diff="$(git log --patch ${base_branch}..HEAD)"
   if [ -z "$diff" ]; then
     echo "No changes detected in working directory"
     return 1
@@ -172,6 +199,7 @@ function {
   echo "Creating pull request..."
   gh pr create \
     --draft \
+    --base "$base_branch" \
     --title "$title" \
     --body "### What
 $what
