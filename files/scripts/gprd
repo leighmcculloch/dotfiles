@@ -219,4 +219,4 @@ $why" \
     gh pr edit --add-reviewer 'copilot-pull-request-reviewer[bot]'
   fi
   echo
-}
+} "$@"
