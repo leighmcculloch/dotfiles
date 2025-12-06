@@ -211,15 +211,21 @@ echo "$data"
   echo
 
   echo "Creating pull request..."
+  local body="### What
+$what
+
+### Why
+$why"
+  if [[ -n "$issue_number" ]]; then
+    body="$body
+
+Close #$issue_number"
+  fi
   gh pr create \
     --draft \
     --base "$base_branch" \
     --title "$title" \
-    --body "### What
-$what
-
-### Why
-$why" \
+    --body "$body" \
     --reviewer "$(echo -n "$reviewer" | tr '\n' ',')" \
     $@
   echo
