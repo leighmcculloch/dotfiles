@@ -201,7 +201,7 @@ function {
   if [ "$owner_type" = "Organization" ]; then
     teams=("${(@f)$(gh api "/orgs/$owner/teams" --jq ".[] | \"$owner/\" + .slug")}")
   fi
-  local reviewer="$(gum filter --no-limit \
+  local reviewer="$(gum filter --no-limit --height 15 \
     $(gh api '/repos/{owner}/{repo}/contributors' --jq '.[].login') \
     "${teams[@]}"
   )"
