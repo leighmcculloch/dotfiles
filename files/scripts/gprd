@@ -179,21 +179,19 @@ echo "$data"
   local suggestion_what=$(echo "$suggestion" | jq -r '.what')
   local suggestion_why=$(echo "$suggestion" | jq -r '.why')
 
+  # Collect the components of the PR
   echo "### Title:"
   local title="$(gum input --width 50 --prompt '| ' --value "$suggestion_title")"
   echo "$title"
   echo
-
   echo "### What:"
   local what="$(gum write --width 80 --prompt '| ' --value "$suggestion_what")"
   echo "$what"
   echo
-
   echo "### Why:"
   local why="$(gum write --width 80 --char-limit 99999 --prompt '| ' --value "$suggestion_why")"
   echo "$why"
   echo
-
   echo "### Reviewer:"
   local repo_info=$(gh api '/repos/{owner}/{repo}')
   local owner=$(<<< "$repo_info" jq -r '.owner.login')
@@ -210,17 +208,20 @@ echo "$data"
   echo "$reviewer"
   echo
 
+  # Construct the PR body
   echo "Creating pull request..."
   local body="### What
 $what
 
 ### Why
 $why"
-  if [[ -n "$issue_number" ]]; then
-    body="$body
 
-Close #$issue_number"
+  # Append the issue number to the body if provided
+  if [[ -n "$issue_number" ]]; then
+    body="$body\n\nClose #$issue_number"
   fi
+
+  # Create the PR
   gh pr create \
     --draft \
     --base "$base_branch" \
@@ -230,6 +231,7 @@ Close #$issue_number"
     $@
   echo
 
+  # Request Copilot review the PR
   if [[ "$owner" == "stellar" && "$is_private" == "true" ]]; then
     echo "Skipping Copilot review (private stellar repo)"
   else
