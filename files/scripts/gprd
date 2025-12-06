@@ -107,7 +107,6 @@ function {
       "content": ("Given the following context and git diff, suggest a concise pull request title (max 50 characters) and description, where the description is separated into two sections. Use imperative mood, which means do not lead with a plural. e.g. Upgrade vs upgrades. Enable vs enables. Add vs adds. Be direct, eliminate filler words and phrases. Think like a journalist.\n\nThe first section is under the heading \"What\" and describes what has changed. The second section is under the heading \"Why\" and describes why the change is being made. Be concise with why, and avoid generic statements.\n\nStart the title with a capital letter but do not end with a full stop. Use full sentences for what and why. Avoid generic phrases.\n\nContext:\n" + ($context | tostring) + "\n\nGit log with diff:\n" + $diff)
     }]
   }')"
-echo "$data"
   local response="$(curl -s https://api.anthropic.com/v1/messages \
     -H "Content-Type: application/json" \
     -H "x-api-key: $ANTHROPIC_API_KEY" \
@@ -180,6 +179,7 @@ echo "$data"
   local suggestion_why=$(echo "$suggestion" | jq -r '.why')
 
   # Collect the components of the PR
+  echo
   echo "### Title:"
   local title="$(gum input --width 50 --prompt '| ' --value "$suggestion_title")"
   echo "$title"
@@ -197,13 +197,13 @@ echo "$data"
   local owner=$(<<< "$repo_info" jq -r '.owner.login')
   local owner_type=$(<<< "$repo_info" jq -r '.owner.type')
   local is_private=$(<<< "$repo_info" jq -r '.private')
-  local teams=""
+  local teams=()
   if [ "$owner_type" = "Organization" ]; then
-    teams=$(gh api "/orgs/$owner/teams" --jq ".[] | \"$owner/\" + .slug")
+    teams=("${(@f)$(gh api "/orgs/$owner/teams" --jq ".[] | \"$owner/\" + .slug")}")
   fi
-  local reviewer="$(gum choose --no-limit \
+  local reviewer="$(gum filter --no-limit \
     $(gh api '/repos/{owner}/{repo}/contributors' --jq '.[].login') \
-    $teams
+    "${teams[@]}"
   )"
   echo "$reviewer"
   echo
