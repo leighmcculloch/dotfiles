@@ -56,23 +56,30 @@ function {
 
   # Build context with repo URL and optional issue
   local repo_url="$(git remote get-url origin | sed 's/\.git$//')"
-  local context="Repository: $repo_url"
+  local context="<repository>
+$repo_url
+</repository>"
   if [[ -n "$issue_number" ]]; then
     echo Issue Number: $issue_number
-    local issue_title="$(gh issue view "$issue_number" --json title --jq '.title')"
-    local issue_body="$(gh issue view "$issue_number" --json body --jq '.body')"
-    local issue_comments="$(gh issue view "$issue_number" --json comments --jq '[.comments[] | "Comment by " + .author.login + ":\n" + .body] | join("\n\n")')"
+    # Escape XML special characters to prevent prompt injection
+    local escape_xml='gsub("&"; "&amp;") | gsub("<"; "&lt;") | gsub(">"; "&gt;") | gsub("\""; "&quot;")'
+    local issue_title="$(gh issue view "$issue_number" --json title --jq ".title | $escape_xml")"
+    local issue_body="$(gh issue view "$issue_number" --json body --jq ".body | $escape_xml")"
+    local issue_comments="$(gh issue view "$issue_number" --json comments --jq "[.comments[] | \"<comment author=\\\"\" + (.author.login | $escape_xml) + \"\\\">\\n\" + (.body | $escape_xml) + \"\\n</comment>\"] | join(\"\\n\\n\")")"
     context="$context
 
-This PR resolves the following issue, issue #$issue_number:
-Title: $issue_title
-
-$issue_body"
+<issue number=\"$issue_number\">
+<title>$issue_title</title>
+<body>
+$issue_body
+</body>
+</issue>"
     if [[ -n "$issue_comments" ]]; then
       context="$context
 
-Issue comments:
-$issue_comments"
+<issue-comments>
+$issue_comments
+</issue-comments>"
     fi
   fi
     echo Context: $context
@@ -108,7 +115,7 @@ $issue_comments"
     "tool_choice": {"type": "tool", "name": "pull_request"},
     "messages": [{
       "role": "user",
-      "content": "Given the following log and diff, suggest a concise pull request title (max 50 characters) and description, where the description is separated into two sections. Use imperative mood, which means do not lead with a plural. e.g. Upgrade vs upgrades. Enable vs enables. Add vs adds. Be direct, eliminate filler words and phrases. Think like a journalist.\n\nThe first section is under the heading \"What\" and describes what has changed. The second section is under the heading \"Why\" and describes why the change is being made. Be concise with why, and avoid generic statements.\n\nStart the title with a capital letter but do not end with a full stop. Use full sentences for what and why. Avoid generic phrases.\n\nReply only with valid JSON, nothing else. Use the JSON format {\"title\":\"<title>\",\"what\":\"<what>\",\"why\":\"<why>\"}, on a single line, nothing else.\n\n"+$context+"\n\nLog with Diff:\n "+$diff
+      "content": "Given the following log and diff, suggest a concise pull request title (max 50 characters) and description, where the description is separated into two sections. Use imperative mood, which means do not lead with a plural. e.g. Upgrade vs upgrades. Enable vs enables. Add vs adds. Be direct, eliminate filler words and phrases. Think like a journalist.\n\nThe first section is under the heading \"What\" and describes what has changed. The second section is under the heading \"Why\" and describes why the change is being made. Be concise with why, and avoid generic statements.\n\nStart the title with a capital letter but do not end with a full stop. Use full sentences for what and why. Avoid generic phrases.\n\nReply only with valid JSON, nothing else. Use the JSON format {\"title\":\"<title>\",\"what\":\"<what>\",\"why\":\"<why>\"}, on a single line, nothing else.\n\n"+$context+"\n\n<git-log-with-diff>\n"+$diff+"\n</git-log-with-diff>"
     }]
   }')"
 echo "$data"
