@@ -218,7 +218,9 @@ $why"
 
   # Append the issue number to the body if provided
   if [[ -n "$issue_number" ]]; then
-    body="$body\n\nClose #$issue_number"
+    body="$body
+
+Close #$issue_number"
   fi
 
   # Create the PR
