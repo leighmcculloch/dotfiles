@@ -236,7 +236,10 @@ $why"
     echo "Skipping Copilot review (private stellar repo)"
   else
     echo "Requesting review from Copilot..."
-    gh pr edit --add-reviewer 'copilot-pull-request-reviewer[bot]'
+    gh pr edit --add-reviewer 'copilot-pull-request-reviewer[bot]' || true
   fi
   echo
+
+  # Copy PR info to clipboard
+  pr
 } "$@"

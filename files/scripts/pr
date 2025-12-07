@@ -7,7 +7,11 @@ function {
   local fmt="$(echo "$json" | jq -r '":github-rainbow: \(.title) [\(.headRepository.name)#\(.number)](https://github.com/\(.headRepositoryOwner.login)/\(.headRepository.name)/\(.number)) `+\(.additions) -\(.deletions)`"')"
   echo "$fmt"
   if [ -t 1 ] ; then
-    if (( $+commands[pbcopy] )); then
+    if (( $+commands[pbcopy] )) && (( $+commands[pandoc] )); then
+      local html="$(echo "$fmt" | pandoc -f markdown -t html)"
+      local hex="$(printf '%s' "$html" | xxd -p | tr -d '\n')"
+      osascript -e "set the clipboard to {«class HTML»:«data HTML${hex}», string:\"$fmt\"}"
+    elif (( $+commands[pbcopy] )); then
       echo "$fmt" | pbcopy
     fi
   fi
