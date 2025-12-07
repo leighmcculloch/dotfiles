@@ -1,0 +1,33 @@
+#!/bin/env zsh
+
+# The GitHub MCP has a lot of tools and can consume a lot of the context window
+# if they are all enabled. So we specify the GITHUB_TOOLS env var so that the
+# GitHub MCP only loads the tools specified here. For a full list of tools see:
+# https://github.com/github/github-mcp-server.
+
+# GitHub tools that are auto permitted in files/claude/settings.json.
+github_tools_auto_permitted=(
+  "get_commit"
+  "get_file_contents"
+  "get_me"
+  "get_tag"
+  "issue_read"
+  "list_branches"
+  "list_commits"
+  "list_issues"
+  "list_pull_requests"
+  "pull_request_read"
+  "search_code"
+  "search_issues"
+  "search_pull_requests"
+)
+
+# Additional GitHub tools that are helpful.
+github_tools_requiring_permission=(
+  "create_pull_request"
+  "update_pull_request"
+  "add_issue_comment"
+  "issue_write"
+)
+
+export GITHUB_TOOLS="${(j:,:)github_tools_auto_permitted},${(j:,:)github_tools_requiring_permission}"

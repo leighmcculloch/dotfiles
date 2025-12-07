@@ -1,27 +1,12 @@
 {
-  "hooks": {
-    "PostToolUse": [
-      {
-        "matcher": "Edit|Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "f=$(jq -r '.tool_input.file_path // empty'); [ -n \"$f\" ] && [[ \"$f\" == *.go ]] && go fmt \"$f\" || true",
-            "timeout": 30
-          }
-        ]
-      },
-      {
-        "matcher": "Edit|Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "f=$(jq -r '.tool_input.file_path // empty'); [ -n \"$f\" ] && [[ \"$f\" == *.rs ]] && rustfmt \"$f\" || true",
-            "timeout": 30
-          }
-        ]
-      }
-    ]
+  "cleanupPeriodDays": 5,
+  "env": {
+    "DISABLE_NON_ESSENTIAL_MODEL_CALLS": "1",
+    "DISABLE_TELEMETRY": "1",
+    "DISABLE_ERROR_REPORTING": "1",
+    "CLAUDE_CODE_DISABLE_TERMINAL_TITLE": "1",
+    "CLAUDE_CODE_IDE_SKIP_AUTO_INSTALL": "1",
+    "CLAUDE_CODE_SUBAGENT_MODEL": "opus"
   },
   "includeCoAuthoredBy": false,
   "permissions": {
@@ -159,27 +144,17 @@
       "mcp__deepwiki__ask_question",
       "mcp__github__get_commit",
       "mcp__github__get_file_contents",
-      "mcp__github__get_label",
-      "mcp__github__get_latest_release",
       "mcp__github__get_me",
-      "mcp__github__get_release_by_tag",
       "mcp__github__get_tag",
-      "mcp__github__get_team_members",
-      "mcp__github__get_teams",
       "mcp__github__issue_read",
       "mcp__github__list_branches",
       "mcp__github__list_commits",
-      "mcp__github__list_issue_types",
       "mcp__github__list_issues",
       "mcp__github__list_pull_requests",
-      "mcp__github__list_releases",
-      "mcp__github__list_tags",
       "mcp__github__pull_request_read",
       "mcp__github__search_code",
       "mcp__github__search_issues",
       "mcp__github__search_pull_requests",
-      "mcp__github__search_repositories",
-      "mcp__github__search_users",
       "mcp__lsp-deno__definition",
       "mcp__lsp-deno__diagnostics",
       "mcp__lsp-deno__edit_file",
@@ -198,17 +173,7 @@
       "mcp__lsp-rust__hover",
       "mcp__lsp-rust__references",
       "mcp__lsp-rust__rename_symbol",
-      "mcp__memory__add_observations",
-      "mcp__memory__create_entities",
-      "mcp__memory__create_relations",
-      "mcp__memory__delete_entities",
-      "mcp__memory__delete_observations",
-      "mcp__memory__delete_relations",
-      "mcp__memory__open_nodes",
-      "mcp__memory__read_graph",
-      "mcp__memory__search_nodes",
       "mcp__perplexity__perplexity_ask",
-      "mcp__sequential-thinking__sequentialthinking",
       "WebFetch(domain:developers.stellar.org)",
       "WebFetch(domain:github.com)",
       "WebFetch(domain:api.github.com)",
@@ -241,6 +206,31 @@
     "deny": [],
     "defaultMode": "plan"
   },
+  "model": "opus",
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "f=$(jq -r '.tool_input.file_path // empty'); [ -n \"$f\" ] && [[ \"$f\" == *.go ]] && go fmt \"$f\" || true",
+            "timeout": 30
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "f=$(jq -r '.tool_input.file_path // empty'); [ -n \"$f\" ] && [[ \"$f\" == *.rs ]] && rustfmt \"$f\" || true",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
+  },
   "statusLine": {
     "type": "command",
     "command": "/Users/leighmcculloch/.claude/statusline-command.sh"
@@ -257,15 +247,6 @@
     ]
   },
   "alwaysThinkingEnabled": false,
-  "env": {
-    "DISABLE_NON_ESSENTIAL_MODEL_CALLS": "1",
-    "DISABLE_TELEMETRY": "1",
-    "DISABLE_ERROR_REPORTING": "1",
-    "CLAUDE_CODE_DISABLE_TERMINAL_TITLE": "1",
-    "CLAUDE_CODE_IDE_SKIP_AUTO_INSTALL": "1",
-    "CLAUDE_CODE_SUBAGENT_MODEL": "opus"
-  },
-  "cleanupPeriodDays": 5,
   "preferences": {
     "loadingTips": false
   },
