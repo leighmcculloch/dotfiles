@@ -1,5 +1,4 @@
-# for homebrew
-
+# Homebrew settings
 export HOMEBREW_NO_ANALYTICS=1
 export HOMEBREW_VERBOSE=1
 export HOMEBREW_VERIFY_ATTESTATIONS=1
@@ -9,26 +8,26 @@ export HOMEBREW_BOOTSNAP=1
 export HOMEBREW_ALLOWED_TAPS=
 export HOMEBREW_CASK_OPTS=--require-sha
 
+# Hardcoded brew prefix for each platform (avoids slow $(brew --prefix) calls)
 os="$(uname -s -m)"
-brew=
 case $os in
-  "Darwin x86_64"*) brew=/usr/local/bin/brew ;;
-  "Darwin arm64"*) brew=/opt/homebrew/bin/brew ;;
-  "Linux"*) brew=/home/linuxbrew/.linuxbrew/bin/brew ;;
-  *) ;;
+  "Darwin x86_64"*) BREW_PREFIX=/usr/local ;;
+  "Darwin arm64"*) BREW_PREFIX=/opt/homebrew ;;
+  "Linux"*) BREW_PREFIX=/home/linuxbrew/.linuxbrew ;;
+  *) BREW_PREFIX= ;;
 esac
 
-if [ -f $brew ] ; then
-  export PATH="$($brew --prefix)/bin:$PATH"
-  fpath=($fpath "$(brew --prefix)"/share/zsh/site-functions/)
+if [ -n "$BREW_PREFIX" ] && [ -d "$BREW_PREFIX" ]; then
+  export PATH="$BREW_PREFIX/bin:$PATH"
+  fpath=($fpath "$BREW_PREFIX/share/zsh/site-functions/")
 
   # sccache for rust
-  export RUSTC_WRAPPER="$($brew --prefix)/bin/sccache"
+  export RUSTC_WRAPPER="$BREW_PREFIX/bin/sccache"
   export SCCACHE_CACHE_SIZE="50G"
 
   # rustup bin install path
-  export PATH="$(brew --prefix rustup)/bin:$PATH"
+  export PATH="$BREW_PREFIX/opt/rustup/bin:$PATH"
 
-  # python unversioned (python instead of python3) bin path
-  export PATH="$(brew --prefix python)/libexec/bin:$PATH"
+  # python unversioned bin path
+  export PATH="$BREW_PREFIX/opt/python/libexec/bin:$PATH"
 fi

@@ -2,64 +2,113 @@ if [ "$ZPROF" ]; then
   zmodload zsh/zprof
 fi
 
-# make c-p/c-n work exactly like up/down arrows
+# Key bindings
+bindkey -e  # Use emacs key bindings as base
 bindkey "^P" up-line-or-search
 bindkey "^N" down-line-or-search
+bindkey "^[[3~" delete-char           # Delete key
+bindkey "^[^?" backward-kill-word     # Alt-Backspace (delete word backward)
+bindkey "^[d" kill-word               # Alt-d (delete word forward)
+bindkey "^[b" backward-word           # Alt-b (move word backward)
+bindkey "^[f" forward-word            # Alt-f (move word forward)
 
 # free up the c-q shortcut for use in vim
 stty start undef
 
 source ~/.zenv
 
-# oh-my-zsh
-if [ -z "$NOOMZ" ]; then
-  export ZSH=$HOME/.oh-my-zsh
-  DISABLE_AUTO_UPDATE="true"
-  if [[ "$TERM_PROGRAM" == "ghostty" || -n "$SSH_CLIENT" ]]; then
-    ZSH_TMUX_AUTOSTART=true
-    ZSH_TMUX_AUTOQUIT=false
-    ZSH_TMUX_UNICODE=true
+# Defer compinit until first completion
+function __deferred_compinit() {
+  unfunction __deferred_compinit
+  autoload -Uz compinit
+  # Regenerate dump if older than 24 hours
+  if [[ -n ~/.zcompdump(#qN.mh+24) ]]; then
+    compinit
+  else
+    compinit -C
   fi
-  ZSH_CUSTOM="$DOTFILES/files/oh-my-zsh-custom"
-  ZSH_THEME="minimal"
-  plugins=(zsh-interactive-cd)
-  if (( $+commands[git] )); then plugins+=(git git-prompt gitfast) fi
-  if (( $+commands[gh] )); then plugins+=(gh) fi
-  if (( $+commands[fzf] )); then plugins+=(fzf) fi
-  if (( $+commands[tmux] )); then plugins+=(tmux) fi
-  if (( $+commands[http] )); then plugins+=(httpie) fi
-  if (( $+commands[rustc] )); then plugins+=(rust) fi
-  if (( $+commands[stellar] )); then plugins+=(stellar) fi
-  source $ZSH/oh-my-zsh.sh
+  # Re-bind Tab to the real completion widget and trigger it
+  bindkey '^I' expand-or-complete
+  zle expand-or-complete
+}
+zle -N __deferred_compinit
+bindkey '^I' __deferred_compinit
+
+# Helper to ensure compinit is loaded before registering completions
+__ensure_compinit() {
+  if ! typeset -f compdef > /dev/null; then
+    autoload -Uz compinit
+    if [[ -n ~/.zcompdump(#qN.mh+24) ]]; then
+      compinit
+    else
+      compinit -C
+    fi
+    # Also rebind Tab now that compinit is loaded
+    bindkey '^I' expand-or-complete
+  fi
+}
+
+# Lazy-load completions to speed up startup
+# These run only when you first invoke the command
+
+# GitHub CLI
+if (( $+commands[gh] )); then
+  gh() {
+    unfunction gh
+    __ensure_compinit
+    eval "$(command gh completion -s zsh)"
+    command gh "$@"
+  }
 fi
 
-#if [[ -z "$ZELLIJ" && "$TERM_PROGRAM" == "ghostty" ]]; then
-#  zellij attach -c main
-#fi
-#if [[ -n "$ZELLIJ" ]]; then
-#  zellij_tab_name_update() {
-#    zellij action rename-tab "$(basename "${PWD/#$HOME/~}")" >/dev/null 2>&1
-#  }
-#  zellij_tab_name_update
-#  chpwd_functions+=(zellij_tab_name_update)
-#fi
+# Stellar CLI
+if (( $+commands[stellar] )); then
+  stellar() {
+    unfunction stellar
+    __ensure_compinit
+    eval "$(command stellar completion --shell zsh)"
+    command stellar "$@"
+  }
+fi
+
+# Rustup
+if (( $+commands[rustup] )); then
+  rustup() {
+    unfunction rustup
+    __ensure_compinit
+    eval "$(command rustup completions zsh)"
+    command rustup "$@"
+  }
+fi
+
+# Tmux
+if (( $+commands[tmux] )); then
+  # Auto-start tmux in ghostty or SSH
+  if [[ -z "$TMUX" && ("$TERM_PROGRAM" == "ghostty" || -n "$SSH_CLIENT") ]]; then
+    tmux attach 2>/dev/null || tmux new-session -s main
+  fi
+  alias clear="tmux send-keys C-l \; send-keys -R \; clear-history"
+fi
+
+# FZF key bindings (Ctrl-R for history, Ctrl-T for files)
+if (( $+commands[fzf] )); then
+  source /opt/homebrew/opt/fzf/shell/key-bindings.zsh
+  source /opt/homebrew/opt/fzf/shell/completion.zsh
+fi
 
 # Use a simplified prompt when recording in asciinema
 if [ $ASCIINEMA_REC ]; then
   PROMPT="$ "
 fi
 
-# tmux
-alias t=tmux
-if [ "$TMUX" ]; then
-  alias clear="tmux send-keys C-l \; send-keys -R \; clear-history"
-fi
-
-# neovim
+# general aliases
+alias l="ls -lah"
+alias p="deno run --allow-env=PERPLEXITY_API_KEY --allow-net=api.perplexity.ai:443 jsr:@leigh/perplexity-cli"
 if (( $+commands[nvim] )); then
   alias vim=nvim
 fi
 
+# Git aliases
 function git() {
   if command git rev-parse --git-dir >/dev/null 2>&1; then
     command git config core.hooksPath no-hooks
@@ -67,17 +116,41 @@ function git() {
   command git $@
 }
 
-# general aliases
-alias l="ls -lah"
-alias p="deno run --allow-env=PERPLEXITY_API_KEY --allow-net=api.perplexity.ai:443 jsr:@leigh/perplexity-cli"
+git_main_branch() {
+  command git rev-parse --git-dir &>/dev/null || return
+  for ref in refs/{heads,remotes/{origin,upstream}}/{main,trunk,master}; do
+    if command git show-ref -q --verify $ref; then
+      echo ${ref:t}; return
+    fi
+  done
+  echo master
+}
 
-# git aliases (in addition to oh-my-zsh git plugin)
-unalias gc >/dev/null 2>&1
+alias g='git'
+alias ga='git add'
+alias gaa='git add --all'
+alias 'gc!'='git commit -v --amend'
+alias 'gcn!'='git commit -v --no-edit --amend'
+alias gco='git checkout'
+alias 'gcm'='git checkout $(git_main_branch)'
+alias gd='git diff'
+alias gdca='git diff --cached'
+alias gf='git fetch'
+alias gl='git pull'
+alias gp='git push'
+alias gst='git status'
+alias gup='git pull --rebase'
+alias grb='git rebase'
+alias grbc='git rebase --continue'
+alias grba='git rebase --abort'
+alias glog='git log --oneline --decorate --graph'
+
+# git aliases (custom)
 alias gcy="gc -y"
 alias gcyp="gcy && gp"
 alias ga.="git add ."
 alias gap="git add -p"
-alias gacn!="ga. && gcn!"
+alias 'gacn!'="ga. && gcn!"
 alias gac="ga. && gc -y"
 alias gacp="ga. && gc -y && gp"
 alias gaacyp="gaa && gcy && gp"
@@ -86,7 +159,7 @@ alias gde="git diff --exit-code"
 alias gdcsv="git diff --color-words=\"[^[:space:],]+\""
 alias gdcacsv="git diff --cached --color-words=\"[^[:space:],]+\""
 alias gscsv="git show --color-words=\"[^[:space:],]+\""
-alias gacnf!="ga . && gcn! && gp -f"
+alias 'gacnf!'="ga . && gcn! && gp -f"
 alias gs="git stash"
 alias gsp="git stash pop"
 alias gsl="git stash list"
@@ -98,6 +171,7 @@ alias gwl="git worktree list"
 alias gwp="git worktree prune"
 alias grbs="git rebase --exec 'git commit --amend --no-edit -n -S' -i"
 
+# gh aliases
 alias ghco="gh co"
 alias ghprme="gh pr list --author @me"
 alias ghprco="gh pr checkout"
@@ -105,23 +179,52 @@ alias ghprco="gh pr checkout"
 # zsh opts
 unsetopt HIST_VERIFY
 
-# print exit code once after last command output
-#function track-exec-command() {
-#  zsh_exec_command=1
-#}
-#function print-exit-code() {
-#  local -i code=$?
-#  (( code == 0 )) && return
-#  (( zsh_exec_command != 1 )) && return
-#  unset zsh_exec_command
-#  print -rC1 -- ''${(%):-"%F{160}✘ exit status $code%f"}''
-#}
-#autoload -Uz add-zsh-hook
-#add-zsh-hook preexec track-exec-command
-#add-zsh-hook precmd print-exit-code
-
 # Bell on every new prompt. (See tmux config, which silences it on the active window.)
 precmd() { print -n '\a' }
+
+# Async stellar prompt info
+# Updates STELLAR_PROMPT_INFO in the background so starship can display it without blocking
+if (( $+commands[stellar] )); then
+  export STELLAR_PROMPT_INFO=""
+  typeset -g _STELLAR_ASYNC_FD=""
+
+  _stellar_prompt_callback() {
+    local fd=$1
+    # Read result
+    STELLAR_PROMPT_INFO="$(<&$fd)"
+    # Clean up
+    exec {fd}<&-
+    zle -F $fd
+    # Refresh prompt
+    zle && zle reset-prompt
+  }
+
+  _stellar_prompt_precmd() {
+    # Close previous fd if still open
+    if [[ -n "$_STELLAR_ASYNC_FD" ]] && { : <&$_STELLAR_ASYNC_FD } 2>/dev/null; then
+      zle -F $_STELLAR_ASYNC_FD
+      exec {_STELLAR_ASYNC_FD}<&-
+    fi
+
+    # Start async job
+    exec {_STELLAR_ASYNC_FD}< <(
+      ver="v$(command stellar version --only-version-major 2>/dev/null)"
+      net="$(command stellar env STELLAR_NETWORK 2>/dev/null)"
+      acct="$(command stellar env STELLAR_ACCOUNT 2>/dev/null)"
+      info="$ver"
+      [[ -n "$net" ]] && info+=" $net"
+      [[ -n "$acct" ]] && info+=" $acct"
+      print -rn -- "$info"
+    )
+
+    # Register callback for when data is ready
+    zle -F $_STELLAR_ASYNC_FD _stellar_prompt_callback
+  }
+
+  zle -N _stellar_prompt_callback
+  autoload -Uz add-zsh-hook
+  add-zsh-hook precmd _stellar_prompt_precmd
+fi
 
 eval "$(starship init zsh)"
 

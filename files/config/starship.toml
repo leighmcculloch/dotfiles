@@ -18,7 +18,7 @@ $rust\
 $golang\
 $deno\
 $nodejs\
-${custom.stellar-cli}\
+${env_var.STELLAR_PROMPT_INFO}\
 $line_break\
 [\\$ ](bold #555555)"""
 
@@ -72,11 +72,8 @@ ahead = '↑$count'
 diverged = '↑$ahead_count↓$behind_count'
 behind = '↓$count'
 
-[custom.stellar-cli]
-when = "which stellar >/dev/null"
-shell = ["/bin/zsh", "-f"]
-command = "arr=(v$(stellar version --only-version-major) $(stellar env STELLAR_NETWORK) $(stellar env STELLAR_ACCOUNT)); print -R ${(j| |)arr}"
-format = "[\ueb44 $output](bold #e4db82) "
+[env_var.STELLAR_PROMPT_INFO]
+format = "[\ueb44 $env_value](bold #e4db82) "
 
 [rust]
 format = "[\ue68b $toolchain](bold #ed6b7a) "
