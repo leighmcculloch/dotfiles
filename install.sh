@@ -37,18 +37,6 @@ ln -sf "$HOME/.ssh_known_hosts" "$HOME/.ssh/known_hosts"
 # setup paths, etc
 source $PWD/files/zenv
 
-# install oh-my-zsh
-export ZSH="$HOME/.oh-my-zsh"
-if [ ! -d "$ZSH" ]; then
-  mkdir -p "$ZSH"
-  pushd "$ZSH"
-  git init -b master # The upstream oh-my-zsh's default branch is 'master'.
-  git remote add origin https://github.com/robbyrussell/oh-my-zsh
-  git fetch origin d41ca84af1271e8bfbe26f581cebe3b86521d0db
-  git reset --hard FETCH_HEAD
-  popd
-fi
-
 # install brew and minimal tools
 if (( ! $+commands[brew] )); then
   if [ -t 0 ]; then; else
