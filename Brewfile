@@ -69,6 +69,7 @@ if OS.mac?
   cask "motion"
   cask "voiceink"
   brew "opencode"
+  cask "claude"
   cask "claude-code"
   cask "granola"
 
