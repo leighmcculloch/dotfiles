@@ -14,15 +14,28 @@ for f in *; do
   src="$PWD/$f"
   dest="$HOME/.$f"
   echo -n "Linking $src at $dest... "
+  # check if destination already exists
   if [ -f "$dest" ] || [ -d "$dest" ]; then
+    # destination already exists
     if [ -L "$dest" ]; then
+      # existing destination is a symlink, safe to replace
       rm "$dest"
       ln -s "$src" "$dest"
       echo "done (replacing symlink)."
     else
-      echo "$fg[red]skipping because exists$reset_color."
+      # existing destination is a real file/dir, back it up first
+      # find next available backup name
+      i=0
+      while [ -e "$dest.bak$i" ]; do
+        ((i++))
+      done
+      backup="$dest.bak$i"
+      mv "$dest" "$backup"
+      ln -s "$src" "$dest"
+      echo "$fg[yellow]done (backed up to $backup)$reset_color."
     fi
   else
+    # destination doesn't exist, create symlink
     ln -sf "$src" "$dest"
     echo "done."
   fi
@@ -36,6 +49,18 @@ ln -sf "$HOME/.ssh_known_hosts" "$HOME/.ssh/known_hosts"
 
 # setup paths, etc
 source $PWD/files/zenv
+
+# install oh-my-zsh
+export ZSH="$HOME/.oh-my-zsh"
+if [ ! -d "$ZSH" ]; then
+  mkdir -p "$ZSH"
+  pushd "$ZSH"
+  git init -b master # The upstream oh-my-zsh's default branch is 'master'.
+  git remote add origin https://github.com/robbyrussell/oh-my-zsh
+  git fetch origin d41ca84af1271e8bfbe26f581cebe3b86521d0db
+  git reset --hard FETCH_HEAD
+  popd
+fi
 
 # install brew and minimal tools
 if (( ! $+commands[brew] )); then
