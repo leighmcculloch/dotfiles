@@ -11,7 +11,9 @@ gh codespace create -d "$branch" -R "$repo" -b "$branch" -m "$machine"
 
 name="$(gh codespace list --json name,displayName | jq -r '.[] | select(.displayName == "'"$branch"'") | .name')"
 
-gh codespace ssh -c "$name" -- tail -f /workspaces/.codespaces/.persistedshare/creation.log || true
+trap '' INT
+gh codespace ssh -c "$name" -- tail -f /workspaces/.codespaces/.persistedshare/creation.log
+trap - INT
 
 gh codespace ssh -c "$name"
 
