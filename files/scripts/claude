@@ -9,7 +9,6 @@ if [ -n "$BREW_PREFIX" ] && [ -x "$BREW_PREFIX/bin/claude" ]; then
   CLAUDES["brew"]="$BREW_PREFIX/bin/claude"
 fi
 
-NPM_ROOT="$(npm root -g 2>/dev/null)"
 if [ -n "$NPM_ROOT" ] && [ -x "$NPM_ROOT/@anthropic-ai/claude-code/cli.js" ]; then
   CLAUDES["npm"]="$NPM_ROOT/@anthropic-ai/claude-code/cli.js"
 fi

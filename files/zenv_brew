@@ -30,4 +30,7 @@ if [ -n "$BREW_PREFIX" ] && [ -d "$BREW_PREFIX" ]; then
 
   # python unversioned bin path
   export PATH="$BREW_PREFIX/opt/python/libexec/bin:$PATH"
+
+  # npm root path
+  export NPM_ROOT="$BREW_PREFIX/lib/node_modules"
 fi
