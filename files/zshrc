@@ -178,6 +178,10 @@ alias ghco="gh co"
 alias ghprme="gh pr list --author @me"
 alias ghprco="gh pr checkout"
 
+# Completion matching: partial/substring matching (like Oh My Zsh)
+# Allows typing end of directory name and matching from anywhere
+zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}' 'r:|=*' 'l:|=* r:|=*'
+
 # zsh opts
 unsetopt HIST_VERIFY
 
