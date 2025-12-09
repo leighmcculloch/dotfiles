@@ -59,7 +59,7 @@ fi
 # setup paths, etc
 source $PWD/files/zenv
 
-if (( ! $+commands[brew] )); then
+if (( $+commands[brew] )); then
   # disable attestation when non-interactive and no GitHub token available
   if [ -z "$HOMEBREW_GITHUB_API_TOKEN" ] && [ ! -t 0 ]; then
     export HOMEBREW_NO_VERIFY_ATTESTATIONS=1
