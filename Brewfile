@@ -77,6 +77,7 @@ if OS.mac?
   mas "Numbers", id: 409203825
   mas "Pages", id: 409201541
   mas "Day Progress", id: 6450280202
+  mas "Audible", id: 379693831
 
   #cask "tailscale-app"
 
