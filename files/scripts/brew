@@ -1,4 +1,4 @@
 #!/usr/bin/env zsh
 
-export HOMEBREW_GITHUB_API_TOKEN="$(gh auth token)"
+export HOMEBREW_GITHUB_API_TOKEN="${HOMEBREW_GITHUB_API_TOKEN:-$(gh auth token)}"
 exec "$BREW_PREFIX/bin/brew" "$@"
