@@ -63,16 +63,11 @@ source $PWD/files/zenv
 brew install --formula gh
 
 # install packages via brew
-if [ -n "${CODESPACES:-}" ]; then
-  # on GitHub Codespaces, pull vendored Homebrew installation
-  ./vendor-brew.sh pull
-else
-  if [ -z "${HOMEBREW_GITHUB_API_TOKEN:-}" ] && [ ! -t 0 ]; then
-    # disable attestation when non-interactive and no GitHub token available
-    export HOMEBREW_NO_VERIFY_ATTESTATIONS=1
-  fi
-  brew bundle install --no-upgrade
+if [ -z "${HOMEBREW_GITHUB_API_TOKEN:-}" ] && [ ! -t 0 ]; then
+  # disable attestation when non-interactive and no GitHub token available
+  export HOMEBREW_NO_VERIFY_ATTESTATIONS=1
 fi
+brew bundle install --no-upgrade
 
 # install plugins/extensions
 ./install-docker-cli-plugins.sh
