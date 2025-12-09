@@ -47,9 +47,6 @@ mkdir -p "$HOME/.ssh"
 ln -sf "$HOME/.ssh_config" "$HOME/.ssh/config"
 ln -sf "$HOME/.ssh_known_hosts" "$HOME/.ssh/known_hosts"
 
-# setup paths, etc
-source $PWD/files/zenv
-
 # install brew and minimal tools
 if (( ! $+commands[brew] )); then
   if [ -t 0 ]; then; else
@@ -57,7 +54,9 @@ if (( ! $+commands[brew] )); then
   fi
   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 fi
-source $PWD/files/zenv_brew
+
+# setup paths, etc
+source $PWD/files/zenv
 
 # install gh cli early so it is available for git credential helper
 brew install --formula gh
