@@ -47,7 +47,7 @@ mkdir -p "$HOME/.ssh"
 ln -sf "$HOME/.ssh_config" "$HOME/.ssh/config"
 ln -sf "$HOME/.ssh_known_hosts" "$HOME/.ssh/known_hosts"
 
-# install brew and minimal tools
+# install brew
 if (( ! $+commands[brew] )); then
   if [ -t 0 ]; then; else
     export NONINTERACTIVE=1
@@ -59,14 +59,18 @@ fi
 # setup paths, etc
 source $PWD/files/zenv
 
-if (( $+commands[brew] )); then
-  # disable attestation when non-interactive and no GitHub token available
+# install gh cli early so it is available for git credential helper
+brew install --formula gh
+
+# install packages via brew
+if [ -n "${CODESPACES:-}" ]; then
+  # on GitHub Codespaces, pull vendored Homebrew installation
+  ./vendor-brew.sh pull
+else
   if [ -z "${HOMEBREW_GITHUB_API_TOKEN:-}" ] && [ ! -t 0 ]; then
+    # disable attestation when non-interactive and no GitHub token available
     export HOMEBREW_NO_VERIFY_ATTESTATIONS=1
   fi
-
-  # install gh cli early so it is available for git credential helper
-  brew install --formula gh
   brew bundle install --no-upgrade
 fi
 
