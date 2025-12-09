@@ -51,6 +51,7 @@ ln -sf "$HOME/.ssh_known_hosts" "$HOME/.ssh/known_hosts"
 if (( ! $+commands[brew] )); then
   if [ -t 0 ]; then; else
     export NONINTERACTIVE=1
+    export HOMEBREW_NO_VERIFY_ATTESTATIONS=1
   fi
   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 fi
