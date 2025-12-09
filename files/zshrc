@@ -55,7 +55,7 @@ __ensure_compinit() {
 if (( $+commands[gh] )); then
   gh() {
     unfunction gh
-    __ensure_compinit
+    (( $+functions[__ensure_compinit] )) && __ensure_compinit
     eval "$(command gh completion -s zsh)"
     command gh "$@"
   }
@@ -65,7 +65,7 @@ fi
 if (( $+commands[stellar] )); then
   stellar() {
     unfunction stellar
-    __ensure_compinit
+    (( $+functions[__ensure_compinit] )) && __ensure_compinit
     eval "$(command stellar completion --shell zsh)"
     command stellar "$@"
   }
@@ -75,7 +75,7 @@ fi
 if (( $+commands[rustup] )); then
   rustup() {
     unfunction rustup
-    __ensure_compinit
+    (( $+functions[__ensure_compinit] )) && __ensure_compinit
     eval "$(command rustup completions zsh)"
     command rustup "$@"
   }
