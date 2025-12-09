@@ -17,6 +17,8 @@ case $os in
   *) BREW_PREFIX= ;;
 esac
 
+export BREW_PREFIX
+
 if [ -n "$BREW_PREFIX" ] && [ -d "$BREW_PREFIX" ]; then
   export PATH="$BREW_PREFIX/bin:$PATH"
   fpath=($fpath "$BREW_PREFIX/share/zsh/site-functions/")
