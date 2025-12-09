@@ -59,10 +59,16 @@ fi
 # setup paths, etc
 source $PWD/files/zenv
 
-# install gh cli early so it is available for git credential helper
-brew install --formula gh
+if (( ! $+commands[brew] )); then
+  # disable attestation when non-interactive and no GitHub token available
+  if [ -z "$HOMEBREW_GITHUB_API_TOKEN" ] && [ ! -t 0 ]; then
+    export HOMEBREW_NO_VERIFY_ATTESTATIONS=1
+  fi
 
-brew bundle install --no-upgrade
+  # install gh cli early so it is available for git credential helper
+  brew install --formula gh
+  brew bundle install --no-upgrade
+fi
 
 # install plugins/extensions
 ./install-docker-cli-plugins.sh
