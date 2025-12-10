@@ -107,7 +107,7 @@ fi
 
 # general aliases
 alias l="ls -lah"
-alias p="deno run --allow-env=PERPLEXITY_API_KEY --allow-net=api.perplexity.ai:443 jsr:@leigh/perplexity-cli"
+alias p="source ~/.zenv_apikey_perplexity && deno run --allow-env=PERPLEXITY_API_KEY --allow-net=api.perplexity.ai:443 jsr:@leigh/perplexity-cli"
 if (( $+commands[nvim] )); then
   alias vim=nvim
 fi
