@@ -59,8 +59,10 @@ fi
 # setup paths, etc
 source $PWD/files/zenv
 
-# install gh cli early so it is available for git credential helper
-brew install --formula gh
+# install some commands ahead of everything else as they are a bare requirement for the dot files to work
+# - gh cli so it is available for git credential helper and scripts
+# - starship so it available to the prompt
+brew install --formula gh starship
 
 # install packages via brew
 if [ -z "${HOMEBREW_GITHUB_API_TOKEN:-}" ] && [ ! -t 0 ]; then
