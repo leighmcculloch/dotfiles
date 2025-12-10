@@ -71,6 +71,7 @@ if OS.mac?
   brew "opencode"
   cask "claude"
   cask "claude-code"
+  brew "gemini-cli"
   cask "granola"
 
   brew "mas"
