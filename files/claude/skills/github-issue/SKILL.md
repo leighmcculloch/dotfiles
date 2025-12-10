@@ -34,8 +34,7 @@ path: .github/ISSUE_TEMPLATE/
 **Step 3: Select appropriate template**
 Analyze the user's request and auto-select the most appropriate template:
 - Bug reports: templates containing "bug" in name
-- Feature requests: templates containing "feature" or "request"
-- Proposals: templates containing "proposal" or "rfc"
+- Feature requests: templates containing "feature" or "request" or "proposal" or "rfc"
 
 If multiple templates exist and the best match is unclear, briefly list options and ask the user.
 
