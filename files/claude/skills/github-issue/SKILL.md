@@ -28,7 +28,7 @@ path: .github/ISSUE_TEMPLATE/
 ```
 owner: {repo_owner}
 repo: .github
-path: ISSUE_TEMPLATE/
+path: .github/ISSUE_TEMPLATE/
 ```
 
 **Step 3: Select appropriate template**
