@@ -72,7 +72,7 @@ ln -sf \
 # - gh cli so it is available for git credential helper and scripts
 # - starship so it available to the prompt
 echo "$fg[cyan]Installing critical programs with brew...$reset_color"
-brew install --formula gh starship nvim
+brew install --formula gh starship nvim delta
 
 # install nvim plugins
 echo "$fg[cyan]Installing nvim plugins...$reset_color"
