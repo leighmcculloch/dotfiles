@@ -1,42 +1,57 @@
-brew "asciinema"
-brew "agg"
-brew "bat"
-brew "csvlens"
-brew "fd"
-brew "fzf"
-brew "gh"
-brew "git"
-brew "git-delta"
-brew "gum"
-brew "httpie"
-brew "jless"
-brew "jq"
-brew "ripgrep"
-brew "slides"
-brew "starship"
-brew "stellar-cli"
-brew "tig"
-brew "tmux"
-brew "tree"
-brew "watchexec"
-brew "zstd"
-brew "prettier"
+# Install brew formula only if the command doesn't exist outside of BREW_PREFIX
+def brew_if_missing(formula, cmd: nil, override: false)
+  cmd ||= formula
+  brew_prefix = `zsh -lc 'echo $BREW_PREFIX'`.chomp
+  # Check if command exists in PATH but not under brew prefix
+  path_dirs = `zsh -lc 'echo $PATH'`.chomp.split(":").reject { |p| p.start_with?(brew_prefix) }
+  found_path = path_dirs.find { |dir| File.executable?(File.join(dir, cmd)) }
+  if found_path && !override
+    puts "Skipping #{formula}: #{cmd} found at #{File.join(found_path, cmd)}"
+  elsif found_path && override
+    puts "Overriding #{formula}: #{cmd} found at #{File.join(found_path, cmd)}, but installing anyway"
+    brew formula
+  else
+    brew formula
+  end
+end
 
-brew "rustup"
-brew "sccache"
-brew "go"
-brew "deno"
-brew "node"
-brew "uv"
-brew "zig"
+brew_if_missing "asciinema"
+brew_if_missing "agg"
+brew_if_missing "bat"
+brew_if_missing "csvlens"
+brew_if_missing "fd"
+brew_if_missing "fzf"
+brew_if_missing "gh"
+brew_if_missing "git", override: OS.mac?
+brew_if_missing "git-delta", cmd: "delta"
+brew_if_missing "gum"
+brew_if_missing "httpie", cmd: "http"
+brew_if_missing "jless"
+brew_if_missing "jq", override: OS.mac?
+brew_if_missing "ripgrep", cmd: "rg"
+brew_if_missing "slides"
+brew_if_missing "starship"
+brew_if_missing "stellar-cli", cmd: "stellar"
+brew_if_missing "tig"
+brew_if_missing "tmux"
+brew_if_missing "tree"
+brew_if_missing "watchexec"
+brew_if_missing "zstd"
+brew_if_missing "prettier"
 
-brew "neovim"
-brew "lua-language-server"
-brew "gopls"
-brew "zls"
-brew "vscode-langservers-extracted"
+brew_if_missing "rustup"
+brew_if_missing "sccache"
+brew_if_missing "go"
+brew_if_missing "deno"
+brew_if_missing "node"
+brew_if_missing "uv"
+brew_if_missing "zig"
 
-brew "stellar-core"
+brew_if_missing "neovim", cmd: "nvim"
+brew_if_missing "lua-language-server"
+brew_if_missing "gopls"
+brew_if_missing "zls"
+brew_if_missing "vscode-langservers-extracted", cmd: "vscode-json-language-server"
 
 go "github.com/leighmcculloch/gas/v3"
 go "github.com/leighmcculloch/gate"
@@ -79,6 +94,8 @@ if OS.mac?
   mas "Pages", id: 409201541
   mas "Day Progress", id: 6450280202
   mas "Audible", id: 379693831
+
+  brew "stellar-core"
 
   #cask "tailscale-app"
 
