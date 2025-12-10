@@ -6,14 +6,15 @@ set -o nounset
 
 autoload -U colors && colors
 
-echo "Installing for $(uname -s -p) in $(echo $0)..."
+echo "$fg[cyan]Installing for $(uname -s -p) in $(echo $0)...$reset_color"
 
 # symlink files
+echo "$fg[cyan]Symlinking files...$reset_color"
 pushd files
 for f in *; do
   src="$PWD/$f"
   dest="$HOME/.$f"
-  echo -n "Linking $src at $dest... "
+  echo -n "$fg[cyan]Linking $src at $dest... $reset_color"
   # check if destination already exists
   if [ -f "$dest" ] || [ -d "$dest" ]; then
     # destination already exists
@@ -21,7 +22,7 @@ for f in *; do
       # existing destination is a symlink, safe to replace
       rm "$dest"
       ln -s "$src" "$dest"
-      echo "done (replacing symlink)."
+      echo "$fg[cyan]done (replacing symlink).$reset_color"
     else
       # existing destination is a real file/dir, back it up first
       # find next available backup name
@@ -32,12 +33,12 @@ for f in *; do
       backup="$dest.bak$i"
       mv "$dest" "$backup"
       ln -s "$src" "$dest"
-      echo "$fg[yellow]done (backed up to $backup)$reset_color."
+      echo "$fg[cyan]done (backed up to $backup).$reset_color"
     fi
   else
     # destination doesn't exist, create symlink
     ln -sf "$src" "$dest"
-    echo "done."
+    echo "$fg[cyan]done.$reset_color"
   fi
 done
 popd
@@ -55,6 +56,7 @@ ln -sf \
 
 # install brew
 if (( ! $+commands[brew] )); then
+  echo "$fg[cyan]Installing brew...$reset_color"
   if [ -t 0 ]; then; else
     export NONINTERACTIVE=1
     export HOMEBREW_NO_VERIFY_ATTESTATIONS=1
@@ -63,19 +65,27 @@ if (( ! $+commands[brew] )); then
 fi
 
 # setup paths, etc
+echo "$fg[cyan]Sourcing zenv...$reset_color"
 source $PWD/files/zenv
 
 # install some commands ahead of everything else as they are a bare requirement for the dot files to work
 # - gh cli so it is available for git credential helper and scripts
 # - starship so it available to the prompt
+echo "$fg[cyan]Installing critical programs with brew...$reset_color"
 brew install --formula gh starship
 
+echo "$fg[green]Critical install complete.$reset_color"
+
 # install nvim plugins
+echo "$fg[cyan]Installing nvim plugins...$reset_color"
 nvim +PlugInstall +qall
 
 # install additional packages via brew
+echo "$fg[cyan]Installing additional programs with brew...$reset_color"
 if [ -z "${HOMEBREW_GITHUB_API_TOKEN:-}" ] && [ ! -t 0 ]; then
   # disable attestation when non-interactive and no GitHub token available
   export HOMEBREW_NO_VERIFY_ATTESTATIONS=1
 fi
 brew bundle install --no-upgrade
+
+echo "$fg[green]Install complete.$reset_color"
