@@ -14,7 +14,7 @@ pushd files
 for f in *; do
   src="$PWD/$f"
   dest="$HOME/.$f"
-  echo -n "$fg[cyan]Linking $src at $dest... $reset_color"
+  echo -n "Linking $src at $dest... "
   # check if destination already exists
   if [ -f "$dest" ] || [ -d "$dest" ]; then
     # destination already exists
@@ -22,7 +22,7 @@ for f in *; do
       # existing destination is a symlink, safe to replace
       rm "$dest"
       ln -s "$src" "$dest"
-      echo "$fg[cyan]done (replacing symlink).$reset_color"
+      echo "done (replacing symlink)."
     else
       # existing destination is a real file/dir, back it up first
       # find next available backup name
@@ -33,12 +33,12 @@ for f in *; do
       backup="$dest.bak$i"
       mv "$dest" "$backup"
       ln -s "$src" "$dest"
-      echo "$fg[cyan]done (backed up to $backup).$reset_color"
+      echo "done (backed up to $backup)."
     fi
   else
     # destination doesn't exist, create symlink
     ln -sf "$src" "$dest"
-    echo "$fg[cyan]done.$reset_color"
+    echo "done."
   fi
 done
 popd
