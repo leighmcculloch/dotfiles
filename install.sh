@@ -43,20 +43,10 @@ for f in *; do
 done
 popd
 
-# setup paths, etc
-echo "$fg[cyan]Sourcing zenv...$reset_color"
-source $PWD/files/zenv
-
 # symlink ssh config into existing .ssh dir
 mkdir -p "$HOME/.ssh"
 ln -sf "$HOME/.ssh_config" "$HOME/.ssh/config"
 ln -sf "$HOME/.ssh_known_hosts" "$HOME/.ssh/known_hosts"
-
-# symlink docker cli plugins
-mkdir -p $HOME/.docker/cli-plugins
-ln -sf \
-  "$BREW_PREFIX/opt/docker-buildx/lib/docker/cli-plugins/docker-buildx" \
-  "$HOME/.docker/cli-plugins/docker-buildx"
 
 # install brew
 if (( ! $+commands[brew] )); then
@@ -67,6 +57,16 @@ if (( ! $+commands[brew] )); then
   fi
   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 fi
+
+# setup paths, etc
+echo "$fg[cyan]Sourcing zenv...$reset_color"
+source $PWD/files/zenv
+
+# symlink docker cli plugins
+mkdir -p $HOME/.docker/cli-plugins
+ln -sf \
+  "$BREW_PREFIX/opt/docker-buildx/lib/docker/cli-plugins/docker-buildx" \
+  "$HOME/.docker/cli-plugins/docker-buildx"
 
 # install some commands ahead of everything else as they are a bare requirement for the dot files to work
 # - gh cli so it is available for git credential helper and scripts
