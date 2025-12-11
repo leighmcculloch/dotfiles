@@ -13,10 +13,12 @@
 	commentChar = ";"
 	hooksPath = no-hooks
 	pager = delta
-
+[gpg.ssh]
+  allowedSignersFile = ~/.gitallowedsignersfile
+[log]
+  showSignature = true
 [interactive]
 	diffFilter = delta --color-only
-
 [advice]
 	detachedHead = false
 [pager]
