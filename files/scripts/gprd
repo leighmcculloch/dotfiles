@@ -50,12 +50,12 @@ function {
   local repo_url="$(git remote get-url origin | sed 's/\.git$//')"
   local context_json=""
   if [[ -n "$issue_number" ]]; then
-    echo Issue Number: $issue_number
-    local issue_json="$(gh issue view "$issue_number" --json title,body,comments)"
-    context_json="$(jq -n --arg repo "$repo_url" --arg issue_num "$issue_number" --argjson issue "$issue_json" '{
+    local issue_json="$(gh issue view "$issue_number" --json url,number,title,body,comments)"
+    echo Issue: $(<<< "$issue_json" jq -r '.url + " - " + .title')
+    context_json="$(jq -n --arg repo "$repo_url" --argjson issue "$issue_json" '{
       repository: $repo,
       issue: {
-        number: $issue_num,
+        number: $issue.number,
         title: $issue.title,
         body: $issue.body,
         comments: [$issue.comments[] | {author: .author.login, body: .body}]
