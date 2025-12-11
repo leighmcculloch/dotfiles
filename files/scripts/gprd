@@ -20,19 +20,11 @@ function {
   done
   set -- "${args[@]}"
 
-  # Determine base branch for the PR by finding the closest ancestor commit that
-  # has another branch pointing to it. This identifies where the current branch
-  # diverged from.
-  local current_branch="$(git rev-parse --abbrev-ref HEAD)"
-  local default_branch="$(gh repo view --json defaultBranchRef --jq .defaultBranchRef.name)"
-  # Walk back through commit history to find first commit with another branch
-  local ancestor_branch=""
-  for commit in $(git rev-list HEAD); do
-    ancestor_branch="$(git branch --points-at "$commit" --format='%(refname:short)' | grep -v "^${current_branch}$" | head -1)"
-    if [[ -n "$ancestor_branch" ]]; then
-      break
-    fi
-  done
+  # Get branch info (current, default, ancestor)
+  local branch_info="$(gbinfo)"
+  local current_branch="$(echo "$branch_info" | jq -r '.current_branch')"
+  local default_branch="$(echo "$branch_info" | jq -r '.default_branch')"
+  local ancestor_branch="$(echo "$branch_info" | jq -r '.ancestor_branch // empty')"
 
   # If an ancestor branch was found (and it's not the default), let user choose.
   # Otherwise just use the default branch.

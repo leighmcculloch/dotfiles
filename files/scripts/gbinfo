@@ -1,0 +1,36 @@
+#!/usr/bin/env zsh
+
+set -o nounset
+
+function {
+  local current_branch="$(git rev-parse --abbrev-ref HEAD)"
+  local default_branch="$(gh repo view --json defaultBranchRef --jq .defaultBranchRef.name)"
+
+  local ancestor_branch=""
+  for commit in $(git rev-list HEAD); do
+    ancestor_branch="$(git branch --points-at "$commit" --format='%(refname:short)' | grep -v "^${current_branch}$" | head -1)"
+    if [[ -n "$ancestor_branch" ]]; then
+      break
+    fi
+  done
+
+  if [[ -n "$ancestor_branch" ]]; then
+    jq -n \
+      --arg current "$current_branch" \
+      --arg default "$default_branch" \
+      --arg ancestor "$ancestor_branch" \
+      '{
+        current_branch: $current,
+        default_branch: $default,
+        ancestor_branch: $ancestor
+      }'
+  else
+    jq -n \
+      --arg current "$current_branch" \
+      --arg default "$default_branch" \
+      '{
+        current_branch: $current,
+        default_branch: $default
+      }'
+  fi
+}
