@@ -21,7 +21,7 @@
 	detachedHead = false
 [pager]
 	branch = 
-        stash = 
+  stash = 
 [branch]
 	sort = -committerdate
 	autoSetupMerge = always
