@@ -48,10 +48,10 @@ Review all gathered context and create a summary that:
 - Lists the key modifications made
 - Frames everything in **future tense** as work to be done
 
-**Important:** Write the issue as if the work hasn't been done yet. Transform:
-- "Added X" → "Add X"
-- "Fixed bug in Y" → "Fix bug in Y"
-- "Refactored Z" → "Refactor Z"
+**Important:** Write the issue to describe the **problem or need**, not the solution. Issues should focus on what's wrong or what's needed, while PRs describe the fix. Transform completed work into problem statements:
+- "Added feature X" → "Need feature X" or "Support for X"
+- "Fixed bug where Y crashed" → "Y crashes when..." or "Bug: Y fails under..."
+- "Refactored Z for performance" → "Z is slow" or "Performance issue in Z"
 
 ### 5. Hand Off to GitHub Issue Skill
 
