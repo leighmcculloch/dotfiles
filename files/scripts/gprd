@@ -33,7 +33,7 @@ function {
     local ancestor_count="$(git rev-list --count ${ancestor_branch}..HEAD)"
     local default_count="$(git rev-list --count ${default_branch}..HEAD)"
     local choice="$(gum choose --header "Base branch:" "${ancestor_branch} (${ancestor_count} commits)" "${default_branch} (${default_count} commits)")"
-    base_branch="${choice% (*}"
+    base_branch="${choice% \(*}"
   else
     base_branch="$default_branch"
   fi
