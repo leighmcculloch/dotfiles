@@ -3,10 +3,10 @@
 # This won't be added again if you remove it.
 Include ~/.orbstack/ssh/config
 
-Include ~/.ssh/config.local
-
 Host *
   HashKnownHosts no
   StrictHostKeyChecking yes
   CheckHostIP no
   UserKnownHostsFile ~/.ssh/known_hosts ~/.ssh/known_hosts_private
+
+Include ~/.ssh/config.local
