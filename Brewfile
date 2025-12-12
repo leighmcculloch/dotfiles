@@ -80,7 +80,7 @@ if OS.mac?
   cask "discord"
   cask "ghostty"
   cask "sublime-text"
-  #cask "lm-studio"
+  cask "lm-studio"
   cask "motion"
   cask "voiceink"
   brew "opencode"
