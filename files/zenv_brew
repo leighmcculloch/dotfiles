@@ -6,7 +6,7 @@ export HOMEBREW_NO_INSECURE_REDIRECT=1
 export HOMEBREW_DISPLAY_INSTALL_TIMES=1
 export HOMEBREW_BOOTSNAP=1
 export HOMEBREW_ALLOWED_TAPS=
-export HOMEBREW_CASK_OPTS=--require-sha
+export HOMEBREW_CASK_OPTS_REQUIRE_SHA=1
 
 # Hardcoded brew prefix for each platform (avoids slow $(brew --prefix) calls)
 os="$(uname -s -m)"
