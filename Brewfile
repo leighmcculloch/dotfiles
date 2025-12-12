@@ -105,8 +105,7 @@ if OS.mac?
     cask "nordlayer"
     mas "Slack", id: 803453959
     mas "Telegram", id: 747648890
-    tap "fastrepl/hyprnote"
-    cask "fastrepl/hyprnote/hyprnote", args: { require_sha: false }
+    cask "hyprnote"
   else
     cask "nordvpn"
     cask "doxie"
