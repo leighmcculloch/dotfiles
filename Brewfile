@@ -1,3 +1,5 @@
+tap "leighmcculloch/dotfiles", "#{ENV['PWD']}"
+
 # Install brew formula only if the command doesn't exist outside of BREW_PREFIX
 def brew_if_missing(formula, cmd: nil, override: false)
   cmd ||= formula
@@ -104,7 +106,7 @@ if OS.mac?
     cask "nordlayer"
     mas "Slack", id: 803453959
     mas "Telegram", id: 747648890
-    cask "hyprnote"
+    cask "leighmcculloch/dotfiles/hyprnote"
   else
     cask "nordvpn"
     cask "doxie"
