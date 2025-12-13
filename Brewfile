@@ -91,7 +91,6 @@ if OS.mac?
   cask "claude"
   cask "claude-code"
   brew "gemini-cli"
-  cask "granola"
 
   brew "mas"
   mas "Numbers", id: 409203825
