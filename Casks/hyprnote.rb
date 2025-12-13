@@ -10,5 +10,5 @@ cask "hyprnote" do
   depends_on macos: ">= :sonoma"
   depends_on arch: :arm64
 
-  app "Hyprnote.app"
+  app "Hyprnote Nightly.app"
 end
