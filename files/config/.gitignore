@@ -10,3 +10,4 @@ stellar/
 colima/
 pnpm/
 swiftpm/
+*/ssh/agent.toml
