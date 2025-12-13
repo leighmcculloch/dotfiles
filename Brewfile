@@ -75,6 +75,7 @@ if OS.mac?
   brew "wasm-pack"
   brew "vhs"
 
+  cask "obsidian"
   cask "arc"
   cask "font-fira-code"
   cask "font-fira-code-nerd-font"
