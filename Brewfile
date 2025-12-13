@@ -33,7 +33,6 @@ brew_if_missing "jq", override: OS.mac?
 brew_if_missing "ripgrep", cmd: "rg"
 brew_if_missing "slides"
 brew_if_missing "starship"
-brew_if_missing "stellar-cli", cmd: "stellar"
 brew_if_missing "tig"
 brew_if_missing "tmux"
 brew_if_missing "tree"
@@ -58,6 +57,8 @@ brew_if_missing "vscode-langservers-extracted", cmd: "vscode-json-language-serve
 go "github.com/leighmcculloch/gas/v3"
 go "github.com/leighmcculloch/gate"
 go "github.com/github/github-mcp-server/cmd/github-mcp-server"
+
+brew "stellar-cli"
 
 if OS.mac?
   brew "autoconf"
