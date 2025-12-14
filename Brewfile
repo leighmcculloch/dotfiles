@@ -39,7 +39,6 @@ brew_if_missing "tree"
 brew_if_missing "watchexec"
 brew_if_missing "zstd"
 brew_if_missing "prettier"
-brew_if_missing "serie"
 
 brew_if_missing "rustup"
 brew_if_missing "sccache"
