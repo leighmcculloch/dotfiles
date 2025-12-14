@@ -85,7 +85,6 @@ if OS.mac?
   cask "ghostty"
   cask "sublime-text"
   cask "lm-studio"
-  cask "motion"
   cask "voiceink"
   brew "opencode"
   cask "claude"
