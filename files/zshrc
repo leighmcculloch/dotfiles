@@ -17,6 +17,19 @@ stty start undef
 
 source ~/.zenv
 
+# Stub compdef to queue registrations until compinit runs
+typeset -a __compdef_queue
+compdef() { __compdef_queue+=("$@") }
+
+# Process queued compdef calls after compinit
+__process_compdef_queue() {
+  unfunction compdef  # Remove stub
+  for args in "${__compdef_queue[@]}"; do
+    compdef ${=args}  # Call real compdef with queued args
+  done
+  unset __compdef_queue
+}
+
 # Defer compinit until first completion
 function __deferred_compinit() {
   unfunction __deferred_compinit
@@ -27,6 +40,7 @@ function __deferred_compinit() {
   else
     compinit -C
   fi
+  (( $+functions[__process_compdef_queue] )) && __process_compdef_queue
   # Re-bind Tab to the real completion widget and trigger it
   bindkey '^I' expand-or-complete
   zle expand-or-complete
@@ -36,13 +50,14 @@ bindkey '^I' __deferred_compinit
 
 # Helper to ensure compinit is loaded before registering completions
 __ensure_compinit() {
-  if ! typeset -f compdef > /dev/null; then
+  if typeset -f compdef | grep -q __compdef_queue; then
     autoload -Uz compinit
     if [[ -n ~/.zcompdump(#qN.mh+24) ]]; then
       compinit
     else
       compinit -C
     fi
+    (( $+functions[__process_compdef_queue] )) && __process_compdef_queue
     # Also rebind Tab now that compinit is loaded
     bindkey '^I' expand-or-complete
   fi
