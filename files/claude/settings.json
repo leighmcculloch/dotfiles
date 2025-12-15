@@ -136,6 +136,7 @@
       "Bash(stellar-strkey:*)",
       "Skill(github-issue)",
       "Skill(github-issue-from-wip)",
+      "Skill(github-pr-enhance)",
       "mcp__context7__resolve-library-id",
       "mcp__context7__get-library-docs",
       "mcp__deepwiki__read_wiki_structure",
