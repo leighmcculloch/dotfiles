@@ -7,3 +7,4 @@ file-history/
 plans/
 history.jsonl
 __store.db
+stats-cache.json
