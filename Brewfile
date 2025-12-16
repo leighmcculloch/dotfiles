@@ -103,7 +103,7 @@ if OS.mac?
   mdm_enrolled = `profiles status -type enrollment`.include?("Yes")
 
   if mdm_enrolled
-    cask "nordlayer"
+    mas "NordLayer", id: 1488888843
     mas "Slack", id: 803453959
     mas "Telegram", id: 747648890
     cask "leighmcculloch/dotfiles/hyprnote"
