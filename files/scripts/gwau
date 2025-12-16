@@ -7,5 +7,5 @@ function {
   local dir="../${PWD##*/}-${branch}"
 
   git worktree prune
-  git worktree add -b "$branch" "$dir" && cd "$dir"
+  git worktree add -b "$branch" "$dir"
 } "$@"
