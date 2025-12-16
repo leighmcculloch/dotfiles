@@ -5,6 +5,8 @@ shell-snapshots/
 debug/
 file-history/
 plans/
+plugins/marketplaces/
+plugins/known_marketplaces.json
 history.jsonl
 __store.db
 stats-cache.json
