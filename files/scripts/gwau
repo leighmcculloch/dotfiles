@@ -1,0 +1,11 @@
+#!/usr/bin/env zsh
+
+set -o nounset
+
+function {
+  local branch="$1"
+  local dir="../${PWD##*/}-${branch}"
+
+  git worktree prune
+  git worktree add -b "$branch" "$dir" && cd "$dir"
+} "$@"
