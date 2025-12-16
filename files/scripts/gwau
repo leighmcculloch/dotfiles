@@ -7,5 +7,9 @@ function {
   local dir="../${PWD##*/}-${branch}"
 
   git worktree prune
-  git worktree add -b "$branch" "$dir"
+  if git show-ref --verify --quiet "refs/heads/$branch"; then
+    git worktree add "$dir" "$branch"
+  else
+    git worktree add -b "$branch" "$dir"
+  fi
 } "$@"
