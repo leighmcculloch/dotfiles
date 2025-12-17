@@ -3,18 +3,9 @@ name: git-commit
 description: Commit with Git
 ---
 
-# Git Commit
+# Git Commit All Files
 
-## Workflow
-
-### 1. Add all files
-
+Use `gaacy` to git add and git commit.
 ```
-gaa
-```
-
-### 2. Run gc
-
-```
-gc
+gaacy
 ```
