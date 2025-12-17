@@ -11,6 +11,10 @@
   "includeCoAuthoredBy": false,
   "permissions": {
     "allow": [
+      "Skill(git-commit)",
+      "Skill(github-issue-create)",
+      "Skill(github-issue-create-from-wip)",
+      "Skill(github-pr-enhance)",
       "Bash(claude:*)",
       "Read(~/.cargo/**)",
       "Read(~/.local/go/pkg/mod/**)",
@@ -31,6 +35,7 @@
       "Bash(git rev-parse:*)",
       "Bash(git describe:*)",
       "Bash(git blame:*)",
+      "Bash(gc)",
       "Bash(curl:*)",
       "Bash(grep:*)",
       "Bash(ls:*)",
@@ -134,9 +139,6 @@
       "Bash(stellar contract read:*)",
       "Bash(stellar-xdr:*)",
       "Bash(stellar-strkey:*)",
-      "Skill(github-issue-create)",
-      "Skill(github-issue-create-from-wip)",
-      "Skill(github-pr-enhance)",
       "mcp__context7__resolve-library-id",
       "mcp__context7__get-library-docs",
       "mcp__deepwiki__read_wiki_structure",
