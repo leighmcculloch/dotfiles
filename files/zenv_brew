@@ -26,6 +26,14 @@ if [ -n "$BREW_PREFIX" ] && [ -d "$BREW_PREFIX" ]; then
   # sccache for rust
   export RUSTC_WRAPPER="$BREW_PREFIX/bin/sccache"
   export SCCACHE_CACHE_SIZE="50G"
+  if [ "$CLAUDECODE" = "1" ]; then
+    unset SCCACHE_DIR
+    _ws_root="$(cargo metadata --format-version 1 2>/dev/null | jq -r '.workspace_root // empty' 2>/dev/null)"
+    if [ -n "$_ws_root" ]; then
+      export SCCACHE_DIR="$_ws_root/target/.sccache"
+    fi
+    unset _ws_root
+  fi
 
   # rustup bin install path
   export PATH="$BREW_PREFIX/opt/rustup/bin:$PATH"
