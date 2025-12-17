@@ -2,7 +2,7 @@
 set -e
 
 SCRIPT_DIR="${0:a:h}"
-CASK_FILE="$SCRIPT_DIR/Casks/hyprnote.rb"
+CASK_FILE="$SCRIPT_DIR/hyprnote.rb"
 
 # Get latest release tag
 TAG=$(curl -s "https://api.github.com/repos/fastrepl/hyprnote/releases/latest" | jq -r '.tag_name')
