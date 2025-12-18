@@ -89,6 +89,7 @@ if OS.mac?
   brew "opencode"
   cask "claude"
   cask "claude-code"
+  cask "copilot-cli"
   brew "gemini-cli"
 
   brew "mas"
