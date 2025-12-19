@@ -20,6 +20,7 @@
       "Read(~/.local/go/pkg/mod/**)",
       "Read(~/.cache/deno/**)",
       "Read(**/node_modules/**)",
+      "Write(/tmp/claude/**)",
       "Write(~/Library/Caches/go-build/**)",
       "Write(~/Library/Caches/Mozilla.sccache/**)",
       "Bash(git fetch:*)",
