@@ -21,6 +21,8 @@ cost_usd=$(echo "$input" | jq -r 'if .cost.total_cost_usd then ((.cost.total_cos
 lines_added=$(echo "$input" | jq -r '.cost.total_lines_added // 0')
 lines_removed=$(echo "$input" | jq -r '.cost.total_lines_removed // 0')
 duration_ms=$(echo "$input" | jq -r '.cost.total_duration_ms // 0')
+context_files=$(echo "$input" | jq -r '.context.files // 0')
+context_tokens=$(echo "$input" | jq -r '.context.tokens // 0')
 
 # Format duration in human-friendly units
 if [ "$duration_ms" -ge 3600000 ]; then
@@ -42,5 +44,17 @@ if [ "$cwd" != "-" ]; then
   cwd="${cwd/#$HOME/~}"
 fi
 
+# Format context tokens in human-friendly units
+if [ "$context_tokens" -ge 1000000 ]; then
+  # Millions (with one decimal)
+  context_tokens_formatted=$(echo "scale=1; $context_tokens / 1000000" | bc)M
+elif [ "$context_tokens" -ge 1000 ]; then
+  # Thousands (with one decimal)
+  context_tokens_formatted=$(echo "scale=1; $context_tokens / 1000" | bc)K
+else
+  # Raw number
+  context_tokens_formatted="${context_tokens}"
+fi
+
 # Output statusline
-printf "${BLUE}%s${RESET} ${DIM}•${RESET} ${GREEN}+%s${RESET} ${RED}-%s${RESET} ${DIM}•${RESET} ${DIM}%s${RESET} ${DIM}•${RESET} ${PURPLE}%s${RESET} ${DIM}•${RESET} ${DIM}%s${RESET}" "$cwd" "$lines_added" "$lines_removed" "$duration_formatted" "$model_display_name" "$([ "$cost_usd" = "-" ] && echo "-" || echo "\$$cost_usd")"
+printf "${BLUE}%s${RESET} ${DIM}•${RESET} ${GREEN}+%s${RESET} ${RED}-%s${RESET} ${DIM}•${RESET} ${DIM}%s${RESET} ${DIM}•${RESET} ${PURPLE}%s${RESET} ${DIM}•${RESET} ${DIM}%s${RESET} ${DIM}•${RESET} ${DIM}%s files, %s tokens${RESET}" "$cwd" "$lines_added" "$lines_removed" "$duration_formatted" "$model_display_name" "$([ "$cost_usd" = "-" ] && echo "-" || echo "\$$cost_usd")" "$context_files" "$context_tokens_formatted"
