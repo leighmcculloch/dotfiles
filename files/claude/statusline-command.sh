@@ -23,12 +23,15 @@ lines_added=$(echo "$input" | jq -r '.cost.total_lines_added // 0')
 lines_removed=$(echo "$input" | jq -r '.cost.total_lines_removed // 0')
 duration_ms=$(echo "$input" | jq -r '.cost.total_duration_ms // 0')
 
-# Context window info
-context_window_size=$(echo "$input" | jq -r '.context_window.context_window_size // 200000')
-total_input_tokens=$(echo "$input" | jq -r '.context_window.total_input_tokens // 0')
-total_output_tokens=$(echo "$input" | jq -r '.context_window.total_output_tokens // 0')
-total_tokens=$((total_input_tokens + total_output_tokens))
-context_percent=$((total_tokens * 100 / context_window_size))
+# Context window info (use current usage, not cumulative totals)
+context_window_size=$(echo "$input" | jq -r '.context_window.context_window_size // empty')
+if [ -n "$context_window_size" ]; then
+  current_input=$(echo "$input" | jq -r '.context_window.current_usage.input_tokens // 0')
+  cache_creation=$(echo "$input" | jq -r '.context_window.current_usage.cache_creation_input_tokens // 0')
+  cache_read=$(echo "$input" | jq -r '.context_window.current_usage.cache_read_input_tokens // 0')
+  current_tokens=$((current_input + cache_creation + cache_read))
+  context_percent=$((current_tokens * 100 / context_window_size))
+fi
 
 # Format duration in human-friendly units
 if [ "$duration_ms" -ge 3600000 ]; then
@@ -51,13 +54,17 @@ if [ "$cwd" != "-" ]; then
 fi
 
 # Color for context percentage based on usage level
-if [ "$context_percent" -ge 80 ]; then
-  CONTEXT_COLOR="$RED"
-elif [ "$context_percent" -ge 50 ]; then
-  CONTEXT_COLOR="$YELLOW"
-else
-  CONTEXT_COLOR="$GREEN"
+context_info=""
+if [ -n "$context_window_size" ]; then
+  if [ "$context_percent" -ge 80 ]; then
+    CONTEXT_COLOR="$RED"
+  elif [ "$context_percent" -ge 50 ]; then
+    CONTEXT_COLOR="$YELLOW"
+  else
+    CONTEXT_COLOR="$GREEN"
+  fi
+  context_info=" ${DIM}•${RESET} ${CONTEXT_COLOR}${context_percent}%${RESET}"
 fi
 
 # Output statusline
-printf "${BLUE}%s${RESET} ${DIM}•${RESET} ${GREEN}+%s${RESET} ${RED}-%s${RESET} ${DIM}•${RESET} ${DIM}%s${RESET} ${DIM}•${RESET} ${PURPLE}%s${RESET} ${DIM}•${RESET} ${DIM}%s${RESET} ${DIM}•${RESET} ${CONTEXT_COLOR}%s%%${RESET}" "$cwd" "$lines_added" "$lines_removed" "$duration_formatted" "$model_display_name" "$([ "$cost_usd" = "-" ] && echo "-" || echo "\$$cost_usd")" "$context_percent"
+printf "${BLUE}%s${RESET} ${DIM}•${RESET} ${GREEN}+%s${RESET} ${RED}-%s${RESET} ${DIM}•${RESET} ${DIM}%s${RESET} ${DIM}•${RESET} ${PURPLE}%s${RESET} ${DIM}•${RESET} ${DIM}%s${RESET}%b" "$cwd" "$lines_added" "$lines_removed" "$duration_formatted" "$model_display_name" "$([ "$cost_usd" = "-" ] && echo "-" || echo "\$$cost_usd")" "$context_info"
