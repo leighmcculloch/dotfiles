@@ -21,6 +21,16 @@ cost_usd=$(echo "$input" | jq -r 'if .cost.total_cost_usd then ((.cost.total_cos
 lines_added=$(echo "$input" | jq -r '.cost.total_lines_added // 0')
 lines_removed=$(echo "$input" | jq -r '.cost.total_lines_removed // 0')
 duration_ms=$(echo "$input" | jq -r '.cost.total_duration_ms // 0')
+context_size=$(echo "$input" | jq -r '.context_window.context_window_size // 0')
+current_usage=$(echo "$input" | jq -r '.context_window.current_usage // null')
+
+# Calculate context percentage
+if [ "$current_usage" != "null" ] && [ "$context_size" -gt 0 ]; then
+    current_tokens=$(echo "$input" | jq -r '.context_window.current_usage | .input_tokens + .cache_creation_input_tokens + .cache_read_input_tokens')
+    context_percent=$((current_tokens * 100 / context_size))
+else
+    context_percent=0
+fi
 
 # Format duration in human-friendly units
 if [ "$duration_ms" -ge 3600000 ]; then
@@ -43,4 +53,4 @@ if [ "$cwd" != "-" ]; then
 fi
 
 # Output statusline
-printf "${BLUE}%s${RESET} ${DIM}•${RESET} ${GREEN}+%s${RESET} ${RED}-%s${RESET} ${DIM}•${RESET} ${DIM}%s${RESET} ${DIM}•${RESET} ${PURPLE}%s${RESET} ${DIM}•${RESET} ${DIM}%s${RESET}" "$cwd" "$lines_added" "$lines_removed" "$duration_formatted" "$model_display_name" "$([ "$cost_usd" = "-" ] && echo "-" || echo "\$$cost_usd")"
+printf "${BLUE}%s${RESET} ${DIM}•${RESET} ${GREEN}+%s${RESET} ${RED}-%s${RESET} ${DIM}•${RESET} ${DIM}%s${RESET} ${DIM}•${RESET} ${PURPLE}%s${RESET} ${DIM}•${RESET} ${DIM}%s%%${RESET} ${DIM}•${RESET} ${DIM}%s${RESET}" "$cwd" "$lines_added" "$lines_removed" "$duration_formatted" "$model_display_name" "$context_percent" "$([ "$cost_usd" = "-" ] && echo "-" || echo "\$$cost_usd")"
