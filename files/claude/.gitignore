@@ -6,6 +6,7 @@ debug/
 file-history/
 plans/
 plugins/marketplaces/
+plugins/cache/
 plugins/known_marketplaces.json
 plugins/installed_plugins.json
 history.jsonl
