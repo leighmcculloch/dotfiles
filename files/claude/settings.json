@@ -43,7 +43,6 @@
       "Bash(ls:*)",
       "Bash(mkdir:*)",
       "Bash(touch:*)",
-      "Bash(gh api:*)",
       "Bash(gh pr view:*)",
       "Bash(gh pr checks:*)",
       "Bash(gh pr diff:*)",
