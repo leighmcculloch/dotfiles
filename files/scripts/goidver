@@ -7,7 +7,8 @@ set -o nounset
 
 function {
   local id="$(git rev-parse HEAD)"
-  local ver="$(go list -m -f '{{.Version}}' $(go list -m)@$id)"
+  local ts="$(TZ=UTC git show -s --no-show-signature --format=%cd --date=format-local:'%Y%m%d%H%M%S' HEAD)"
+  local ver="v0.0.0-${ts}-${id:0:12}"
   if [ -t 1 ] ; then
     if (( $+commands[pbcopy] )); then
       echo -n $ver | pbcopy
