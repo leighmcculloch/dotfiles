@@ -239,6 +239,10 @@
     "type": "command",
     "command": "/Users/leighmcculloch/.claude/statusline-command.sh"
   },
+  "enabledPlugins": {
+    "rust-analyzer-lsp@claude-plugins-official": true,
+    "gopls-lsp@claude-plugins-official": true
+  },
   "sandbox": {
     "enabled": true,
     "autoAllowBashIfSandboxed": true,
@@ -255,8 +259,5 @@
   },
   "feedbackSurveyState": {
     "lastShownTime": 1753919494306
-  },
-  "enabledPlugins": {
-    "rust-analyzer-lsp@claude-plugins-official": true
   }
 }
