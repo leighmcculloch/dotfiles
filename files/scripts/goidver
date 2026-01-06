@@ -1,0 +1,17 @@
+#!/usr/bin/env zsh
+
+# Outputs the go v0.0.0 semantic version for the module in the current
+# directory at its current commit.
+
+set -o nounset
+
+function {
+  local id="$(git rev-parse HEAD)"
+  local ver="$(go list -m -f '{{.Version}}' $(go list -m)@$id)"
+  if [ -t 1 ] ; then
+    if (( $+commands[pbcopy] )); then
+      echo -n $ver | pbcopy
+    fi
+  fi
+  echo -n $ver
+}
