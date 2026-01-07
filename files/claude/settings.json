@@ -240,7 +240,8 @@
   },
   "enabledPlugins": {
     "rust-analyzer-lsp@claude-plugins-official": true,
-    "gopls-lsp@claude-plugins-official": true
+    "gopls-lsp@claude-plugins-official": true,
+    "ralph-loop@claude-plugins-official": true
   },
   "sandbox": {
     "enabled": true,

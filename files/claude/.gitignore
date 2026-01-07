@@ -9,6 +9,7 @@ plugins/marketplaces/
 plugins/cache/
 plugins/known_marketplaces.json
 plugins/installed_plugins.json
+plugins/install-counts-cache.json
 history.jsonl
 __store.db
 stats-cache.json
