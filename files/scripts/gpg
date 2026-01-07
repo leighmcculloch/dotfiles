@@ -1,0 +1,5 @@
+#!/bin/sh
+# Wrapper for gpg that doesn't call gpg and exits immediately.
+# This prevents "cannot run gpg" errors when verifying signatures
+# on commits signed with GPG when only SSH signing is configured.
+exit 1

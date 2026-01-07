@@ -13,8 +13,10 @@
 	commentChar = ";"
 	hooksPath = no-hooks
 	pager = delta
+[gpg]
+	program = gpg
 [gpg.ssh]
-  allowedSignersFile = ~/.gitallowedsignersfile
+	allowedSignersFile = ~/.gitallowedsignersfile
 [log]
 [pretty]
 	signature = format:%C(auto)%h %C(green)[%G?:%GS]%C(reset) %s%C(auto)%d
