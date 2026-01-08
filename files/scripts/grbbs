@@ -1,0 +1,68 @@
+#!/usr/bin/env zsh
+
+set -o nounset
+
+function {
+  # Get branch info (current, default, ancestor)
+  local branch_info="$(gbinfo)"
+  local current_branch="$(echo "$branch_info" | jq -r '.current_branch')"
+  local default_branch="$(echo "$branch_info" | jq -r '.default_branch')"
+  local ancestor_branch="$(echo "$branch_info" | jq -r '.ancestor_branch // empty')"
+
+  # If an ancestor branch was found (and it's not the default), let user choose.
+  # Otherwise just use the default branch.
+  local base_branch=""
+  if [[ -n "$ancestor_branch" && "$ancestor_branch" != "$default_branch" ]]; then
+    local ancestor_count="$(git rev-list --count ${ancestor_branch}..HEAD)"
+    local default_count="$(git rev-list --count ${default_branch}..HEAD)"
+    local choice="$(gum choose --header "Base branch:" "${ancestor_branch} (${ancestor_count} commits)" "${default_branch} (${default_count} commits)")"
+    base_branch="${choice% \(*}"
+  else
+    base_branch="$default_branch"
+  fi
+  echo "Base branch: ${base_branch}"
+
+  # Get commits since base branch in chronological order (oldest first)
+  local commits=("${(@f)$(git log --reverse --format="%H %G?" ${base_branch}..HEAD)}")
+
+  if [[ ${#commits[@]} -eq 0 || -z "${commits[1]}" ]]; then
+    echo "No commits to sign"
+    return 0
+  fi
+
+  # Find the first commit without a good signature (G)
+  local first_unsigned=""
+  local first_unsigned_parent=""
+  local prev_commit=""
+  for line in "${commits[@]}"; do
+    local commit_sha="${line%% *}"
+    local sig_status="${line##* }"
+    if [[ "$sig_status" != "G" ]]; then
+      first_unsigned="$commit_sha"
+      first_unsigned_parent="$prev_commit"
+      break
+    fi
+    prev_commit="$commit_sha"
+  done
+
+  if [[ -z "$first_unsigned" ]]; then
+    echo "All commits are already signed"
+    return 0
+  fi
+
+  # Determine the rebase target (parent of first unsigned commit)
+  local rebase_onto=""
+  if [[ -z "$first_unsigned_parent" ]]; then
+    # First commit after base is unsigned, rebase onto base branch
+    rebase_onto="$base_branch"
+  else
+    # Some commits are signed, rebase onto last signed commit
+    rebase_onto="$first_unsigned_parent"
+  fi
+
+  echo "First unsigned commit: $(git log --oneline -1 $first_unsigned)"
+  echo "Rebasing onto: $rebase_onto"
+  echo
+
+  git rebase --exec "git commit --amend --no-edit -n -S" "$rebase_onto"
+}
