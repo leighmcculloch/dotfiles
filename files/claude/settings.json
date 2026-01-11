@@ -240,6 +240,10 @@
           {
             "type": "command",
             "command": "printf '\\a' > /dev/tty"
+          },
+          {
+            "type": "command",
+            "command": "source ~/.zenv_apikey_pushover && curl -s -X POST https://api.pushover.net/1/messages.json -d token=\"$PUSHOVER_TOKEN\" -d user=\"$PUSHOVER_USER\" -d message=\"Claude Code stopped\" > /dev/null 2>&1 || true"
           }
         ]
       }
@@ -251,6 +255,10 @@
           {
             "type": "command",
             "command": "printf '\\a' > /dev/tty"
+          },
+          {
+            "type": "command",
+            "command": "source ~/.zenv_apikey_pushover && curl -s -X POST https://api.pushover.net/1/messages.json -d token=\"$PUSHOVER_TOKEN\" -d user=\"$PUSHOVER_USER\" -d message=\"Claude Code notification\" > /dev/null 2>&1 || true"
           }
         ]
       }
