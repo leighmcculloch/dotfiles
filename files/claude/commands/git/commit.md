@@ -1,15 +1,12 @@
----
-name: git-commit
-description: Commit with Git
----
+# Git Commit
 
-# Git Commit Specific Files
+# Specific Files
 
 Use `ga <file> [file]...` to add a file.
 
 Use `gcy` to create the commit.
 
-# Git Commit All Files
+# All Files
 
 Use `gaacy` to add all files and create the commit.
 ```
