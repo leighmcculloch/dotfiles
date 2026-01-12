@@ -15,6 +15,7 @@
   "permissions": {
     "allow": [
       "Skill(git-commit)",
+      "Skill(github-pr-create)",
       "Skill(github-issue-create)",
       "Skill(github-issue-create-from-wip)",
       "Skill(github-pr-enhance)",
