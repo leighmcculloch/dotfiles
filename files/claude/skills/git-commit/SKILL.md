@@ -1,3 +1,8 @@
+---
+name: git-commit
+description: Commit to Git.
+---
+
 # Git Commit
 
 ## Specific Files
