@@ -1,5 +1,15 @@
 {
   "banner": "never",
+  "last_logged_in_user": {
+    "host": "https://github.com",
+    "login": "leighmcculloch"
+  },
+  "logged_in_users": [
+    {
+      "host": "https://github.com",
+      "login": "leighmcculloch"
+    }
+  ],
   "model": "claude-opus-4.5",
   "render_markdown": true,
   "screen_reader": false,

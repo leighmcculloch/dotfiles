@@ -1,0 +1,127 @@
+#!/usr/bin/env zsh
+
+set -o nounset
+
+# Launch GitHub Copilot CLI with pre-approved permissions
+# Mirrors the permissions from Claude Code settings.json
+
+exec "$BREW_PREFIX/bin/copilot" \
+  \
+  `# === URL Permissions ===` \
+  --allow-url developers.stellar.org \
+  --allow-url github.com \
+  --allow-url api.github.com \
+  --allow-url raw.githubusercontent.com \
+  --allow-url results-receiver.actions.githubusercontent.com \
+  --allow-url productionresultssa13.blob.core.windows.net \
+  --allow-url crates.io \
+  --allow-url static.crates.io \
+  --allow-url index.crates.io \
+  --allow-url docs.rs \
+  --allow-url doc.rust-lang.org \
+  --allow-url rust-lang.org \
+  --allow-url pkg.go.dev \
+  --allow-url go.dev \
+  --allow-url golang.org \
+  --allow-url deno.land \
+  --allow-url docs.deno.com \
+  --allow-url jsr.io \
+  --allow-url developer.mozilla.org \
+  --allow-url npmjs.com \
+  --allow-url nodejs.org \
+  --allow-url stellar.org \
+  --allow-url soroban.stellar.org \
+  --allow-url horizon.stellar.org \
+  --allow-url docs.github.com \
+  --allow-url lib.rs \
+  --allow-url socket.dev \
+  \
+  `# === Git Commands ===` \
+  --allow-tool 'shell(git fetch)' \
+  --allow-tool 'shell(git grep)' \
+  --allow-tool 'shell(git diff)' \
+  --allow-tool 'shell(git log)' \
+  --allow-tool 'shell(git show)' \
+  --allow-tool 'shell(git branch)' \
+  --allow-tool 'shell(git remote)' \
+  --allow-tool 'shell(git tag)' \
+  --allow-tool 'shell(git config)' \
+  --allow-tool 'shell(git rev-parse)' \
+  --allow-tool 'shell(git describe)' \
+  --allow-tool 'shell(git blame)' \
+  --allow-tool 'shell(git add)' \
+  --allow-tool 'shell(git commit)' \
+  --allow-tool 'shell(git status)' \
+  \
+  `# === GitHub CLI ===` \
+  --allow-tool 'shell(gh pr)' \
+  --allow-tool 'shell(gh issue)' \
+  --allow-tool 'shell(gh repo)' \
+  --allow-tool 'shell(gh run)' \
+  --allow-tool 'shell(gh workflow)' \
+  --allow-tool 'shell(gh release)' \
+  --allow-tool 'shell(gh browse)' \
+  --allow-tool 'shell(gh search)' \
+  --allow-tool 'shell(gh gist)' \
+  --allow-tool 'shell(gh api)' \
+  \
+  `# === Rust/Cargo ===` \
+  --allow-tool 'shell(cargo)' \
+  --allow-tool 'shell(rustc)' \
+  --allow-tool 'shell(rustfmt)' \
+  \
+  `# === Go ===` \
+  --allow-tool 'shell(go)' \
+  --allow-tool 'shell(gofmt)' \
+  \
+  `# === Deno ===` \
+  --allow-tool 'shell(deno)' \
+  \
+  `# === Node/NPM ===` \
+  --allow-tool 'shell(npm)' \
+  --allow-tool 'shell(node)' \
+  \
+  `# === Unix Utilities ===` \
+  --allow-tool 'shell(curl)' \
+  --allow-tool 'shell(grep)' \
+  --allow-tool 'shell(ls)' \
+  --allow-tool 'shell(mkdir)' \
+  --allow-tool 'shell(touch)' \
+  --allow-tool 'shell(cat)' \
+  --allow-tool 'shell(head)' \
+  --allow-tool 'shell(tail)' \
+  --allow-tool 'shell(wc)' \
+  --allow-tool 'shell(find)' \
+  --allow-tool 'shell(which)' \
+  --allow-tool 'shell(whereis)' \
+  --allow-tool 'shell(diff)' \
+  --allow-tool 'shell(sort)' \
+  --allow-tool 'shell(uniq)' \
+  --allow-tool 'shell(cut)' \
+  --allow-tool 'shell(jq)' \
+  --allow-tool 'shell(yq)' \
+  --allow-tool 'shell(tree)' \
+  --allow-tool 'shell(stat)' \
+  --allow-tool 'shell(file)' \
+  --allow-tool 'shell(realpath)' \
+  --allow-tool 'shell(dirname)' \
+  --allow-tool 'shell(basename)' \
+  --allow-tool 'shell(pwd)' \
+  --allow-tool 'shell(date)' \
+  --allow-tool 'shell(uname)' \
+  --allow-tool 'shell(du)' \
+  --allow-tool 'shell(df)' \
+  \
+  `# === Stellar Tools ===` \
+  --allow-tool 'shell(stellar)' \
+  --allow-tool 'shell(stellar-xdr)' \
+  --allow-tool 'shell(stellar-strkey)' \
+  \
+  `# === Mermaid Diagrams ===` \
+  --allow-tool 'shell(mmdc)' \
+  --allow-tool 'shell(open)' \
+  \
+  `# === File Operations ===` \
+  --allow-tool 'write' \
+  \
+  "$@"
