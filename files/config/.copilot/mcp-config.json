@@ -1,23 +1,21 @@
 {
   "mcpServers": {
-    "github": {
-      "type": "local",
-      "command": "sh",
-      "args": ["-c", "source ~/.zenv_apikey_github && github-mcp-server stdio"]
-    },
     "perplexity": {
       "type": "local",
       "command": "sh",
-      "args": ["-c", "source ~/.zenv_apikey_perplexity && deno run --allow-env --allow-net npm:server-perplexity-ask"]
+      "args": ["-c", "source ~/.zenv_apikey_perplexity && deno run --allow-env --allow-net npm:server-perplexity-ask"],
+      "tools": ["perplexity_ask"]
     },
     "deepwiki": {
       "type": "sse",
-      "url": "https://mcp.deepwiki.com/sse"
+      "url": "https://mcp.deepwiki.com/sse",
+      "tools": ["read_wiki_structure", "read_wiki_contents", "ask_question"]
     },
     "context7": {
       "type": "local",
       "command": "sh",
-      "args": ["-c", "source ~/.zenv_apikey_context7 && deno run --allow-env --allow-net npm:@upstash/context7-mcp"]
+      "args": ["-c", "source ~/.zenv_apikey_context7 && deno run --allow-env --allow-net npm:@upstash/context7-mcp"],
+      "tools": ["resolve-library-id", "get-library-docs"]
     }
   }
 }
