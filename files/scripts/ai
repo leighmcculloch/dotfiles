@@ -1,0 +1,43 @@
+#!/usr/bin/env zsh
+
+set -o nounset
+
+function {
+  local choice="$(gum choose 'copilot' 'claude')"
+  
+  # Detect caller
+  local caller="$(ps -o comm= $PPID 2>/dev/null | xargs basename 2>/dev/null)"
+
+  local cmd=""
+
+  case "$choice" in
+    copilot)
+      cmd="copilot"
+      case "$caller" in
+        gc|gbb)
+          cmd="$cmd --model claude-haiku-4.5"
+          ;;
+        gprd|aimergeconflict)
+          cmd="$cmd --model claude-opus-4.5"
+          ;;
+      esac
+      ;;
+    claude)
+      cmd="claude"
+      case "$caller" in
+        gc|gbb)
+          cmd="$cmd --model claude-haiku-4-5"
+          ;;
+        gprd|aimergeconflict)
+          cmd="$cmd --model claude-opus-4-5"
+          ;;
+      esac
+      ;;
+  esac
+
+  if [[ "${AI_CMD_PRINT_COMMAND:-}" == "1" ]]; then
+    echo "$cmd" "${(q)@}"
+  else
+    ${=cmd} "$@"
+  fi
+} "$@"

@@ -11,81 +11,20 @@ function {
     return 1
   fi
 
-  local escaped_diff="${${$(echo "$diff" | jq -R -s '.')%\"}#\"}"
+  local ai="${AI_CMD:-ai}"
+  local name="$($ai -p "You are a senior software engineer.
 
-  # Use Claude
-  source ~/.zenv_apikey_anthropic
-  local response="$(curl -s -X POST https://api.anthropic.com/v1/messages \
-    -H "Content-Type: application/json" \
-    -H "x-api-key: $ANTHROPIC_API_KEY" \
-    -H "anthropic-version: 2023-06-01" \
-    -d '{
-      "model": "claude-haiku-4-5",
-      "max_tokens": 50,
-      "system": "You are a senior software engineer.",
-      "messages": [{
-        "role": "user",
-        "content": "Given the following git diff, suggest a concise, kebab-case branch name that describes the changes (max 5 words).\n\nReply only with the branch name, nothing else. \n\nDo not use any of these names: '"${branches}"'. \n\nDiff:\n '"${escaped_diff}"'"
-      }]
-    }')"
-  local name=$(echo "$response" | jq -r '.content[0].text' | tr '[:upper:] ' '[:lower:]-')
+Given the following git diff, suggest a concise, kebab-case branch name that describes the changes (max 5 words).
 
-  # Use Grok
-  #local response="$(curl -s https://api.x.ai/v1/chat/completions \
-  #  -H "Content-Type: application/json" \
-  #  -H "Authorization: Bearer $X_AI_API_KEY" \
-  #  -d '{
-  #    "model": "grok-code-fast-1",
-  #    "stream": false,
-  #    "temperature": 0,
-  #    "messages": [
-  #      {
-  #        "role": "system", 
-  #        "content": "You are a senior software engineer."
-  #      },
-  #      {
-  #        "role": "user",
-  #        "content": "Given the following git diff, suggest a concise, kebab-case branch name that describes the changes (max 5 words).\n\nReply only with the branch name, nothing else. \n\nDo not use any of these names: '"${branches}"'. \n\nDiff:\n '"${escaped_diff}"'"
-  #      }
-  #    ]
-  #  }')"
-  #local name=$(echo "$response" | jq -r '.choices[0].message.content' | tr '[:upper:] ' '[:lower:]-')
+Reply only with the branch name, nothing else.
 
-  # Use local LM Studio
-  #local host="concrete"
-  #[[ "$(hostname)" == "Concrete.local" ]] && host="127.0.0.1"
-  #local response="$(curl -s http://${host}:1234/v1/chat/completions \
-  #  -H "Content-Type: application/json" \
-  #  -d '{
-  #    "model": "qwen/qwen3-coder-30b",
-  #    "stream": false,
-  #    "messages": [
-  #      {
-  #        "role": "user",
-  #        "content": "Given the following git diff, suggest a concise, kebab-case branch name that describes the changes (max 5 words).\n\nReply only with the branch name, nothing else. \n\nDo not use any of these names: '"${branches}"'. \n\nDiff:\n '"${escaped_diff}"'"
-  #      }
-  #    ],
-  #    "response_format": {
-  #      "type": "json_schema",
-  #      "json_schema": {
-  #        "name": "branch_name_response",
-  #        "strict": true,
-  #        "schema": {
-  #          "type": "object",
-  #          "properties": {
-  #            "branch_name": {
-  #              "type": "string"
-  #            }
-  #          },
-  #          "required": ["branch_name"]
-  #        }
-  #      }
-  #    }
-  #  }')"
-  #local name=$(echo "$response" | jq -r '.choices[0].message.content | fromjson | .branch_name')
+Do not use any of these names: ${branches}.
+
+Diff:
+${diff}" | tr '[:upper:] ' '[:lower:]-')"
 
   if [ -z "$name" ]; then
-    echo "Error: Failed to get branch name from Anthropic API"
+    echo "Error: Failed to get branch name"
     return 1
   fi
 

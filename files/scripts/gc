@@ -39,78 +39,17 @@ function {
     return 1
   fi
 
-  local escaped_diff="${${$(echo "$diff" | jq -R -s '.')%\"}#\"}"
+  local ai="${AI_CMD:-ai}"
+  message="$($ai -p "You are a senior software engineer.
 
-  # Use Claude
-  source ~/.zenv_apikey_anthropic
-  local response="$(curl -s -X POST https://api.anthropic.com/v1/messages \
-    -H "Content-Type: application/json" \
-    -H "x-api-key: $ANTHROPIC_API_KEY" \
-    -H "anthropic-version: 2023-06-01" \
-    -d '{
-      "model": "claude-haiku-4-5",
-      "max_tokens": 50,
-      "system": "You are a senior software engineer.",
-      "messages": [{
-        "role": "user",
-        "content": "Given the following git diff, suggest a concise, commit message that says in present tense with imperative mood what has changed without saying why (max 50 characters).\n\nReply only with the commit message, nothing else. Do not use convention commit format. Start the commit message with a lower case letter and do not end with a full stop. Avoid generic phrases. \n\nBranch: '"${branch}"' \n\nDiff:\n '"${escaped_diff}"'"
-      }]
-    }')"
-  message=$(echo "$response" | jq -r '.content[0].text')
+Given the following git diff, suggest a concise, commit message that says in present tense with imperative mood what has changed without saying why (max 50 characters).
 
-  # Use Grok
-  #local response="$(curl -s https://api.x.ai/v1/chat/completions \
-  #  -H "Content-Type: application/json" \
-  #  -H "Authorization: Bearer $X_AI_API_KEY" \
-  #  -d '{
-  #    "model": "grok-code-fast-1",
-  #    "stream": false,
-  #    "temperature": 0,
-  #    "messages": [
-  #      {
-  #        "role": "system", 
-  #        "content": "You are a senior software engineer."
-  #      },
-  #      {
-  #        "role": "user",
-  #        "content": "Given the following git diff, suggest a concise, commit message that says in present tense with imperative mood what has changed without saying why (max 50 characters).\n\nReply only with the commit message, nothing else. Do not use convention commit format. Start the commit message with a lower case letter and do not end with a full stop. Avoid generic phrases. \n\nBranch: '"${branch}"' \n\nDiff:\n '"${escaped_diff}"'"
-  #      }
-  #    ]
-  #  }')"
-  #message=$(echo "$response" | jq -r '.choices[0].message.content')
+Reply only with the commit message, nothing else. Do not use convention commit format. Start the commit message with a lower case letter and do not end with a full stop. Avoid generic phrases.
 
-  # Use local LM Studio
-  #local host="concrete"
-  #[[ "$(hostname)" == "Concrete.local" ]] && host="127.0.0.1"
-  #local response="$(curl -s http://${host}:1234/v1/chat/completions \
-  #  -H "Content-Type: application/json" \
-  #  -d '{
-  #    "model": "qwen/qwen3-coder-30b",
-  #    "stream": false,
-  #    "messages": [
-  #      {
-  #        "role": "user",
-  #        "content": "You are a senior software engineer.\n\nGiven the following git diff, suggest a concise, commit message that says in present tense with imperative mood what has changed without saying why (max 50 characters).\n\nReply only with the commit message, nothing else. Do not surround the message with quotes, asterisks, or whitespace. Do not use convention commit format. Start the commit message with a lower case letter. Do not include a full stop at the end. Avoid generic phrases. \n\nBranch: '"${branch}"' \n\nDiff:\n '"${escaped_diff}"'"
-  #      }
-  #    ],
-  #    "response_format": {
-  #      "type": "json_schema",
-  #      "json_schema": {
-  #        "name": "commit_message_response",
-  #        "strict": true,
-  #        "schema": {
-  #          "type": "object",
-  #          "properties": {
-  #            "commit_message": {
-  #              "type": "string"
-  #            }
-  #          },
-  #          "required": ["commit_message"]
-  #        }
-  #      }
-  #    }
-  #  }')"
-  #message=$(echo "$response" | jq -r '.choices[0].message.content | fromjson | .commit_message')
+Branch: ${branch}
+
+Diff:
+${diff}")"
 
   if (( yes == 0 )); then
     message="$(gum write --width 80 --char-limit 99999 --prompt '| ' --value "$message")"
