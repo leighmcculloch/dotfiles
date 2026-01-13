@@ -25,6 +25,7 @@
       "Read(~/.local/go/pkg/mod/**)",
       "Read(~/.cache/deno/**)",
       "Read(**/node_modules/**)",
+      "Read(/tmp/claude/**)",
       "Write(/tmp/claude/**)",
       "Write(~/Library/Caches/go-build/**)",
       "Write(~/Library/Caches/Mozilla.sccache/**)",
