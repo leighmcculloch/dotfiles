@@ -13,5 +13,8 @@
   "model": "claude-opus-4.5",
   "render_markdown": true,
   "screen_reader": false,
-  "theme": "auto"
+  "theme": "auto",
+  "trusted_folders": [
+    "/Users/leighmcculloch/Code"
+  ]
 }
