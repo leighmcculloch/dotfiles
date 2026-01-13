@@ -1,0 +1,9 @@
+#!/bin/zsh
+
+# Formulas and casks to upgrade
+packages=(
+    claude-code
+    copilot-cli
+)
+
+brew upgrade "${packages[@]}"
