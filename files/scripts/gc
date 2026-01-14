@@ -162,6 +162,10 @@ ${diff}"
       message=""
     else
       message="${choice% \[*\]}"
+      # Print selected model so it stays in history
+      local selected_label="${choice##*\[}"
+      selected_label="${selected_label%\]}"
+      printf "● %s\n" "$selected_label"
     fi
 
     message="$(gum write --width 80 --char-limit 99999 --prompt '| ' --value "$message")"
