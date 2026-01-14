@@ -80,6 +80,7 @@ if OS.mac?
   mas "Numbers", id: 409203825
   mas "Pages", id: 409201541
   mas "Day Progress", id: 6450280202
+  mas "Spokenly", id: 6740315592
   mas "Termius", id: 1176074088
 
   brew "stellar-core"
