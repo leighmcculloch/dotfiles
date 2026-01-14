@@ -1,0 +1,101 @@
+#!/bin/bash
+
+GREEN='\033[0;32m'
+CYAN='\033[0;36m'
+NC='\033[0m' # No Color
+
+function log() {
+  echo -e "${GREEN}$1${NC}"
+}
+
+if [ "$#" -lt 3 ]; then
+  log "Usage: $0 <max_attempts> <search_text> <prompt>"
+  exit 1
+fi
+
+if ! [[ "$1" =~ ^[0-9]+$ ]]; then
+  log "Error: First argument <max_attempts> must be a positive integer. You provided: '$1'"
+  log "Usage: $0 <max_attempts> <search_text> <prompt>"
+  exit 1
+fi
+
+MAX_ATTEMPTS="$1"
+SEARCH="$2"
+PROMPT="$3"
+COPILOT_CMD="copilot"
+
+log "Running '$COPILOT_CMD' with prompt '$PROMPT' until stdout contains '$SEARCH' (Max attempts: $MAX_ATTEMPTS)"
+
+count=0
+while [ $count -lt $MAX_ATTEMPTS ]; do
+  count=$((count + 1))
+  
+  log "----------------------------------------"
+  log "--- Run #$count ---"
+  log "----------------------------------------"
+  
+  # Create temp dir for logs
+  LOG_DIR=$(mktemp -d)
+  
+  # Background tailer for logs
+  (
+    # Wait for file to appear (up to 2 seconds)
+    for i in {1..20}; do
+      shopt -s nullglob
+      files=("$LOG_DIR"/*)
+      if [ ${#files[@]} -gt 0 ]; then
+        tail -n +1 -F "${files[@]}" 2>/dev/null | grep --line-buffered -v "Chunk received" | grep --line-buffered "^20" | while IFS= read -r line; do
+          # Extract JSON part from log line (everything after the first {)
+          json_part=$(echo "$line" | sed -n 's/^.*[0-9] {/{/p')
+          
+          if [ -n "$json_part" ]; then
+            # Parse with jq if available, otherwise fall back to simple grep/sed
+            if command -v jq >/dev/null 2>&1; then
+              echo "$json_part" | jq -r '
+                .choices[0].delta.reasoning_text // empty,
+                .choices[0].delta.content // empty,
+                .choices[0].message.reasoning_text // empty,
+                .choices[0].message.content // empty,
+                (.choices[0].message.tool_calls[]? | "Tool: \(.function.name) args: \(.function.arguments)")
+              ' 2>/dev/null | while read -r decoded; do
+                if [ -n "$decoded" ] && [ "$decoded" != "null" ]; then
+                   echo -e "${CYAN}${decoded}${NC}" >&2
+                fi
+              done
+            else
+              # Fallback: simplistic extraction for when jq is missing
+              echo "$json_part" | grep -oE '"(reasoning_text|content|name|arguments)":\s*"[^"]*"' | sed 's/\\n/\n/g' | sed 's/\\"/"/g' >&2
+            fi
+          fi
+        done
+        break
+      fi
+      sleep 0.1
+    done
+  ) &
+  TAILER_PID=$!
+  
+  # Run the command, capture stdout and stderr (but logs go to LOG_DIR)
+  OUTPUT=$("$COPILOT_CMD" -p "$PROMPT" --log-dir "$LOG_DIR" --log-level all 2>&1)
+  
+  # Clean up tailer
+  kill $TAILER_PID 2>/dev/null
+  wait $TAILER_PID 2>/dev/null
+  
+  # Print the command output
+  echo "$OUTPUT"
+  
+  # Clean up logs
+  rm -rf "$LOG_DIR"
+  
+  # Check if search term matches
+  if echo "$OUTPUT" | grep -Fq "$SEARCH"; then
+    log "Found '$SEARCH'!"
+    exit 0
+  fi
+  
+  sleep 1
+done
+
+log "Max attempts ($MAX_ATTEMPTS) reached without finding '$SEARCH'."
+exit 1
