@@ -63,91 +63,107 @@ ${diff}"
     "copilot|gemini-3-pro-preview"
   )
 
-  local -a pids=()
-  local -a tmpfiles=()
-  local -a errfiles=()
-  local -a labels=()
-  local total=${#ai_configs[@]}
-
-  # Launch all AI calls in parallel
-  for config in "${ai_configs[@]}"; do
+  # If -y flag, pick one random model and use it directly
+  if (( yes == 1 )); then
+    local random_idx=$(( RANDOM % ${#ai_configs[@]} + 1 ))
+    local config="${ai_configs[$random_idx]}"
     local tool="${config%%|*}"
     local model="${config#*|}"
-    labels+=("$tool $model")
+    local label="$tool $model"
 
-    local tmpfile="$(mktemp)"
-    local errfile="$(mktemp)"
-    tmpfiles+=("$tmpfile")
-    errfiles+=("$errfile")
+    printf "○ %s\n" "$label"
+    message="$(${=tool} --model "$model" -p "$prompt" 2>/dev/null | tr '\n' ' ' | sed 's/  */ /g' | sed 's/^ //;s/ $//')"
+    printf "\033[1A● %s\033[K\n" "$label"
 
-    ${=tool} --model "$model" -p "$prompt" > "$tmpfile" 2>"$errfile" &
-    pids+=($!)
-  done
+    if [[ -z "$message" ]]; then
+      echo "Failed to generate commit message" >&2
+      return 1
+    fi
+  else
+    local -a pids=()
+    local -a tmpfiles=()
+    local -a errfiles=()
+    local -a labels=()
+    local total=${#ai_configs[@]}
 
-  # Progress display - print initial state
-  for i in {1..${#pids[@]}}; do
-    printf "○ %s\n" "${labels[$i]}"
-  done
+    # Launch all AI calls in parallel
+    for config in "${ai_configs[@]}"; do
+      local tool="${config%%|*}"
+      local model="${config#*|}"
+      labels+=("$tool $model")
 
-  local completed=0
-  while (( completed < total )); do
-    completed=0
-    printf "\033[${total}A"  # Move up
+      local tmpfile="$(mktemp)"
+      local errfile="$(mktemp)"
+      tmpfiles+=("$tmpfile")
+      errfiles+=("$errfile")
+
+      ${=tool} --model "$model" -p "$prompt" > "$tmpfile" 2>"$errfile" &
+      pids+=($!)
+    done
+
+    # Progress display - print initial state
     for i in {1..${#pids[@]}}; do
-      if kill -0 ${pids[$i]} 2>/dev/null; then
-        printf "○ %s\033[K\n" "${labels[$i]}"
+      printf "○ %s\n" "${labels[$i]}"
+    done
+
+    local completed=0
+    while (( completed < total )); do
+      completed=0
+      printf "\033[${total}A"  # Move up
+      for i in {1..${#pids[@]}}; do
+        if kill -0 ${pids[$i]} 2>/dev/null; then
+          printf "○ %s\033[K\n" "${labels[$i]}"
+        else
+          printf "● %s\033[K\n" "${labels[$i]}"
+          ((completed++))
+        fi
+      done
+      (( completed < total )) && sleep 0.5
+    done
+
+    # Clear progress display
+    printf "\033[${total}A"
+    for i in {1..${total}}; do
+      printf "\033[K\n"
+    done
+    printf "\033[${total}A"
+
+    # Collect results
+    local -a choices=()
+    for i in {1..${#tmpfiles[@]}}; do
+      local result="$(cat "${tmpfiles[$i]}" | tr '\n' ' ' | sed 's/  */ /g' | sed 's/^ //;s/ $//')"
+      if [[ -n "$result" ]]; then
+        choices+=("${result} [${labels[$i]}]")
       else
-        printf "● %s\033[K\n" "${labels[$i]}"
-        ((completed++))
+        echo "FAILED: ${labels[$i]}" >&2
+        echo "  stdout: $(cat "${tmpfiles[$i]}")" >&2
+        echo "  stderr: $(cat "${errfiles[$i]}")" >&2
       fi
     done
-    (( completed < total )) && sleep 0.5
-  done
 
-  # Clear progress display
-  printf "\033[${total}A"
-  for i in {1..${total}}; do
-    printf "\033[K\n"
-  done
-  printf "\033[${total}A"
+    # Clean up
+    for tmpfile in "${tmpfiles[@]}"; do
+      rm -f "$tmpfile"
+    done
+    for errfile in "${errfiles[@]}"; do
+      rm -f "$errfile"
+    done
 
-  # Collect results
-  local -a choices=()
-  for i in {1..${#tmpfiles[@]}}; do
-    local result="$(cat "${tmpfiles[$i]}" | tr '\n' ' ' | sed 's/  */ /g' | sed 's/^ //;s/ $//')"
-    if [[ -n "$result" ]]; then
-      choices+=("${result} [${labels[$i]}]")
-    else
-      echo "FAILED: ${labels[$i]}" >&2
-      echo "  stdout: $(cat "${tmpfiles[$i]}")" >&2
-      echo "  stderr: $(cat "${errfiles[$i]}")" >&2
+    choices+=("[type my own]")
+
+    local choice="$(printf '%s\n' "${choices[@]}" | gum choose --header "Select commit message:")"
+
+    if [[ -z "$choice" ]]; then
+      echo "Cancelled"
+      return 1
     fi
-  done
 
-  # Clean up
-  for tmpfile in "${tmpfiles[@]}"; do
-    rm -f "$tmpfile"
-  done
-  for errfile in "${errfiles[@]}"; do
-    rm -f "$errfile"
-  done
+    if [[ "$choice" == "[type my own]" ]]; then
+      message=""
+    else
+      message="${choice% \[*\]}"
+    fi
 
-  choices+=("[type my own]")
-
-  local choice="$(printf '%s\n' "${choices[@]}" | gum choose --header "Select commit message:")"
-
-  if [[ -z "$choice" ]]; then
-    echo "Cancelled"
-    return 1
-  fi
-
-  if [[ "$choice" == "[type my own]" ]]; then
-    message=""
-  else
-    message="${choice% \[*\]}"
-  fi
-
-  if (( yes == 0 )); then
     message="$(gum write --width 80 --char-limit 99999 --prompt '| ' --value "$message")"
   fi
 
