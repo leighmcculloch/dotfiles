@@ -72,8 +72,12 @@ ${diff}"
     local label="$tool $model"
 
     printf "○ %s\n" "$label"
+    local start_time=$(gdate +%s%6N)
     message="$(${=tool} --model "$model" -p "$prompt" 2>/dev/null | tr '\n' ' ' | sed 's/  */ /g' | sed 's/^ //;s/ $//')"
-    printf "\033[1A● %s\033[K\n" "$label"
+    local end_time=$(gdate +%s%6N)
+    local elapsed_us=$((end_time - start_time))
+    local elapsed_s=$(printf '%d.%06d' $((elapsed_us / 1000000)) $((elapsed_us % 1000000)))
+    printf "\033[1A● %s (${elapsed_s}s)\033[K\n" "$label"
 
     if [[ -z "$message" ]]; then
       echo "Failed to generate commit message" >&2
@@ -84,6 +88,8 @@ ${diff}"
     local -a tmpfiles=()
     local -a errfiles=()
     local -a labels=()
+    local -a start_times=()
+    local -a elapsed_times=()
     local total=${#ai_configs[@]}
 
     # Launch all AI calls in parallel
@@ -97,6 +103,7 @@ ${diff}"
       tmpfiles+=("$tmpfile")
       errfiles+=("$errfile")
 
+      start_times+=($(gdate +%s%6N))
       ${=tool} --model "$model" -p "$prompt" > "$tmpfile" 2>"$errfile" &
       pids+=($!)
     done
@@ -104,6 +111,11 @@ ${diff}"
     # Progress display - print initial state
     for i in {1..${#pids[@]}}; do
       printf "○ %s\n" "${labels[$i]}"
+    done
+
+    # Initialize elapsed times array
+    for i in {1..${#pids[@]}}; do
+      elapsed_times+=(-1)
     done
 
     local completed=0
@@ -114,7 +126,11 @@ ${diff}"
         if kill -0 ${pids[$i]} 2>/dev/null; then
           printf "○ %s\033[K\n" "${labels[$i]}"
         else
-          printf "● %s\033[K\n" "${labels[$i]}"
+          if (( elapsed_times[$i] < 0 )); then
+            elapsed_times[$i]=$(($(gdate +%s%6N) - start_times[$i]))
+          fi
+          local elapsed_s=$(printf '%d.%06d' $((elapsed_times[$i] / 1000000)) $((elapsed_times[$i] % 1000000)))
+          printf "● %s (${elapsed_s}s)\033[K\n" "${labels[$i]}"
           ((completed++))
         fi
       done
@@ -133,7 +149,8 @@ ${diff}"
     for i in {1..${#tmpfiles[@]}}; do
       local result="$(cat "${tmpfiles[$i]}" | tr '\n' ' ' | sed 's/  */ /g' | sed 's/^ //;s/ $//')"
       if [[ -n "$result" ]]; then
-        choices+=("${result} [${labels[$i]}]")
+        local elapsed_s=$(printf '%d.%06d' $((elapsed_times[$i] / 1000000)) $((elapsed_times[$i] % 1000000)))
+        choices+=("${result} [${labels[$i]} (${elapsed_s}s)]")
       else
         echo "FAILED: ${labels[$i]}" >&2
         echo "  stdout: $(cat "${tmpfiles[$i]}")" >&2

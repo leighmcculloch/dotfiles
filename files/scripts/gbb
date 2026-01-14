@@ -16,6 +16,8 @@ function {
     copilot) ai="$ai --model claude-opus-4.5" ;;
     claude) ai="$ai --model claude-haiku-4-5" ;;
   esac
+  printf "○ %s\n" "$ai"
+  local start_time=$(gdate +%s%6N)
   local name="$(${=ai} -p "You are a senior software engineer.
 
 Given the following git diff, suggest a concise, kebab-case branch name that describes the changes (max 5 words).
@@ -26,6 +28,10 @@ Do not use any of these names: ${branches}.
 
 Diff:
 ${diff}" | tr '[:upper:] ' '[:lower:]-')"
+  local end_time=$(gdate +%s%6N)
+  local elapsed_us=$((end_time - start_time))
+  local elapsed_s=$(printf '%d.%06d' $((elapsed_us / 1000000)) $((elapsed_us % 1000000)))
+  printf "\033[1A● %s (${elapsed_s}s)\033[K\n" "$ai"
 
   if [ -z "$name" ]; then
     echo "Error: Failed to get branch name"

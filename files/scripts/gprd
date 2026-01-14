@@ -70,6 +70,8 @@ function {
     copilot) ai="$ai --model claude-opus-4.5" ;;
     claude) ai="$ai --model claude-opus-4-5" ;;
   esac
+  printf "○ %s\n" "$ai"
+  local start_time=$(gdate +%s%6N)
   local json_schema='{"type":"object","properties":{"title":{"type":"string","description":"Concise title that focuses on the impact of the change. Max 50 characters. Start with a capital letter. End without a full stop. Use imperative mood."},"what":{"type":"string","description":"Describes what has changed. Use imperative mood."},"why":{"type":"string","description":"Describe why the change is being made. Be concise with why, and avoid generic statements."}},"required":["title","what","why"]}'
   
   local prompt="You are a senior software engineer.
@@ -94,6 +96,10 @@ ${diff}"
 
 Reply only with valid JSON format {\"title\":\"\",\"what\":\"\",\"why\":\"\"}, on a single line, nothing else.")"
   fi
+  local end_time=$(gdate +%s%6N)
+  local elapsed_us=$((end_time - start_time))
+  local elapsed_s=$(printf '%d.%06d' $((elapsed_us / 1000000)) $((elapsed_us % 1000000)))
+  printf "\033[1A● %s (${elapsed_s}s)\033[K\n" "$ai"
 
   if [ -z "$suggestion" ]; then
     echo "Error: Failed to get commit message from Anthropic API"
