@@ -52,12 +52,12 @@ ${diff}"
 
   # AI configurations: tool|model
   local -a ai_configs=(
-    "copilot|claude-opus-4.5"
     "claude|claude-opus-4-5"
-    "copilot|claude-sonnet-4.5"
     "claude|claude-sonnet-4-5"
-    "copilot|claude-haiku-4.5"
     "claude|claude-haiku-4-5"
+    "copilot|claude-opus-4.5"
+    "copilot|claude-sonnet-4.5"
+    "copilot|claude-haiku-4.5"
     "copilot|gpt-5.1-codex-max"
     "copilot|gpt-5.2"
     "copilot|gemini-3-pro-preview"
