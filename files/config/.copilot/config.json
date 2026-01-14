@@ -15,6 +15,7 @@
   "screen_reader": false,
   "theme": "auto",
   "trusted_folders": [
-    "/Users/leighmcculloch/Code"
+    "/Users/leighmcculloch/Code",
+    "/Users/leighmcculloch/.dotfiles"
   ]
 }
