@@ -39,8 +39,12 @@ function {
     return 1
   fi
 
-  local ai="${AI_CMD:-ai}"
-  message="$($ai -p "You are a senior software engineer.
+  local ai="${AI_CMD:-copilot}"
+  case "$ai" in
+    copilot) ai="$ai --model claude-haiku-4.5" ;;
+    claude) ai="$ai --model claude-haiku-4-5" ;;
+  esac
+  message="$(${=ai} -p "You are a senior software engineer.
 
 Given the following git diff, suggest a concise, commit message that says in present tense with imperative mood what has changed without saying why (max 50 characters).
 

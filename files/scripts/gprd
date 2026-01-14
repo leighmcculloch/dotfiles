@@ -65,8 +65,11 @@ function {
     context_json="$(jq -n --arg repo "$repo_url" '{repository: $repo}')"
   fi
 
-  local ai="${AI_CMD:-ai}"
-  local ai_cmd="$(AI_CMD_PRINT_COMMAND=1 $ai)"
+  local ai="${AI_CMD:-copilot}"
+  case "$ai" in
+    copilot) ai="$ai --model claude-opus-4.5" ;;
+    claude) ai="$ai --model claude-opus-4-5" ;;
+  esac
   local json_schema='{"type":"object","properties":{"title":{"type":"string","description":"Concise title that focuses on the impact of the change. Max 50 characters. Start with a capital letter. End without a full stop. Use imperative mood."},"what":{"type":"string","description":"Describes what has changed. Use imperative mood."},"why":{"type":"string","description":"Describe why the change is being made. Be concise with why, and avoid generic statements."}},"required":["title","what","why"]}'
   
   local prompt="You are a senior software engineer.
@@ -84,10 +87,10 @@ Git log with diff:
 ${diff}"
 
   local suggestion=""
-  if [[ "$ai_cmd" == claude* ]]; then
-    suggestion="$($ai_cmd -p "$prompt" --json-schema "$json_schema")"
+  if [[ "$ai" == claude* ]]; then
+    suggestion="$(${=ai} -p "$prompt" --json-schema "$json_schema")"
   else
-    suggestion="$($ai_cmd -p "$prompt
+    suggestion="$(${=ai} -p "$prompt
 
 Reply only with valid JSON format {\"title\":\"\",\"what\":\"\",\"why\":\"\"}, on a single line, nothing else.")"
   fi

@@ -11,8 +11,12 @@ function {
     return 1
   fi
 
-  local ai="${AI_CMD:-ai}"
-  local name="$($ai -p "You are a senior software engineer.
+  local ai="${AI_CMD:-copilot}"
+  case "$ai" in
+    copilot) ai="$ai --model claude-haiku-4.5" ;;
+    claude) ai="$ai --model claude-haiku-4-5" ;;
+  esac
+  local name="$(${=ai} -p "You are a senior software engineer.
 
 Given the following git diff, suggest a concise, kebab-case branch name that describes the changes (max 5 words).
 
