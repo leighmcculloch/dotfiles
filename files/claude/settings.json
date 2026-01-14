@@ -20,7 +20,9 @@
       "Skill(github-issue-create-from-wip)",
       "Skill(github-pr-enhance)",
       "Skill(mermaid-diagram)",
+      "Skill(review)",
       "Bash(claude:*)",
+      "Bash(copilot:*)",
       "Read(~/.cargo/**)",
       "Read(~/.local/go/pkg/mod/**)",
       "Read(~/.cache/deno/**)",
@@ -212,6 +214,8 @@
       "WebFetch(domain:docs.github.com)",
       "WebFetch(domain:lib.rs)",
       "WebFetch(domain:socket.dev)",
+      "WebFetch(domain:api.enterprise.githubcopilot.com)",
+      "WebFetch(domain:mcp.deepwiki.com)",
       "WebSearch"
     ],
     "deny": [],
