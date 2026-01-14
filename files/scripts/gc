@@ -39,12 +39,7 @@ function {
     return 1
   fi
 
-  local ai="${AI_CMD:-copilot}"
-  case "$ai" in
-    copilot) ai="$ai --model claude-opus-4.5" ;;
-    claude) ai="$ai --model claude-haiku-4-5" ;;
-  esac
-  message="$(${=ai} -p "You are a senior software engineer.
+  local prompt="You are a senior software engineer.
 
 Given the following git diff, suggest a concise, commit message that says in present tense with imperative mood what has changed without saying why (max 50 characters).
 
@@ -53,11 +48,101 @@ Reply only with the commit message, nothing else. Do not use convention commit f
 Branch: ${branch}
 
 Diff:
-${diff}")"
+${diff}"
+
+  # AI configurations: tool|model
+  local -a ai_configs=(
+    "copilot|claude-opus-4.5"
+    "claude|claude-opus-4-5"
+    "copilot|claude-sonnet-4.5"
+    "claude|claude-sonnet-4-5"
+    "copilot|claude-haiku-4.5"
+    "claude|claude-haiku-4-5"
+    "copilot|gpt-5.1-codex-max"
+    "copilot|gpt-5.2"
+    "copilot|gemini-3-pro-preview"
+  )
+
+  local -a pids=()
+  local -a tmpfiles=()
+  local -a errfiles=()
+  local -a labels=()
+  local total=${#ai_configs[@]}
+
+  # Launch all AI calls in parallel
+  for config in "${ai_configs[@]}"; do
+    local tool="${config%%|*}"
+    local model="${config#*|}"
+    labels+=("$tool $model")
+
+    local tmpfile="$(mktemp)"
+    local errfile="$(mktemp)"
+    tmpfiles+=("$tmpfile")
+    errfiles+=("$errfile")
+
+    ${=tool} --model "$model" -p "$prompt" > "$tmpfile" 2>"$errfile" &
+    pids+=($!)
+  done
+
+  # Progress display - print initial state
+  for i in {1..${#pids[@]}}; do
+    printf "○ %s\n" "${labels[$i]}"
+  done
+
+  local completed=0
+  while (( completed < total )); do
+    completed=0
+    printf "\033[${total}A"  # Move up
+    for i in {1..${#pids[@]}}; do
+      if kill -0 ${pids[$i]} 2>/dev/null; then
+        printf "○ %s\033[K\n" "${labels[$i]}"
+      else
+        printf "● %s\033[K\n" "${labels[$i]}"
+        ((completed++))
+      fi
+    done
+    (( completed < total )) && sleep 0.5
+  done
+
+  # Collect results
+  local -a choices=()
+  for i in {1..${#tmpfiles[@]}}; do
+    local result="$(cat "${tmpfiles[$i]}" | tr '\n' ' ' | sed 's/  */ /g' | sed 's/^ //;s/ $//')"
+    if [[ -n "$result" ]]; then
+      choices+=("${result} [${labels[$i]}]")
+    else
+      echo "FAILED: ${labels[$i]}" >&2
+      echo "  stdout: $(cat "${tmpfiles[$i]}")" >&2
+      echo "  stderr: $(cat "${errfiles[$i]}")" >&2
+    fi
+  done
+
+  # Clean up
+  for tmpfile in "${tmpfiles[@]}"; do
+    rm -f "$tmpfile"
+  done
+  for errfile in "${errfiles[@]}"; do
+    rm -f "$errfile"
+  done
+
+  choices+=("[type my own]")
+
+  local choice="$(printf '%s\n' "${choices[@]}" | gum choose --header "Select commit message:")"
+
+  if [[ -z "$choice" ]]; then
+    echo "Cancelled"
+    return 1
+  fi
+
+  if [[ "$choice" == "[type my own]" ]]; then
+    message=""
+  else
+    message="${choice% \[*\]}"
+  fi
 
   if (( yes == 0 )); then
     message="$(gum write --width 80 --char-limit 99999 --prompt '| ' --value "$message")"
   fi
 
-  git commit -m "$message" $@
-} "$@"
+  git commit -m "$message" ${@:+"$@"}
+} ${@:+"$@"}
