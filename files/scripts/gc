@@ -104,6 +104,13 @@ ${diff}"
     (( completed < total )) && sleep 0.5
   done
 
+  # Clear progress display
+  printf "\033[${total}A"
+  for i in {1..${total}}; do
+    printf "\033[K\n"
+  done
+  printf "\033[${total}A"
+
   # Collect results
   local -a choices=()
   for i in {1..${#tmpfiles[@]}}; do
