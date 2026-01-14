@@ -13,7 +13,7 @@ function {
 
   local ai="${AI_CMD:-copilot}"
   case "$ai" in
-    copilot) ai="$ai --model claude-haiku-4.5" ;;
+    copilot) ai="$ai --model claude-opus-4.5" ;;
     claude) ai="$ai --model claude-haiku-4-5" ;;
   esac
   local name="$(${=ai} -p "You are a senior software engineer.
