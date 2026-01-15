@@ -180,7 +180,4 @@ exec "$BREW_PREFIX/bin/copilot" \
   --allow-tool 'shell(mmdc)' \
   --allow-tool 'shell(open)' \
   \
-  `# === File Operations ===` \
-  --allow-tool 'write' \
-  \
   "$@"
