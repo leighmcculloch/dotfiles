@@ -13,7 +13,6 @@ exec "$BREW_PREFIX/bin/copilot" \
   --allow-url api.github.com \
   --allow-url raw.githubusercontent.com \
   --allow-url results-receiver.actions.githubusercontent.com \
-  --allow-url productionresultssa13.blob.core.windows.net \
   --allow-url crates.io \
   --allow-url static.crates.io \
   --allow-url index.crates.io \
