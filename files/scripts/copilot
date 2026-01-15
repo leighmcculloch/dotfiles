@@ -48,7 +48,8 @@ exec "$BREW_PREFIX/bin/copilot" \
   --allow-tool 'shell(git branch)' \
   --allow-tool 'shell(git remote)' \
   --allow-tool 'shell(git tag)' \
-  --allow-tool 'shell(git config)' \
+  --allow-tool 'shell(git config --get)' \
+  --allow-tool 'shell(git config --list)' \
   --allow-tool 'shell(git rev-parse)' \
   --allow-tool 'shell(git describe)' \
   --allow-tool 'shell(git blame)' \
@@ -57,32 +58,80 @@ exec "$BREW_PREFIX/bin/copilot" \
   --allow-tool 'shell(git status)' \
   \
   `# === GitHub CLI ===` \
-  --allow-tool 'shell(gh pr)' \
-  --allow-tool 'shell(gh issue)' \
-  --allow-tool 'shell(gh repo)' \
-  --allow-tool 'shell(gh run)' \
-  --allow-tool 'shell(gh workflow)' \
-  --allow-tool 'shell(gh release)' \
+  --allow-tool 'shell(gh pr view)' \
+  --allow-tool 'shell(gh pr checks)' \
+  --allow-tool 'shell(gh pr diff)' \
+  --allow-tool 'shell(gh pr list)' \
+  --allow-tool 'shell(gh pr status)' \
+  --allow-tool 'shell(gh issue view)' \
+  --allow-tool 'shell(gh issue list)' \
+  --allow-tool 'shell(gh issue status)' \
+  --allow-tool 'shell(gh repo view)' \
+  --allow-tool 'shell(gh repo list)' \
+  --allow-tool 'shell(gh repo clone)' \
+  --allow-tool 'shell(gh run view)' \
+  --allow-tool 'shell(gh run list)' \
+  --allow-tool 'shell(gh run watch)' \
+  --allow-tool 'shell(gh workflow list)' \
+  --allow-tool 'shell(gh workflow view)' \
+  --allow-tool 'shell(gh release view)' \
+  --allow-tool 'shell(gh release list)' \
   --allow-tool 'shell(gh browse)' \
   --allow-tool 'shell(gh search)' \
-  --allow-tool 'shell(gh gist)' \
-  --allow-tool 'shell(gh api)' \
+  --allow-tool 'shell(gh gist view)' \
+  --allow-tool 'shell(gh gist list)' \
   \
   `# === Rust/Cargo ===` \
-  --allow-tool 'shell(cargo)' \
-  --allow-tool 'shell(rustc)' \
+  --allow-tool 'shell(cargo --version)' \
+  --allow-tool 'shell(cargo check)' \
+  --allow-tool 'shell(cargo doc)' \
+  --allow-tool 'shell(cargo init)' \
+  --allow-tool 'shell(cargo update)' \
+  --allow-tool 'shell(cargo build)' \
+  --allow-tool 'shell(cargo test)' \
+  --allow-tool 'shell(cargo tree)' \
+  --allow-tool 'shell(cargo metadata)' \
+  --allow-tool 'shell(cargo pkgid)' \
+  --allow-tool 'shell(cargo verify-project)' \
+  --allow-tool 'shell(cargo info)' \
+  --allow-tool 'shell(rustc --version)' \
   --allow-tool 'shell(rustfmt)' \
   \
   `# === Go ===` \
-  --allow-tool 'shell(go)' \
+  --allow-tool 'shell(go build)' \
+  --allow-tool 'shell(go test)' \
+  --allow-tool 'shell(go mod tidy)' \
+  --allow-tool 'shell(go get)' \
+  --allow-tool 'shell(go list)' \
+  --allow-tool 'shell(go doc)' \
+  --allow-tool 'shell(go vet)' \
+  --allow-tool 'shell(go version)' \
+  --allow-tool 'shell(go env)' \
+  --allow-tool 'shell(go mod graph)' \
+  --allow-tool 'shell(go mod why)' \
   --allow-tool 'shell(gofmt)' \
   \
   `# === Deno ===` \
-  --allow-tool 'shell(deno)' \
+  --allow-tool 'shell(deno add)' \
+  --allow-tool 'shell(deno check)' \
+  --allow-tool 'shell(deno doc)' \
+  --allow-tool 'shell(deno info)' \
+  --allow-tool 'shell(deno run)' \
+  --allow-tool 'shell(deno task)' \
+  --allow-tool 'shell(deno test)' \
+  --allow-tool 'shell(deno --version)' \
   \
   `# === Node/NPM ===` \
-  --allow-tool 'shell(npm)' \
-  --allow-tool 'shell(node)' \
+  --allow-tool 'shell(npm list)' \
+  --allow-tool 'shell(npm view)' \
+  --allow-tool 'shell(npm search)' \
+  --allow-tool 'shell(npm outdated)' \
+  --allow-tool 'shell(npm config list)' \
+  --allow-tool 'shell(npm config get)' \
+  --allow-tool 'shell(npm explain)' \
+  --allow-tool 'shell(npm ls)' \
+  --allow-tool 'shell(npm why)' \
+  --allow-tool 'shell(node --version)' \
   \
   `# === Unix Utilities ===` \
   --allow-tool 'shell(curl)' \
@@ -116,7 +165,14 @@ exec "$BREW_PREFIX/bin/copilot" \
   --allow-tool 'shell(df)' \
   \
   `# === Stellar Tools ===` \
-  --allow-tool 'shell(stellar)' \
+  --allow-tool 'shell(stellar version)' \
+  --allow-tool 'shell(stellar xdr decode)' \
+  --allow-tool 'shell(stellar xdr types)' \
+  --allow-tool 'shell(stellar network list)' \
+  --allow-tool 'shell(stellar keys address)' \
+  --allow-tool 'shell(stellar keys ls)' \
+  --allow-tool 'shell(stellar contract info)' \
+  --allow-tool 'shell(stellar contract read)' \
   --allow-tool 'shell(stellar-xdr)' \
   --allow-tool 'shell(stellar-strkey)' \
   \
