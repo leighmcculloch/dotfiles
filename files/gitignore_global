@@ -16,3 +16,6 @@ __debug_bin
 .claude/
 crush.md
 /target/
+
+# Notes files in repos not intended to be committed.
+NOTES_*.md
