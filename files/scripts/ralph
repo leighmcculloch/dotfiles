@@ -37,37 +37,43 @@ while [ $count -lt $MAX_ATTEMPTS ]; do
   # Create temp dir for logs
   LOG_DIR=$(mktemp -d)
   
-  # Background tailer for logs
+  # Background tailer for logs - shows last 8 lines with screen rewriting
   (
     # Wait for file to appear (up to 2 seconds)
     for i in {1..20}; do
       shopt -s nullglob
       files=("$LOG_DIR"/*)
       if [ ${#files[@]} -gt 0 ]; then
-        tail -n +1 -F "${files[@]}" 2>/dev/null | grep --line-buffered -v "Chunk received" | grep --line-buffered "^20" | while IFS= read -r line; do
-          # Extract JSON part from log line (everything after the first {)
-          json_part=$(echo "$line" | sed -n 's/^.*[0-9] {/{/p')
+        # Cache terminal width once
+        cols=$(tput cols 2>/dev/null || echo 80)
+        
+        tail -n +1 -F "${files[@]}" 2>/dev/null | awk -v cols="$cols" -v cyan="$CYAN" -v nc="$NC" '
+        BEGIN {
+          bufsize = 8
+          idx = 0
+          count = 0
+          printed = 0
+        }
+        {
+          # Store line in ring buffer
+          buf[idx] = substr($0, 1, cols)
+          idx = (idx + 1) % bufsize
+          if (count < bufsize) count++
           
-          if [ -n "$json_part" ]; then
-            # Parse with jq if available, otherwise fall back to simple grep/sed
-            if command -v jq >/dev/null 2>&1; then
-              echo "$json_part" | jq -r '
-                .choices[0].delta.reasoning_text // empty,
-                .choices[0].delta.content // empty,
-                .choices[0].message.reasoning_text // empty,
-                .choices[0].message.content // empty,
-                (.choices[0].message.tool_calls[]? | "Tool: \(.function.name) args: \(.function.arguments)")
-              ' 2>/dev/null | while read -r decoded; do
-                if [ -n "$decoded" ] && [ "$decoded" != "null" ]; then
-                   echo -e "${CYAN}${decoded}${NC}" >&2
-                fi
-              done
-            else
-              # Fallback: simplistic extraction for when jq is missing
-              echo "$json_part" | grep -oE '"(reasoning_text|content|name|arguments)":\s*"[^"]*"' | sed 's/\\n/\n/g' | sed 's/\\"/"/g' >&2
-            fi
-          fi
-        done
+          # Move cursor up to overwrite previous output
+          if (printed > 0) {
+            printf "\033[%dA", printed > "/dev/stderr"
+          }
+          
+          # Print all buffered lines
+          printed = count
+          for (i = 0; i < count; i++) {
+            line = buf[(idx - count + i + bufsize) % bufsize]
+            printf "\033[2K%s%s%s\n", cyan, line, nc > "/dev/stderr"
+          }
+          fflush("/dev/stderr")
+        }
+        '
         break
       fi
       sleep 0.1
@@ -81,6 +87,11 @@ while [ $count -lt $MAX_ATTEMPTS ]; do
   # Clean up tailer
   kill $TAILER_PID 2>/dev/null
   wait $TAILER_PID 2>/dev/null
+  
+  # Clear the log window (move up 8 lines and clear each)
+  for i in {1..8}; do
+    printf '\033[1A\033[2K' >&2
+  done
   
   # Print the command output
   echo "$OUTPUT"
