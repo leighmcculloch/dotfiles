@@ -39,8 +39,9 @@ function {
   fi
   echo "Base branch: ${base_branch}"
 
-  # Get the diff between base branch and HEAD
-  local diff="$(git log --patch ${base_branch}..HEAD)"
+  # Get the diff and log between base branch and HEAD
+  local diff="$(git diff ${base_branch}..HEAD)"
+  local log="$(git log ${base_branch}..HEAD)"
   if [ -z "$diff" ]; then
     echo "No changes detected in working directory"
     return 1
@@ -85,8 +86,12 @@ Start the title with a capital letter but do not end with a full stop. Use full 
 Context:
 ${context_json}
 
-Git log with diff:
-${diff}"
+Diff:
+${diff}
+
+Commit log:
+Note: The commit log may contain implementation details, experimentation, and multiple attempts. Be critical about whether it represents the intent of the final change or just artifacts of the development process.
+${log}"
 
   local suggestion=""
   if [[ "$ai" == claude* ]]; then
