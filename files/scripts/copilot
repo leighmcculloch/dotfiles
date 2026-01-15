@@ -5,6 +5,10 @@ set -o nounset
 # Launch GitHub Copilot CLI with pre-approved permissions
 # Mirrors the permissions from Claude Code settings.json
 
+export GIT_CONFIG_COUNT=1
+export GIT_CONFIG_KEY_0="commit.gpgsign"
+export GIT_CONFIG_VALUE_0="false"
+
 exec "$BREW_PREFIX/bin/copilot" \
   \
   `# === URL Permissions ===` \
