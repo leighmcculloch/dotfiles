@@ -68,13 +68,17 @@ if OS.mac?
   cask "discord"
   cask "ghostty"
   cask "sublime-text"
+
+  # AI desktop tools
   cask "lm-studio"
   cask "voiceink"
-  brew "opencode"
   cask "claude"
+  cask "claude"
+
+  # AI CLI tools
+  brew "opencode"
   cask "claude-code"
   cask "copilot-cli"
-  brew "gemini-cli"
 
   brew "mas"
   mas "Numbers", id: 409203825
