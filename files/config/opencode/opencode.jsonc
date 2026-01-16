@@ -4,7 +4,6 @@
   "model": "copilot/claude-opus-4.5",
   "small_model": "copilot/gpt-5.2-codex",
   "permission": {
-    "defaultMode": "plan",
     "context7_resolve-library-id": "allow",
     "context7_get-library-docs": "allow",
     "deepwiki_read_wiki_structure": "allow",
@@ -167,14 +166,6 @@
       "command": ["sh", "-c", "source ~/.zenv_apikey_context7 && deno run --allow-env --allow-net npm:@upstash/context7-mcp"],
       "enabled": true
     }
-  },
-  "formatter": {
-    "go": true,
-    "rust": true
-  },
-  "lsp": {
-    "go": true,
-    "rust": true
   },
   "share": "disabled",
   "autoupdate": false,
