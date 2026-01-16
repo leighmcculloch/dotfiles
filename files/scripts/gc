@@ -50,37 +50,35 @@ Branch: ${branch}
 Diff:
 ${diff}"
 
-  # AI configurations: tool|model
+  # AI configurations: full command (prompt will be appended as last arg)
   local -a ai_configs=(
-    #"claude|claude-opus-4-5"
-    "claude|claude-sonnet-4-5"
-    #"claude|claude-haiku-4-5"
-    #"copilot|claude-opus-4.5"
-    #"copilot|claude-sonnet-4.5"
-    #"copilot|claude-haiku-4.5"
-    #"copilot|gpt-5.2-codex"
-    #"copilot|gpt-5.1-codex-max"
-    #"copilot|gpt-5.2"
-    #"copilot|gpt-5.1-codex-mini"
-    #"copilot|gpt-5-mini"
-    #"copilot|gemini-3-pro-preview"
+    #"claude --model claude-opus-4-5 -p"
+    #"claude --model claude-sonnet-4-5 -p"
+    #"claude --model claude-haiku-4-5 -p"
+    #"opencode run -m github-copilot/claude-opus-4.5"
+    "copilot --model claude-opus-4.5 -p"
+    #"copilot --model claude-sonnet-4.5 -p"
+    #"copilot --model claude-haiku-4.5 -p"
+    #"copilot --model gpt-5.2-codex -p"
+    #"copilot --model gpt-5.1-codex-max -p"
+    #"copilot --model gpt-5.2 -p"
+    #"copilot --model gpt-5.1-codex-mini -p"
+    #"copilot --model gpt-5-mini -p"
+    #"copilot --model gemini-3-pro-preview -p"
   )
 
   # If -y flag, pick one random model and use it directly
   if (( yes == 1 )); then
     local random_idx=$(( RANDOM % ${#ai_configs[@]} + 1 ))
-    local config="${ai_configs[$random_idx]}"
-    local tool="${config%%|*}"
-    local model="${config#*|}"
-    local label="$tool $model"
+    local cmd="${ai_configs[$random_idx]}"
 
-    printf "○ %s\n" "$label"
+    printf "○ %s\n" "$cmd"
     local start_time=$(gdate +%s%6N)
-    message="$(${=tool} --model "$model" -p "$prompt" 2>/dev/null | tr '\n' ' ' | sed 's/  */ /g' | sed 's/^ //;s/ $//')"
+    message="$(${=cmd} "$prompt" 2>/dev/null | tr '\n' ' ' | sed 's/  */ /g' | sed 's/^ //;s/ $//')"
     local end_time=$(gdate +%s%6N)
     local elapsed_us=$((end_time - start_time))
     local elapsed_s=$(printf '%d.%06d' $((elapsed_us / 1000000)) $((elapsed_us % 1000000)))
-    printf "\033[1A● %s (${elapsed_s}s)\033[K\n" "$label"
+    printf "\033[1A● %s (${elapsed_s}s)\033[K\n" "$cmd"
 
     if [[ -z "$message" ]]; then
       echo "Failed to generate commit message" >&2
@@ -96,10 +94,8 @@ ${diff}"
     local total=${#ai_configs[@]}
 
     # Launch all AI calls in parallel
-    for config in "${ai_configs[@]}"; do
-      local tool="${config%%|*}"
-      local model="${config#*|}"
-      labels+=("$tool $model")
+    for cmd in "${ai_configs[@]}"; do
+      labels+=("$cmd")
 
       local tmpfile="$(mktemp)"
       local errfile="$(mktemp)"
@@ -107,7 +103,7 @@ ${diff}"
       errfiles+=("$errfile")
 
       start_times+=($(gdate +%s%6N))
-      ${=tool} --model "$model" -p "$prompt" > "$tmpfile" 2>"$errfile" &
+      ${=cmd} "$prompt" > "$tmpfile" 2>"$errfile" &
       pids+=($!)
     done
 

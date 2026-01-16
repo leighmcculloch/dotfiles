@@ -1,8 +1,8 @@
 {
   "$schema": "https://opencode.ai/config.json",
   "theme": "ghostty",
-  "model": "copilot/claude-opus-4.5",
-  "small_model": "copilot/gpt-5.2-codex",
+  "model": "github-copilot/claude-opus-4.5",
+  "small_model": "github-copilot/gpt-5.2-codex",
   "permission": {
     "context7_resolve-library-id": "allow",
     "context7_get-library-docs": "allow",
