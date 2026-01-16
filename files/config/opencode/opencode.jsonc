@@ -1,48 +1,197 @@
- {
-   "$schema": "https://opencode.ai/config.json",
-   "theme": "ghostty",
-   "permission": {
-     "bash": {
-       "git checkout": "deny",
-       "git add": "deny",
-       "git commit": "deny",
-       "git push": "deny",
-       "git pull": "deny",
-       "git merge": "deny",
-       "git rebase": "deny",
-       "git reset": "deny"
-     }
-   },
-    "mcp": {
-      "perplexity": {
-        "type": "local",
-        "command": ["npx", "-y", "server-perplexity-ask"],
-        "enabled": true
-      },
-      "deepwiki": {
-        "type": "remote",
-        "url": "https://mcp.deepwiki.com/sse",
-        "enabled": true
-      },
-      "github": {
-        "type": "local",
-        "command": ["go", "run", "github.com/github/github-mcp-server/cmd/github-mcp-server@latest", "stdio"],
-        "enabled": true
-      },
-      "context7": {
-        "type": "local",
-        "command": ["deno", "run", "--allow-env=CONTEXT7_API_KEY,CLIENT_IP_ENCRYPTION_KEY,NODE_V8_COVERAGE,UNDICI_NO_FG,JEST_WORKER_ID,HTTPS_PROXY,https_proxy,HTTP_PROXY,http_proxy,NO_DEPRECATION,TRACE_DEPRECATION", "--allow-net", "npm:@upstash/context7-mcp"],
-        "enabled": true
-      },
-      "openzeppelin-stellar-contracts": {
-        "type": "remote",
-        "url": "https://mcp.openzeppelin.com/contracts/stellar/mcp",
-        "enabled": true
-      },
-      "playwright": {
-        "type": "local",
-        "command": ["deno", "run", "--allow-env", "--allow-sys", "npm:@playwright/mcp"],
-        "enabled": true
-      }
+{
+  "$schema": "https://opencode.ai/config.json",
+  "theme": "ghostty",
+  "model": "copilot/claude-opus-4.5",
+  "small_model": "copilot/gpt-5.2-codex",
+  "permission": {
+    "defaultMode": "plan",
+    "context7_resolve-library-id": "allow",
+    "context7_get-library-docs": "allow",
+    "deepwiki_read_wiki_structure": "allow",
+    "deepwiki_read_wiki_contents": "allow",
+    "deepwiki_ask_question": "allow",
+    "github_get_commit": "allow",
+    "github_get_file_contents": "allow",
+    "github_get_me": "allow",
+    "github_get_tag": "allow",
+    "github_issue_read": "allow",
+    "github_list_branches": "allow",
+    "github_list_commits": "allow",
+    "github_list_issues": "allow",
+    "github_list_pull_requests": "allow",
+    "github_pull_request_read": "allow",
+    "github_search_code": "allow",
+    "github_search_issues": "allow",
+    "github_search_pull_requests": "allow",
+    "perplexity_perplexity_ask": "allow",
+    "webfetch": "allow",
+    "websearch": "allow",
+    "edit": "ask",
+    "bash": {
+      "git fetch": "allow",
+      "git grep": "allow",
+      "git diff": "allow",
+      "git log": "allow",
+      "git show": "allow",
+      "git branch": "allow",
+      "git remote": "allow",
+      "git tag": "allow",
+      "git config --get": "allow",
+      "git config --list": "allow",
+      "git rev-parse": "allow",
+      "git describe": "allow",
+      "git blame": "allow",
+      "gh pr view": "allow",
+      "gh pr checks": "allow",
+      "gh pr diff": "allow",
+      "gh pr list": "allow",
+      "gh pr status": "allow",
+      "gh issue view": "allow",
+      "gh issue list": "allow",
+      "gh issue status": "allow",
+      "gh repo view": "allow",
+      "gh repo list": "allow",
+      "gh repo clone": "allow",
+      "gh run view": "allow",
+      "gh run list": "allow",
+      "gh run watch": "allow",
+      "gh workflow list": "allow",
+      "gh workflow view": "allow",
+      "gh release view": "allow",
+      "gh release list": "allow",
+      "gh browse": "allow",
+      "gh search": "allow",
+      "gh gist view": "allow",
+      "gh gist list": "allow",
+      "cargo --version": "allow",
+      "cargo check": "allow",
+      "cargo doc": "allow",
+      "cargo init": "allow",
+      "cargo update": "allow",
+      "cargo build": "allow",
+      "cargo test": "allow",
+      "cargo tree": "allow",
+      "cargo metadata": "allow",
+      "cargo pkgid": "allow",
+      "cargo verify-project": "allow",
+      "cargo info": "allow",
+      "rustc --version": "allow",
+      "go build": "allow",
+      "go test": "allow",
+      "go mod tidy": "allow",
+      "go get": "allow",
+      "go list": "allow",
+      "go doc": "allow",
+      "go vet": "allow",
+      "go version": "allow",
+      "go env": "allow",
+      "go mod graph": "allow",
+      "go mod why": "allow",
+      "deno add": "allow",
+      "deno check": "allow",
+      "deno doc": "allow",
+      "deno info": "allow",
+      "deno run": "allow",
+      "deno task": "allow",
+      "deno test": "allow",
+      "deno --version": "allow",
+      "npm list": "allow",
+      "npm view": "allow",
+      "npm search": "allow",
+      "npm outdated": "allow",
+      "npm config list": "allow",
+      "npm config get": "allow",
+      "npm explain": "allow",
+      "npm ls": "allow",
+      "npm why": "allow",
+      "node --version": "allow",
+      "curl": "allow",
+      "grep": "allow",
+      "ls": "allow",
+      "mkdir": "allow",
+      "touch": "allow",
+      "cat": "allow",
+      "head": "allow",
+      "tail": "allow",
+      "wc": "allow",
+      "find": "allow",
+      "which": "allow",
+      "whereis": "allow",
+      "diff": "allow",
+      "sort": "allow",
+      "uniq": "allow",
+      "cut": "allow",
+      "jq": "allow",
+      "yq": "allow",
+      "tree": "allow",
+      "stat": "allow",
+      "file": "allow",
+      "realpath": "allow",
+      "dirname": "allow",
+      "basename": "allow",
+      "pwd": "allow",
+      "date": "allow",
+      "uname": "allow",
+      "du": "allow",
+      "df": "allow",
+      "stellar version": "allow",
+      "stellar xdr decode": "allow",
+      "stellar xdr types": "allow",
+      "stellar network list": "allow",
+      "stellar keys address": "allow",
+      "stellar keys ls": "allow",
+      "stellar contract info": "allow",
+      "stellar contract read": "allow",
+      "stellar-xdr": "allow",
+      "stellar-strkey": "allow"
     }
- }
+  },
+  "mcp": {
+    "github": {
+      "type": "local",
+      "command": ["sh", "-c", "source ~/.zenv_apikey_github && github-mcp-server stdio"],
+      "enabled": true
+    },
+    "perplexity": {
+      "type": "local",
+      "command": ["sh", "-c", "source ~/.zenv_apikey_perplexity && deno run --allow-env --allow-net npm:server-perplexity-ask"],
+      "enabled": true
+    },
+    "deepwiki": {
+      "type": "remote",
+      "url": "https://mcp.deepwiki.com/sse",
+      "enabled": true
+    },
+    "context7": {
+      "type": "local",
+      "command": ["sh", "-c", "source ~/.zenv_apikey_context7 && deno run --allow-env --allow-net npm:@upstash/context7-mcp"],
+      "enabled": true
+    }
+  },
+  "formatter": {
+    "go": true,
+    "rust": true
+  },
+  "lsp": {
+    "go": true,
+    "rust": true
+  },
+  "share": "disabled",
+  "autoupdate": false,
+  "compaction": {
+    "auto": true,
+    "prune": true
+  },
+  "experimental": {
+    "hook": {
+      "session_completed": [
+        {
+          "command": ["sh", "-c", "printf '\\a' > /dev/tty"]
+        },
+        {
+          "command": ["sh", "-c", "source ~/.zenv_apikey_pushover && curl -s -X POST https://api.pushover.net/1/messages.json -d token=\"$PUSHOVER_TOKEN\" -d user=\"$PUSHOVER_USER\" -d \"message=[opencode] Session completed\" > /dev/null 2>&1 || true"]
+        }
+      ]
+    }
+  }
+}
