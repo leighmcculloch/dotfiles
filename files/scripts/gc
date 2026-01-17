@@ -50,145 +50,33 @@ Branch: ${branch}
 Diff:
 ${diff}"
 
-  # AI configurations: full command (prompt will be appended as last arg)
-  local -a ai_configs=(
-    #"claude --model claude-opus-4-5 -p"
-    #"claude --model claude-sonnet-4-5 -p"
-    #"claude --model claude-haiku-4-5 -p"
-    #"opencode run -m github-copilot/claude-opus-4.5"
-    #"opencode run -m github-copilot/claude-sonnet-4.5"
-    #"opencode run -m github-copilot/claude-haiku-4.5"
-    "opencode run -m github-copilot/gpt-5.2-codex"
-    #"opencode run -m github-copilot/gpt-5.2"
-    #"opencode run -m github-copilot/gemini-3-pro-preview"
-    #"copilot --model claude-opus-4.5 -p"
-    #"copilot --model claude-sonnet-4.5 -p"
-    #"copilot --model claude-haiku-4.5 -p"
-    #"copilot --model gpt-5.2-codex -p"
-    #"copilot --model gpt-5.1-codex-max -p"
-    #"copilot --model gpt-5.2 -p"
-    #"copilot --model gpt-5.1-codex-mini -p"
-    #"copilot --model gpt-5-mini -p"
-    #"copilot --model gemini-3-pro-preview -p"
-  )
+  # Detect MDM enrollment
+  local mdm_enrolled=0
+  if profiles status -type enrollment 2>/dev/null | grep -q "Yes"; then
+    mdm_enrolled=1
+  fi
 
-  # If -y flag, pick one random model and use it directly
-  if (( yes == 1 )); then
-    local random_idx=$(( RANDOM % ${#ai_configs[@]} + 1 ))
-    local cmd="${ai_configs[$random_idx]}"
-
-    printf "○ %s\n" "$cmd"
-    local start_time=$(gdate +%s%6N)
-    message="$(${=cmd} "$prompt" 2>/dev/null | tr '\n' ' ' | sed 's/  */ /g' | sed 's/^ //;s/ $//')"
-    local end_time=$(gdate +%s%6N)
-    local elapsed_us=$((end_time - start_time))
-    local elapsed_s=$(printf '%d.%06d' $((elapsed_us / 1000000)) $((elapsed_us % 1000000)))
-    printf "\033[1A● %s (${elapsed_s}s)\033[K\n" "$cmd"
-
-    if [[ -z "$message" ]]; then
-      echo "Failed to generate commit message" >&2
-      return 1
-    fi
+  local ai=""
+  if (( mdm_enrolled )); then
+    ai="opencode run -m github-copilot/gpt-5.2-codex"
   else
-    local -a pids=()
-    local -a tmpfiles=()
-    local -a errfiles=()
-    local -a labels=()
-    local -a start_times=()
-    local -a elapsed_times=()
-    local total=${#ai_configs[@]}
+    ai="claude --model claude-haiku-4-5 -p"
+  fi
 
-    # Launch all AI calls in parallel
-    for cmd in "${ai_configs[@]}"; do
-      labels+=("$cmd")
+  printf "○ %s\n" "$ai"
+  local start_time=$(gdate +%s%6N)
+  message="$(${=ai} "$prompt" 2>/dev/null | tr '\n' ' ' | sed 's/  */ /g' | sed 's/^ //;s/ $//')"
+  local end_time=$(gdate +%s%6N)
+  local elapsed_us=$((end_time - start_time))
+  local elapsed_s=$(printf '%d.%06d' $((elapsed_us / 1000000)) $((elapsed_us % 1000000)))
+  printf "\033[1A● %s (${elapsed_s}s)\033[K\n" "$ai"
 
-      local tmpfile="$(mktemp)"
-      local errfile="$(mktemp)"
-      tmpfiles+=("$tmpfile")
-      errfiles+=("$errfile")
+  if [[ -z "$message" ]]; then
+    echo "Failed to generate commit message" >&2
+    return 1
+  fi
 
-      start_times+=($(gdate +%s%6N))
-      ${=cmd} "$prompt" > "$tmpfile" 2>"$errfile" &
-      pids+=($!)
-    done
-
-    # Progress display - print initial state
-    for i in {1..${#pids[@]}}; do
-      printf "○ %s\n" "${labels[$i]}"
-    done
-
-    # Initialize elapsed times array
-    for i in {1..${#pids[@]}}; do
-      elapsed_times+=(-1)
-    done
-
-    local completed=0
-    while (( completed < total )); do
-      completed=0
-      printf "\033[${total}A"  # Move up
-      for i in {1..${#pids[@]}}; do
-        if kill -0 ${pids[$i]} 2>/dev/null; then
-          printf "○ %s\033[K\n" "${labels[$i]}"
-        else
-          if (( elapsed_times[$i] < 0 )); then
-            elapsed_times[$i]=$(($(gdate +%s%6N) - start_times[$i]))
-          fi
-          local elapsed_s=$(printf '%d.%06d' $((elapsed_times[$i] / 1000000)) $((elapsed_times[$i] % 1000000)))
-          printf "● %s (${elapsed_s}s)\033[K\n" "${labels[$i]}"
-          ((completed++))
-        fi
-      done
-      (( completed < total )) && sleep 0.5
-    done
-
-    # Clear progress display
-    printf "\033[${total}A"
-    for i in {1..${total}}; do
-      printf "\033[K\n"
-    done
-    printf "\033[${total}A"
-
-    # Collect results
-    local -a choices=()
-    for i in {1..${#tmpfiles[@]}}; do
-      local result="$(cat "${tmpfiles[$i]}" | tr '\n' ' ' | sed 's/  */ /g' | sed 's/^ //;s/ $//')"
-      if [[ -n "$result" ]]; then
-        local elapsed_s=$(printf '%d.%06d' $((elapsed_times[$i] / 1000000)) $((elapsed_times[$i] % 1000000)))
-        choices+=("${result} [${labels[$i]} (${elapsed_s}s)]")
-      else
-        echo "FAILED: ${labels[$i]}" >&2
-        echo "  stdout: $(cat "${tmpfiles[$i]}")" >&2
-        echo "  stderr: $(cat "${errfiles[$i]}")" >&2
-      fi
-    done
-
-    # Clean up
-    for tmpfile in "${tmpfiles[@]}"; do
-      rm -f "$tmpfile"
-    done
-    for errfile in "${errfiles[@]}"; do
-      rm -f "$errfile"
-    done
-
-    choices+=("[type my own]")
-
-    local choice="$(printf '%s\n' "${choices[@]}" | gum choose --header "Select commit message:")"
-
-    if [[ -z "$choice" ]]; then
-      echo "Cancelled"
-      return 1
-    fi
-
-    if [[ "$choice" == "[type my own]" ]]; then
-      message=""
-    else
-      message="${choice% \[*\]}"
-      # Print selected model so it stays in history
-      local selected_label="${choice##*\[}"
-      selected_label="${selected_label%\]}"
-      printf "● %s\n" "$selected_label"
-    fi
-
+  if (( yes == 0 )); then
     message="$(gum write --width 80 --char-limit 99999 --prompt '| ' --value "$message")"
   fi
 
