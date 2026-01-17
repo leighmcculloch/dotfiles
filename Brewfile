@@ -1,5 +1,3 @@
-tap "leighmcculloch/dotfiles", "#{ENV['PWD']}"
-
 brew "asciinema"
 brew "agg"
 brew "bat"
