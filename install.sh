@@ -88,4 +88,7 @@ if [ -z "${HOMEBREW_GITHUB_API_TOKEN:-}" ] && [ ! -t 0 ]; then
 fi
 brew bundle install --no-upgrade
 
+# install additional packages
+deno install -g --allow-all npm:@anthropic-ai/sandbox-runtime
+
 echo "$fg[green]Install complete.$reset_color"
