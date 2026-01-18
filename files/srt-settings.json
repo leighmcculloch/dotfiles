@@ -13,7 +13,10 @@
     "denyRead": [
       "~/.ssh",
       "~/.zenv_apikey_*",
-      "~"
+      "~/Desktop/",
+      "~/Documents/",
+      "~/Filing*/",
+      "~/Library/"
     ],
     "allowWrite": [
       ".",
@@ -21,17 +24,9 @@
       "~/Code/"
     ],
     "denyWrite": [
-      ".env",
-      "config/production.json"
+      ".env"
     ]
   },
-  "ignoreViolations": {
-    "*": [
-      "/usr/bin",
-      "/System"
-    ],
-    "git push": ["/usr/bin/nc"],
-    "npm": ["/private/tmp"]
-  },
+  "ignoreViolations": {},
   "enableWeakerNestedSandbox": false
 }
