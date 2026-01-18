@@ -12,11 +12,13 @@
   "filesystem": {
     "denyRead": [
       "~/.ssh",
-      "~/.zenv_apikey_*"
+      "~/.zenv_apikey_*",
+      "~"
     ],
     "allowWrite": [
       ".",
-      "/tmp"
+      "/tmp",
+      "~/Code/"
     ],
     "denyWrite": [
       ".env",
