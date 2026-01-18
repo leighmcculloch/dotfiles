@@ -3,7 +3,27 @@
     "allowedDomains": [
       "github.com",
       "*.github.com",
-      "api.github.com"
+      "api.github.com",
+      "lfs.github.com",
+      "github-cloud.githubusercontent.com",
+      "objects.githubusercontent.com",
+      "api.githubcopilot.com",
+      "copilot-proxy.githubusercontent.com",
+      "opencode.ai",
+      "api.anthropic.com",
+      "generativelanguage.googleapis.com",
+      "api.x.ai",
+      "*.api.x.ai",
+      "api.perplexity.ai",
+      "mcp.deepwiki.com",
+      "api.upstash.com",
+      "*.upstash.io",
+      "api.pushover.net",
+      "registry.npmjs.org",
+      "*.npmjs.org",
+      "deno.land",
+      "*.deno.land",
+      "esm.sh"
     ],
     "deniedDomains": [],
     "allowUnixSockets": [],
@@ -21,7 +41,7 @@
     "allowWrite": [
       ".",
       "/tmp",
-      "~/Code/"
+      "~/.local/share/opencode"
     ],
     "denyWrite": [
       ".env"
