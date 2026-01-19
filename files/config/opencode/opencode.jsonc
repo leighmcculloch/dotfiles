@@ -181,16 +181,6 @@
     }
   },
   "experimental": {
-    "batch_tool": true,
-    "hook": {
-      "session_completed": [
-        {
-          "command": ["sh", "-c", "printf '\\a' > /dev/tty"]
-        },
-        {
-          "command": ["sh", "-c", "source ~/.zenv_apikey_pushover && curl -s -X POST https://api.pushover.net/1/messages.json -d token=\"$PUSHOVER_TOKEN\" -d user=\"$PUSHOVER_USER\" -d \"message=[opencode] Session completed\" > /dev/null 2>&1 || true"]
-        }
-      ]
-    }
+    "batch_tool": true
   }
 }
