@@ -104,4 +104,4 @@ RUN curl -fsSL https://claude.ai/install.sh | bash
 
 ENV PATH="${HOME}/.claude/bin:${PATH}"
 
-ENTRYPOINT ["claude", "--dangerously-skip-permissions"]
+ENTRYPOINT ["claude", "--mcp-config=$HOME/.claude/mcp.json", "--dangerously-skip-permissions"]
