@@ -5,7 +5,7 @@ SCRIPT_DIR="${0:a:h}"
 DOCKERFILE="$SCRIPT_DIR/../../docker/aisandbox.Dockerfile"
 
 # Select tool
-TOOL=$(gum choose --header "Select AI tool:" "opencode" "claude")
+TOOL="${TOOL:-$(gum choose --header "Select AI tool:" "opencode" "claude")}"
 
 # Build image
 docker build \
@@ -21,6 +21,7 @@ docker build \
 MOUNTS=()
 MOUNT_DIRS=(
   "$(pwd)"
+  "$HOME/.claude.json"
   "$HOME/.claude"
   "$HOME/.config/opencode"
   "$HOME/.local/share/opencode"

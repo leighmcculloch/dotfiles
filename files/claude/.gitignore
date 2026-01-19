@@ -17,3 +17,4 @@ history.jsonl
 __store.db
 stats-cache.json
 chrome/chrome-native-host
+.credentials.json
