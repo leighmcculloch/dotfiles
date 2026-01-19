@@ -1,0 +1,88 @@
+# syntax=docker/dockerfile:1
+# ============================================
+# Base stage: common setup for both tools
+# ============================================
+FROM ubuntu:24.04 AS base
+
+ARG USER
+ARG UID
+ARG HOME
+
+# Install system dependencies
+RUN --mount=type=cache,target=/var/cache/apt \
+    --mount=type=cache,target=/var/lib/apt \
+    apt-get update && apt-get install -y \
+    ca-certificates \
+    build-essential \
+    pkg-config \
+    libssl-dev \
+    curl \
+    git \
+    unzip \
+    zstd \
+    jq
+
+# Create user with matching UID and macOS-style home path
+RUN useradd -m -u ${UID} -d ${HOME} -s /bin/bash ${USER}
+
+# Set up environment
+ENV PATH="${HOME}/.local/bin:${HOME}/.local/go/bin:${HOME}/.cargo/bin:${HOME}/go/bin:${PATH}"
+ENV GOPATH="${HOME}/go"
+ENV GOROOT="${HOME}/.local/go"
+USER ${USER}
+WORKDIR ${HOME}
+
+# Install Go (latest)
+RUN --mount=type=cache,target=/tmp/downloads,uid=${UID} \
+    mkdir -p ${HOME}/.local \
+    && GO_VERSION=$(curl -fsSL https://go.dev/VERSION?m=text | head -1 | sed 's/^go//') \
+    && GO_TAR=/tmp/downloads/go${GO_VERSION}.linux-amd64.tar.gz \
+    && [ -f "$GO_TAR" ] || curl -fsSL -o "$GO_TAR" https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz \
+    && tar -C ${HOME}/.local -xzf "$GO_TAR" \
+    && go install golang.org/x/tools/gopls@latest
+
+# Install GitHub CLI (latest)
+RUN --mount=type=cache,target=/tmp/downloads,uid=${UID} \
+    GH_VERSION=$(curl -fsSL https://api.github.com/repos/cli/cli/releases/latest | jq -r '.tag_name | ltrimstr("v")') \
+    && GH_TAR=/tmp/downloads/gh_${GH_VERSION}_linux_amd64.tar.gz \
+    && [ -f "$GH_TAR" ] || curl -fsSL -o "$GH_TAR" https://github.com/cli/cli/releases/download/v${GH_VERSION}/gh_${GH_VERSION}_linux_amd64.tar.gz \
+    && tar -C ${HOME}/.local -xzf "$GH_TAR" --strip-components=1
+
+# Install Deno (latest)
+RUN --mount=type=cache,target=/tmp/downloads,uid=${UID} \
+    DENO_VERSION=$(curl -fsSL https://api.github.com/repos/denoland/deno/releases/latest | jq -r '.tag_name | ltrimstr("v")') \
+    && DENO_ZIP=/tmp/downloads/deno-${DENO_VERSION}-x86_64-unknown-linux-gnu.zip \
+    && [ -f "$DENO_ZIP" ] || curl -fsSL -o "$DENO_ZIP" https://github.com/denoland/deno/releases/download/v${DENO_VERSION}/deno-x86_64-unknown-linux-gnu.zip \
+    && unzip -o "$DENO_ZIP" -d ${HOME}/.local/bin
+
+# Install Rust (stable + nightly) with wasm32v1-none target and rust-analyzer
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y \
+    && . ${HOME}/.cargo/env \
+    && rustup toolchain install stable \
+    && rustup toolchain install nightly \
+    && rustup target add wasm32v1-none --toolchain stable \
+    && rustup target add wasm32v1-none --toolchain nightly \
+    && rustup component add rust-analyzer
+
+# Install MCP servers
+RUN go install github.com/github/github-mcp-server/cmd/github-mcp-server@latest
+
+# ============================================
+# OpenCode stage
+# ============================================
+FROM base AS opencode
+
+RUN curl -fsSL https://opencode.ai/install | bash
+
+ENV OPENCODE_PERMISSION='{"edit":"allow","bash":"allow","webfetch":"allow"}'
+
+ENTRYPOINT ["opencode"]
+
+# ============================================
+# Claude Code stage
+# ============================================
+FROM base AS claude
+
+RUN curl -fsSL https://claude.ai/install.sh | bash
+
+ENTRYPOINT ["claude", "--dangerously-skip-permissions"]

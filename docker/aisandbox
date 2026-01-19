@@ -1,0 +1,47 @@
+#!/usr/bin/env zsh
+set -euo pipefail
+
+SCRIPT_DIR="${0:a:h}"
+DOCKERFILE="$SCRIPT_DIR/aisandbox.Dockerfile"
+
+# Select tool
+TOOL=$(gum choose --header "Select AI tool:" "opencode" "claude")
+
+# Build image
+docker build
+  -t "$TOOL" \
+  --target "$TOOL"
+  --build-arg HOME="$HOME" \
+  --build-arg USER="$USER" \
+  --build-arg UID="$(id -u)" \
+  -f "$DOCKERFILE" "$SCRIPT_DIR"
+
+# Build volume mounts
+MOUNTS=()
+MOUNT_DIRS=(
+  "$(pwd)"
+  "$HOME/.claude"
+  "$HOME/.config/opencode"
+  "$HOME/.local/share/opencode"
+)
+for dir in "${MOUNT_DIRS[@]}"; do
+    MOUNTS+=(-v "$dir:$dir")
+done
+
+# Mount API key files if they exist (warn if missing)
+KEYFILES=(
+  "$HOME/.zenv_apikey_perplexity"
+  "$HOME/.zenv_apikey_context7"
+  "$HOME/.zenv_apikey_pushover"
+  "$HOME/.zenv_apikey_github_ro"
+)
+for keyfile in "${KEYFILES[@]}"; do
+  MOUNTS+=(-v "$keyfile:$keyfile:ro")
+done
+
+# Run container
+docker run --rm -it \
+    "${MOUNTS[@]}" \
+    -w "$(pwd)" \
+    "$TOOL" \
+    "$@"
