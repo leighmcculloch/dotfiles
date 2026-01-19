@@ -74,7 +74,7 @@ if OS.mac?
   cask "claude"
 
   # AI CLI tools
-  brew "opencode"
+  # brew "opencode" - updated too infrequently, must be installed with npm
   cask "claude-code"
   cask "copilot-cli"
 

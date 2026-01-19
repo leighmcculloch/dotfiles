@@ -89,6 +89,7 @@ fi
 brew bundle install --no-upgrade
 
 # install additional packages
+npm install -g opencode-ai
 deno install -g --allow-all npm:@anthropic-ai/sandbox-runtime
 deno install --global --allow-env --allow-net npm:server-perplexity-ask
 deno install --global --allow-env --allow-net npm:@upstash/context7-mcp
