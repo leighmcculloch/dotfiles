@@ -130,7 +130,7 @@ fi
 # Git aliases
 function git() {
   if command git rev-parse --git-dir >/dev/null 2>&1; then
-    command git config core.hooksPath no-hooks
+    command git config core.hooksPath no-hooks >/dev/null 2>&1
   fi
   command git $@
 }
