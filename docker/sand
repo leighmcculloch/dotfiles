@@ -60,7 +60,7 @@ GIT_USER_NAME="$(git config --global user.name 2>/dev/null || true)"
 GIT_USER_EMAIL="$(git config --global user.email 2>/dev/null || true)"
 
 # Generate container name from current directory + random 2-digit suffix
-CONTAINER_NAME="$(basename "$(pwd)")-$(printf '%02d' $((RANDOM % 100)))"
+CONTAINER_NAME="$(basename "$(pwd)" | tr -d '.')-$(printf '%02d' $((RANDOM % 100)))"
 
 # Run container
 docker run --rm -it \
