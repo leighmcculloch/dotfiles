@@ -91,7 +91,7 @@ ENV PATH="${HOME}/.opencode/bin:${PATH}"
 
 ENV OPENCODE_PERMISSION='{"edit":"allow","bash":"allow","webfetch":"allow"}'
 
-#ENTRYPOINT ["opencode"]
+ENTRYPOINT opencode
 
 # ============================================
 # Claude Code stage
@@ -104,4 +104,4 @@ RUN curl -fsSL https://claude.ai/install.sh | bash
 
 ENV PATH="${HOME}/.claude/bin:${PATH}"
 
-ENTRYPOINT ["claude", "--mcp-config=$HOME/.claude/mcp.json", "--dangerously-skip-permissions"]
+ENTRYPOINT claude --mcp-config=$HOME/.claude/mcp.json --dangerously-skip-permissions
