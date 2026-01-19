@@ -148,7 +148,7 @@
   "mcp": {
     "github": {
       "type": "local",
-      "command": ["sh", "-c", "source ~/.zenv_apikey_github && github-mcp-server stdio"],
+      "command": ["sh", "-c", "source ~/.zenv_apikey_github_ro && github-mcp-server stdio"],
       "enabled": true
     },
     "perplexity": {

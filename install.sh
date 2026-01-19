@@ -90,5 +90,7 @@ brew bundle install --no-upgrade
 
 # install additional packages
 deno install -g --allow-all npm:@anthropic-ai/sandbox-runtime
+deno install --global --allow-env --allow-net npm:server-perplexity-ask
+deno install --global --allow-env --allow-net npm:@upstash/context7-mcp
 
 echo "$fg[green]Install complete.$reset_color"

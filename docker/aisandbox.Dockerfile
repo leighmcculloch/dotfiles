@@ -27,14 +27,14 @@ RUN --mount=type=cache,target=/var/cache/apt \
 RUN useradd -m -u ${UID} -d ${HOME} -s /bin/bash ${USER}
 
 # Set up environment
-ENV PATH="${HOME}/.local/bin:${HOME}/.local/go/bin:${HOME}/.cargo/bin:${HOME}/go/bin:${PATH}"
-ENV GOPATH="${HOME}/go"
-ENV GOROOT="${HOME}/.local/go"
-ENV TERM="xterm-256color"
+ENV PATH="${HOME}/.local/bin:${PATH}"
 USER ${USER}
 WORKDIR ${HOME}
 
 # Install Go
+ENV GOPATH="${HOME}/go"
+ENV GOROOT="${HOME}/.local/go"
+ENV PATH="${HOME}/.local/go/bin:${HOME}/go/bin:${PATH}"
 RUN --mount=type=cache,target=/tmp/downloads,uid=${UID} \
     mkdir -p ${HOME}/.local \
     && ARCH=$(dpkg --print-architecture) \
@@ -45,6 +45,7 @@ RUN --mount=type=cache,target=/tmp/downloads,uid=${UID} \
     && go install golang.org/x/tools/gopls@latest
 
 # Install Deno
+ENV PATH="${HOME}/.deno/bin:${PATH}"
 RUN --mount=type=cache,target=/tmp/downloads,uid=${UID} \
     ARCH=$(uname -m) \
     && DENO_VERSION=$(curl -fsSL https://api.github.com/repos/denoland/deno/releases/latest | jq -r '.tag_name | ltrimstr("v")') \
@@ -53,6 +54,7 @@ RUN --mount=type=cache,target=/tmp/downloads,uid=${UID} \
     && unzip -o "$DENO_ZIP" -d ${HOME}/.local/bin
 
 # Install Rust (stable + nightly) with wasm32v1-none target and rust-analyzer
+ENV PATH="${HOME}/.cargo/bin:${PATH}"
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y \
     && . ${HOME}/.cargo/env \
     && rustup toolchain install stable \
@@ -71,6 +73,10 @@ RUN --mount=type=cache,target=/tmp/downloads,uid=${UID} \
 
 # Install MCP servers
 RUN go install github.com/github/github-mcp-server/cmd/github-mcp-server@latest
+RUN deno install --global --allow-env --allow-net npm:server-perplexity-ask
+RUN deno install --global --allow-env --allow-net npm:@upstash/context7-mcp
+
+ENV TERM="xterm-256color"
 
 # ============================================
 # OpenCode stage
@@ -85,7 +91,7 @@ ENV PATH="${HOME}/.opencode/bin:${PATH}"
 
 ENV OPENCODE_PERMISSION='{"edit":"allow","bash":"allow","webfetch":"allow"}'
 
-ENTRYPOINT ["opencode"]
+#ENTRYPOINT ["opencode"]
 
 # ============================================
 # Claude Code stage

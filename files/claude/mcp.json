@@ -3,12 +3,12 @@
     "github": {
       "type": "stdio",
       "command": "sh",
-      "args": [ "-c", "source ~/.zenv_apikey_github && github-mcp-server stdio" ]
+      "args": [ "-c", "source ~/.zenv_apikey_github_ro && github-mcp-server stdio" ]
     },
     "perplexity": {
       "type": "stdio",
       "command": "sh",
-      "args": [ "-c", "source ~/.zenv_apikey_perplexity && deno run --allow-env --allow-net npm:server-perplexity-ask" ]
+      "args": [ "-c", "source ~/.zenv_apikey_perplexity && mcp-server-perplexity-ask" ]
     },
     "deepwiki": {
       "type": "sse",
@@ -17,7 +17,7 @@
     "context7": {
       "type": "stdio",
       "command": "sh",
-      "args": [ "-c", "source ~/.zenv_apikey_context7 && deno run --allow-env --allow-net npm:@upstash/context7-mcp" ]
+      "args": [ "-c", "source ~/.zenv_apikey_context7 && context7-mcp" ]
     }
   }
 }
