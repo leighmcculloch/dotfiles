@@ -26,7 +26,7 @@ MOUNT_DIRS=(
   "$HOME/.local/share/opencode"
 )
 for dir in "${MOUNT_DIRS[@]}"; do
-    MOUNTS+=(-v "$dir:$dir")
+    MOUNTS+=(-v "${dir}:${dir}")
 done
 
 # Mount API key files if they exist (warn if missing)
@@ -37,7 +37,7 @@ KEYFILES=(
   "$HOME/.zenv_apikey_github_ro"
 )
 for keyfile in "${KEYFILES[@]}"; do
-  MOUNTS+=(-v "$keyfile:$keyfile:ro")
+  MOUNTS+=(-v "${keyfile}:${keyfile}:ro")
 done
 
 # Run container

@@ -20,7 +20,8 @@ RUN --mount=type=cache,target=/var/cache/apt \
     git \
     unzip \
     zstd \
-    jq
+    jq \
+    ncurses-base
 
 # Create user with matching UID and macOS-style home path
 RUN useradd -m -u ${UID} -d ${HOME} -s /bin/bash ${USER}
@@ -75,7 +76,11 @@ RUN go install github.com/github/github-mcp-server/cmd/github-mcp-server@latest
 # ============================================
 FROM base AS opencode
 
+ARG HOME
+
 RUN curl -fsSL https://opencode.ai/install | bash
+
+ENV PATH="${HOME}/.opencode/bin:${PATH}"
 
 ENV OPENCODE_PERMISSION='{"edit":"allow","bash":"allow","webfetch":"allow"}'
 
@@ -86,6 +91,10 @@ ENTRYPOINT ["opencode"]
 # ============================================
 FROM base AS claude
 
+ARG HOME
+
 RUN curl -fsSL https://claude.ai/install.sh | bash
+
+ENV PATH="${HOME}/.claude/bin:${PATH}"
 
 ENTRYPOINT ["claude", "--dangerously-skip-permissions"]
