@@ -26,6 +26,16 @@ MOUNT_DIRS=(
   "$HOME/.config/opencode"
   "$HOME/.local/share/opencode"
 )
+if git rev-parse --is-inside-work-tree &>/dev/null; then
+  # Mount common git dir repo if this is a worktree
+  local git_dir git_common_dir
+  git_dir="$(git rev-parse --git-dir)"
+  git_common_dir="$(git rev-parse --git-common-dir)"
+  if [[ "$git_dir" != "$git_common_dir" ]]; then
+    common_dir="$(dirname "$git_common_dir")"
+    MOUNTS+=("$common_dir")
+  fi
+fi
 for dir in "${MOUNT_DIRS[@]}"; do
     MOUNTS+=(-v "${dir}:${dir}")
 done

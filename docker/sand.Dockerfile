@@ -89,7 +89,7 @@ RUN curl -fsSL https://opencode.ai/install | bash
 
 ENV PATH="${HOME}/.opencode/bin:${PATH}"
 
-ENV OPENCODE_PERMISSION='{"edit":"allow","bash":"allow","webfetch":"allow"}'
+ENV OPENCODE_PERMISSION='{"edit":"allow","bash":"allow","webfetch":"allow","external_directory":"allow"}'
 
 ENTRYPOINT ["opencode"]
 
