@@ -2,7 +2,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="${0:a:h}"
-DOCKERFILE="$SCRIPT_DIR/../../docker/aisandbox.Dockerfile"
+DOCKERFILE="$SCRIPT_DIR/../../docker/sand.Dockerfile"
 
 # Select tool
 TOOL="${TOOL:-$(gum choose --header "Select AI tool:" "opencode" "claude")}"
