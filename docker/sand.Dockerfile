@@ -27,7 +27,7 @@ RUN --mount=type=cache,target=/var/cache/apt \
 RUN useradd -m -u ${UID} -d ${HOME} -s /bin/bash ${USER}
 
 # Set up environment
-ENV PATH="${HOME}/.local/bin:${PATH}"
+ENV PATH="${HOME}/.local/bin:${HOME}/.scripts:${PATH}"
 USER ${USER}
 WORKDIR ${HOME}
 

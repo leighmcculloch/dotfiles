@@ -25,6 +25,7 @@ MOUNT_DIRS=(
   "$HOME/.claude"
   "$HOME/.config/opencode"
   "$HOME/.local/share/opencode"
+  "$HOME/.scripts"
 )
 if git rev-parse --is-inside-work-tree &>/dev/null; then
   # Mount common git dir repo if this is a worktree
@@ -51,9 +52,17 @@ for keyfile in "${KEYFILES[@]}"; do
   MOUNTS+=(-v "${keyfile}:${keyfile}:ro")
 done
 
+# Get git identity from host
+GIT_USER_NAME="$(git config --global user.name 2>/dev/null || true)"
+GIT_USER_EMAIL="$(git config --global user.email 2>/dev/null || true)"
+
 # Run container
 docker run --rm -it \
     "${MOUNTS[@]}" \
+    -e "GIT_AUTHOR_NAME=$GIT_USER_NAME" \
+    -e "GIT_AUTHOR_EMAIL=$GIT_USER_EMAIL" \
+    -e "GIT_COMMITTER_NAME=$GIT_USER_NAME" \
+    -e "GIT_COMMITTER_EMAIL=$GIT_USER_EMAIL" \
     -w "$(pwd)" \
     "$TOOL" \
     "$@"
