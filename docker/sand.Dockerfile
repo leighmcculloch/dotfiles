@@ -117,4 +117,4 @@ RUN curl -fsSL https://gh.io/copilot-install | bash
 
 ENV PATH="${HOME}/.local/bin:${PATH}"
 
-ENTRYPOINT ["copilot"]
+ENTRYPOINT ["/bin/sh", "-c", "exec copilot --allow-all"]
