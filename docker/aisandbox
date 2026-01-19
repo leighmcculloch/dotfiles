@@ -2,19 +2,20 @@
 set -euo pipefail
 
 SCRIPT_DIR="${0:a:h}"
-DOCKERFILE="$SCRIPT_DIR/aisandbox.Dockerfile"
+DOCKERFILE="$SCRIPT_DIR/../../docker/aisandbox.Dockerfile"
 
 # Select tool
 TOOL=$(gum choose --header "Select AI tool:" "opencode" "claude")
 
 # Build image
-docker build
+docker build \
   -t "$TOOL" \
-  --target "$TOOL"
+  --target "$TOOL" \
   --build-arg HOME="$HOME" \
   --build-arg USER="$USER" \
   --build-arg UID="$(id -u)" \
-  -f "$DOCKERFILE" "$SCRIPT_DIR"
+  -f "$DOCKERFILE" \
+  "$SCRIPT_DIR"
 
 # Build volume mounts
 MOUNTS=()

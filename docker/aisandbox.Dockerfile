@@ -32,27 +32,22 @@ ENV GOROOT="${HOME}/.local/go"
 USER ${USER}
 WORKDIR ${HOME}
 
-# Install Go (latest)
+# Install Go
 RUN --mount=type=cache,target=/tmp/downloads,uid=${UID} \
     mkdir -p ${HOME}/.local \
+    && ARCH=$(dpkg --print-architecture) \
     && GO_VERSION=$(curl -fsSL https://go.dev/VERSION?m=text | head -1 | sed 's/^go//') \
-    && GO_TAR=/tmp/downloads/go${GO_VERSION}.linux-amd64.tar.gz \
-    && [ -f "$GO_TAR" ] || curl -fsSL -o "$GO_TAR" https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz \
+    && GO_TAR=/tmp/downloads/go${GO_VERSION}.linux-${ARCH}.tar.gz \
+    && [ -f "$GO_TAR" ] || curl -fsSL -o "$GO_TAR" https://go.dev/dl/go${GO_VERSION}.linux-${ARCH}.tar.gz \
     && tar -C ${HOME}/.local -xzf "$GO_TAR" \
     && go install golang.org/x/tools/gopls@latest
 
-# Install GitHub CLI (latest)
+# Install Deno
 RUN --mount=type=cache,target=/tmp/downloads,uid=${UID} \
-    GH_VERSION=$(curl -fsSL https://api.github.com/repos/cli/cli/releases/latest | jq -r '.tag_name | ltrimstr("v")') \
-    && GH_TAR=/tmp/downloads/gh_${GH_VERSION}_linux_amd64.tar.gz \
-    && [ -f "$GH_TAR" ] || curl -fsSL -o "$GH_TAR" https://github.com/cli/cli/releases/download/v${GH_VERSION}/gh_${GH_VERSION}_linux_amd64.tar.gz \
-    && tar -C ${HOME}/.local -xzf "$GH_TAR" --strip-components=1
-
-# Install Deno (latest)
-RUN --mount=type=cache,target=/tmp/downloads,uid=${UID} \
-    DENO_VERSION=$(curl -fsSL https://api.github.com/repos/denoland/deno/releases/latest | jq -r '.tag_name | ltrimstr("v")') \
-    && DENO_ZIP=/tmp/downloads/deno-${DENO_VERSION}-x86_64-unknown-linux-gnu.zip \
-    && [ -f "$DENO_ZIP" ] || curl -fsSL -o "$DENO_ZIP" https://github.com/denoland/deno/releases/download/v${DENO_VERSION}/deno-x86_64-unknown-linux-gnu.zip \
+    ARCH=$(uname -m) \
+    && DENO_VERSION=$(curl -fsSL https://api.github.com/repos/denoland/deno/releases/latest | jq -r '.tag_name | ltrimstr("v")') \
+    && DENO_ZIP=/tmp/downloads/deno-${DENO_VERSION}-${ARCH}-unknown-linux-gnu.zip \
+    && [ -f "$DENO_ZIP" ] || curl -fsSL -o "$DENO_ZIP" https://github.com/denoland/deno/releases/download/v${DENO_VERSION}/deno-${ARCH}-unknown-linux-gnu.zip \
     && unzip -o "$DENO_ZIP" -d ${HOME}/.local/bin
 
 # Install Rust (stable + nightly) with wasm32v1-none target and rust-analyzer
@@ -63,6 +58,14 @@ RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y \
     && rustup target add wasm32v1-none --toolchain stable \
     && rustup target add wasm32v1-none --toolchain nightly \
     && rustup component add rust-analyzer
+
+# Install GitHub CLI
+RUN --mount=type=cache,target=/tmp/downloads,uid=${UID} \
+    ARCH=$(dpkg --print-architecture) \
+    && GH_VERSION=$(curl -fsSL https://api.github.com/repos/cli/cli/releases/latest | jq -r '.tag_name | ltrimstr("v")') \
+    && GH_TAR=/tmp/downloads/gh_${GH_VERSION}_linux_${ARCH}.tar.gz \
+    && [ -f "$GH_TAR" ] || curl -fsSL -o "$GH_TAR" https://github.com/cli/cli/releases/download/v${GH_VERSION}/gh_${GH_VERSION}_linux_${ARCH}.tar.gz \
+    && tar -C ${HOME}/.local -xzf "$GH_TAR" --strip-components=1
 
 # Install MCP servers
 RUN go install github.com/github/github-mcp-server/cmd/github-mcp-server@latest
