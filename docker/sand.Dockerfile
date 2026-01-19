@@ -73,8 +73,8 @@ RUN --mount=type=cache,target=/tmp/downloads,uid=${UID} \
 
 # Install MCP servers
 RUN go install github.com/github/github-mcp-server/cmd/github-mcp-server@latest
-RUN deno install --global --allow-env --allow-net npm:server-perplexity-ask
-RUN deno install --global --allow-env --allow-net npm:@upstash/context7-mcp
+RUN deno install --global --deny-read --allow-env --allow-net npm:server-perplexity-ask
+RUN deno install --global --allow-env --allow-net --allow-read=$HOME/.cache/deno/npm/registry.npmjs.org/@upstash/context7-mcp npm:@upstash/context7-mcp
 
 ENV TERM="xterm-256color"
 
@@ -88,8 +88,8 @@ ARG HOME
 RUN curl -fsSL https://opencode.ai/install | bash
 
 ENV PATH="${HOME}/.opencode/bin:${PATH}"
-
-ENV OPENCODE_PERMISSION='{"edit":"allow","bash":"allow","webfetch":"allow","external_directory":"allow"}'
+ENV OPENCODE_PERMISSION='{"edit":"allow","bash":"allow","webfetch":"allow", "websearch":"allow","external_directory":"allow"}'
+ENV OPENCODE_EXPERIMENTAL=true
 
 ENTRYPOINT ["opencode"]
 
