@@ -19,3 +19,6 @@ crush.md
 
 # Notes files in repos not intended to be committed.
 NOTES_*.md
+
+# Exclude opencode plans
+.opencode/plans
