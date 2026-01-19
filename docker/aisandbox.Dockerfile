@@ -30,6 +30,7 @@ RUN useradd -m -u ${UID} -d ${HOME} -s /bin/bash ${USER}
 ENV PATH="${HOME}/.local/bin:${HOME}/.local/go/bin:${HOME}/.cargo/bin:${HOME}/go/bin:${PATH}"
 ENV GOPATH="${HOME}/go"
 ENV GOROOT="${HOME}/.local/go"
+ENV TERM="xterm-256color"
 USER ${USER}
 WORKDIR ${HOME}
 
