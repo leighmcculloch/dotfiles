@@ -5,7 +5,7 @@ SCRIPT_DIR="${0:a:h}"
 DOCKERFILE="$SCRIPT_DIR/../../docker/sand.Dockerfile"
 
 # Select tool
-TOOL="${TOOL:-$(gum choose --header "Select AI tool:" "opencode" "claude")}"
+TOOL="${TOOL:-$(gum choose --header "Select AI tool:" "opencode" "claude" "copilot")}"
 
 # Build image
 docker build \
@@ -23,6 +23,7 @@ MOUNT_DIRS=(
   "$(pwd)"
   "$HOME/.claude.json"
   "$HOME/.claude"
+  "$HOME/.copilot"
   "$HOME/.config/opencode"
   "$HOME/.local/share/opencode"
   "$HOME/.scripts"

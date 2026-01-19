@@ -105,3 +105,16 @@ RUN curl -fsSL https://claude.ai/install.sh | bash
 ENV PATH="${HOME}/.claude/bin:${PATH}"
 
 ENTRYPOINT ["/bin/sh", "-c", "exec claude --mcp-config=$HOME/.claude/mcp.json --dangerously-skip-permissions"]
+
+# ============================================
+# Copilot CLI stage
+# ============================================
+FROM base AS copilot
+
+ARG HOME
+
+RUN curl -fsSL https://gh.io/copilot-install | bash
+
+ENV PATH="${HOME}/.local/bin:${PATH}"
+
+ENTRYPOINT ["copilot"]
