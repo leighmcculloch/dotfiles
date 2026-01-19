@@ -11,23 +11,19 @@ function {
     return 1
   fi
 
+  # Detect MDM enrollment
   local mdm_enrolled=0
   if profiles status -type enrollment 2>/dev/null | grep -q "Yes"; then
     mdm_enrolled=1
   fi
 
-  local ai="${AI_CMD:-}"
-  if [[ -z "$ai" ]]; then
-    if (( mdm_enrolled )); then
-      ai="copilot"
-    else
-      ai="claude"
-    fi
+  local ai=""
+  if (( mdm_enrolled )); then
+    ai="opencode run -m github-copilot/gpt-5.2-codex"
+  else
+    ai="claude --model claude-haiku-4-5 -p"
   fi
-  case "$ai" in
-    copilot) ai="$ai --model claude-opus-4.5" ;;
-    claude) ai="$ai --model claude-haiku-4-5" ;;
-  esac
+
   printf "○ %s\n" "$ai"
   local start_time=$(gdate +%s%6N)
   local name="$(${=ai} -p "You are a senior software engineer.
