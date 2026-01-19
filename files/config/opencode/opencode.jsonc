@@ -1,8 +1,21 @@
 {
   "$schema": "https://opencode.ai/config.json",
   "theme": "ghostty",
+  "enabled_providers": [
+    "github-copilot"
+  ],
   "model": "github-copilot/claude-opus-4.5",
   "small_model": "github-copilot/gpt-5.2-codex",
+  "default_agent": "plan",
+  "autoupdate": false,
+  "watcher": {
+    "ignore": ["target/", "node_modules/**", "dist/**", ".git/**"]
+  },
+  "compaction": {
+    "auto": true,
+    "prune": true
+  },
+  "share": "manual",
   "permission": {
     "context7_resolve-library-id": "allow",
     "context7_get-library-docs": "allow",
@@ -153,7 +166,7 @@
     },
     "perplexity": {
       "type": "local",
-      "command": ["sh", "-c", "source ~/.zenv_apikey_perplexity && deno run --allow-env --allow-net npm:server-perplexity-ask"],
+      "command": ["sh", "-c", "source ~/.zenv_apikey_perplexity && mcp-server-perplexity-ask"],
       "enabled": true
     },
     "deepwiki": {
@@ -163,17 +176,12 @@
     },
     "context7": {
       "type": "local",
-      "command": ["sh", "-c", "source ~/.zenv_apikey_context7 && deno run --allow-env --allow-net npm:@upstash/context7-mcp"],
+      "command": ["sh", "-c", "source ~/.zenv_apikey_context7 && context7-mcp"],
       "enabled": true
     }
   },
-  "share": "disabled",
-  "autoupdate": false,
-  "compaction": {
-    "auto": true,
-    "prune": true
-  },
   "experimental": {
+    "batch_tool": true,
     "hook": {
       "session_completed": [
         {
