@@ -15,7 +15,7 @@
     "auto": true,
     "prune": true
   },
-  "share": "manual",
+  "share": "disabled",
   "permission": {
     "context7_resolve-library-id": "allow",
     "context7_get-library-docs": "allow",
@@ -161,12 +161,12 @@
   "mcp": {
     "github": {
       "type": "local",
-      "command": ["sh", "-c", "source ~/.zenv_apikey_github_ro && github-mcp-server stdio"],
+      "command": ["bash", "-c", "source ~/.zenv_apikey_github_ro && github-mcp-server stdio"],
       "enabled": true
     },
     "perplexity": {
       "type": "local",
-      "command": ["sh", "-c", "source ~/.zenv_apikey_perplexity && mcp-server-perplexity-ask"],
+      "command": ["bash", "-c", "source ~/.zenv_apikey_perplexity && mcp-server-perplexity-ask"],
       "enabled": true
     },
     "deepwiki": {
@@ -176,7 +176,7 @@
     },
     "context7": {
       "type": "local",
-      "command": ["sh", "-c", "source ~/.zenv_apikey_context7 && context7-mcp"],
+      "command": ["bash", "-c", "source ~/.zenv_apikey_context7 && context7-mcp"],
       "enabled": true
     }
   },
