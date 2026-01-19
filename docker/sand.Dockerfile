@@ -23,6 +23,10 @@ RUN --mount=type=cache,target=/var/cache/apt \
     jq \
     ncurses-base
 
+# Set the shell to bash instead of the default dash
+RUN echo "dash dash/sh boolean false" | debconf-set-selections \
+    && dpkg-reconfigure -f noninteractive dash
+
 # Create user with matching UID and macOS-style home path
 RUN useradd -m -u ${UID} -d ${HOME} -s /bin/bash ${USER}
 
