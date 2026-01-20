@@ -36,7 +36,7 @@ RUN --mount=type=cache,target=/var/cache/apt \
 RUN useradd -m -u ${UID} -d ${HOME} -s /bin/bash ${USER}
 
 # Set up environment
-ENV PATH="${HOME}/.local/bin:${HOME}/.scripts:${PATH}"
+ENV PATH="${HOME}/.local/bin:${PATH}"
 USER ${USER}
 WORKDIR ${HOME}
 
@@ -146,24 +146,28 @@ docker build \
 # Build volume mounts
 MOUNTS=()
 MOUNT_DIRS=(
+  # current directory
   "$(pwd)"
+  # claude code
   "$HOME/.claude.json"
   "$HOME/.claude"
-  "$XDG_CONFIG_HOME/.copilot"
+  # opencode
   "$HOME/.config/opencode"
   "$HOME/.local/share/opencode"
-  "$HOME/.scripts"
+  # copilot-cli
+  "$XDG_CONFIG_HOME/.copilot"
 )
 # Mount common git dir if current dir or any immediate subdir is a worktree
 typeset -A seen_common_dirs
 for dir in "$(pwd)" "$(pwd)"/*/; do
   [[ -d "$dir" ]] || continue
   git -C "$dir" rev-parse --is-inside-work-tree &>/dev/null || continue
-  git_dir="$(git -C "$dir" rev-parse --git-dir)"
-  git_common_dir="$(git -C "$dir" rev-parse --git-common-dir)"
+  git_dir="$(cd "$dir" && cd "$(git rev-parse --git-dir)" && pwd)"
+  git_common_dir="$(cd "$dir" && cd "$(git rev-parse --git-common-dir)" && pwd)"
   [[ "$git_dir" != "$git_common_dir" ]] || continue
   common_dir="$(cd "$dir" && cd "$(dirname "$git_common_dir")" && pwd)"
   [[ -z "${seen_common_dirs[$common_dir]:-}" ]] || continue
+  echo "adding to mounts $common_dir ($git_dir) ($git_common_dir)"
   seen_common_dirs[$common_dir]=1
   MOUNT_DIRS+=("$common_dir")
 done
@@ -217,11 +221,6 @@ done
 
 log "Environment (passthrough):"
 for var in "${ENV_PASSTHROUGH[@]}"; do
-  echo "  $var=${(P)var}" >&2
-done
-
-log "Environment (set):"
-for var in "${ENV_SET[@]}"; do
   echo "  $var" >&2
 done
 
