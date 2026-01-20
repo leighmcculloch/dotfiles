@@ -23,7 +23,7 @@ MOUNT_DIRS=(
   "$(pwd)"
   "$HOME/.claude.json"
   "$HOME/.claude"
-  "$HOME/.copilot"
+  "$XDG_CONFIG_HOME/.copilot"
   "$HOME/.config/opencode"
   "$HOME/.local/share/opencode"
   "$HOME/.scripts"
@@ -65,6 +65,7 @@ CONTAINER_NAME="$(basename "$(pwd)" | tr -d '.')-$(printf '%02d' $((RANDOM % 100
 
 # Load any keys needed
 source "$HOME/.zenv_apikey_github_ro"
+source "$HOME/.zenv_apikey_github_copilot"
 
 # Run container
 docker run --rm -it \
@@ -78,6 +79,7 @@ docker run --rm -it \
   -e "GIT_COMMITTER_NAME=$GIT_USER_NAME" \
   -e "GIT_COMMITTER_EMAIL=$GIT_USER_EMAIL" \
   -e "GH_TOKEN=$GITHUB_TOKEN" \
+  -e "COPILOT_GITHUB_TOKEN=$COPILOT_GITHUB_TOKEN" \
   -w "$(pwd)" \
   "$TOOL" \
   "$@"
