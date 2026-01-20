@@ -232,8 +232,8 @@ docker run --rm -it \
   --security-opt=no-new-privileges:true \
   --name "$CONTAINER_NAME" \
   "${MOUNTS[@]}" \
-  ${ENV_PASSTHROUGH[@]/#/-e } \
-  ${ENV_SET[@]/#/-e } \
+  ${ENV_PASSTHROUGH[@]/#/-e=} \
+  ${ENV_SET[@]/#/-e=} \
   -w "$(pwd)" \
   "$TOOL" \
   "$@"
