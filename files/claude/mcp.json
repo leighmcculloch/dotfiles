@@ -3,7 +3,7 @@
     "github": {
       "type": "stdio",
       "command": "sh",
-      "args": [ "-c", "source ~/.zenv_apikey_github_ro && github-mcp-server stdio" ]
+      "args": [ "-c", "source ~/.zenv_apikey_github_ro ; source ~/.zenv_apikey_github ; github-mcp-server stdio" ]
     },
     "perplexity": {
       "type": "stdio",

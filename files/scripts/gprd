@@ -105,9 +105,9 @@ ${log}"
 
   local suggestion=""
   if [[ "$ai" == claude* ]]; then
-    suggestion="$(${=ai} -p "$prompt" --json-schema "$json_schema")"
+    suggestion="$(${=ai} "$prompt" --output-format json --json-schema "$json_schema" | jq -c '.structured_output')"
   else
-    suggestion="$(${=ai} -p "$prompt
+    suggestion="$(${=ai} "$prompt
 
 Reply only with valid JSON format {\"title\":\"\",\"what\":\"\",\"why\":\"\"}, on a single line, nothing else.")"
   fi
@@ -149,7 +149,7 @@ Now provide the final title, what, and why based on this additional context. Do 
 
     local start_time2=$(gdate +%s%6N)
     if [[ "$ai" == claude* ]]; then
-      suggestion="$(${=ai} -p "$followup_prompt" --json-schema "$json_schema")"
+      suggestion="$(${=ai} -p "$followup_prompt" --output-format json --json-schema "$json_schema" | jq -c '.structured_output')"
     else
       suggestion="$(${=ai} -p "$followup_prompt
 
