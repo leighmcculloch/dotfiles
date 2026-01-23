@@ -219,7 +219,11 @@
       "WebFetch(domain:mcp.deepwiki.com)",
       "WebSearch"
     ],
-    "deny": [],
+    "deny": [
+      "Bash(git push --force:*)",
+      "Bash(git push -f:*)",
+      "Bash(git push --force-with-lease:*)"
+    ],
     "defaultMode": "plan"
   },
   "model": "opus",

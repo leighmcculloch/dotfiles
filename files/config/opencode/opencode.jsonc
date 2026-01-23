@@ -155,7 +155,10 @@
       "stellar contract info": "allow",
       "stellar contract read": "allow",
       "stellar-xdr": "allow",
-      "stellar-strkey": "allow"
+      "stellar-strkey": "allow",
+      "git push --force": "deny",
+      "git push -f": "deny",
+      "git push --force-with-lease": "deny"
     }
   },
   "mcp": {
