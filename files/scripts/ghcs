@@ -3,11 +3,20 @@
 # Open a GitHub Codespace for the current branch, join it, then delete on exit.
 
 repo="$(gh repo view --json name,owner --jq '.owner.login + "/" + .name')"
+
 branch="$(git symbolic-ref --short HEAD)"
+
 machine="largePremiumLinux" # largest machine
 
 echo "Creating GitHub Codespace for $repo # $branch..."
-name="$(gh codespace create -d "$branch" -R "$repo" -b "$branch" -m "$machine" | tee /dev/stderr | tail -1)"
+name="$(gh codespace create \
+  -d "$branch" \
+  -R "$repo" \
+  -b "$branch" \
+  -m "$machine" \
+  | tee /dev/stderr \
+  | tail -1\
+)"
 
 echo "Tailing creation log..."
 echo "Press Ctrl+C to continue to SSH session..."
@@ -20,6 +29,3 @@ trap - INT
 
 echo "SSHing in..."
 gh codespace ssh -c "$name"
-
-echo "Deleting..."
-gh codespace delete -c "$name"
