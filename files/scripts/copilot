@@ -61,6 +61,7 @@ exec "$BREW_PREFIX/bin/copilot" \
   --deny-tool 'shell(git push --force)' \
   --deny-tool 'shell(git push -f)' \
   --deny-tool 'shell(git push --force-with-lease)' \
+  --deny-tool 'shell(git commit --amend)' \
   \
   `# === GitHub CLI ===` \
   --allow-tool 'shell(gh pr view)' \
