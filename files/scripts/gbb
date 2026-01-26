@@ -19,9 +19,9 @@ function {
 
   local ai=""
   if (( mdm_enrolled )); then
-    ai="opencode run -m github-copilot/gpt-5.2-codex"
+    ai="opencode run -m github-copilot/claude-opus-4.5"
   else
-    ai="claude --model claude-haiku-4-5 -p"
+    ai="claude --model claude-opus-4-5 -p"
   fi
 
   printf "○ %s\n" "$ai"
