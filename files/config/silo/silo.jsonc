@@ -1,5 +1,5 @@
 {
-  "backend": "avf",
+  "backend": "lima",
   "mounts_ro": [
     "~/.zenv_apikey_perplexity",
     "~/.zenv_apikey_context7",
