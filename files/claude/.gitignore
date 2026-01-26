@@ -8,6 +8,7 @@ shell-snapshots/
 debug/
 file-history/
 plans/
+tasks/
 plugins/marketplaces/
 plugins/cache/
 plugins/known_marketplaces.json
