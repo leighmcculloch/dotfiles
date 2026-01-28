@@ -2,6 +2,13 @@
 
 set -o nounset
 
+# Create symlink if it doesn't exist.
+# Claude Code displays a warning if the binary isn't in that location.
+if [ ! -L ~/.local/bin/claude ]; then
+  mkdir -p ~/.local/bin
+  ln -s "$0" ~/.local/bin/claude
+fi
+
 CLAUDE_BIN="$BREW_PREFIX/bin/claude"
 
 if [ $# -eq 0 ]; then
