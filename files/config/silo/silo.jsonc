@@ -1,5 +1,10 @@
 {
   "backend": "container",
+  "post_build_hooks": [
+    "curl -fsSL https://deno.land/install.sh | sh",
+    "~/.deno/bin/deno install --global --deny-read --allow-env --allow-net npm:server-perplexity-ask",
+    "~/.deno/bin/deno install --global --allow-env --allow-net --allow-read=$HOME/.cache/deno/npm/registry.npmjs.org/@upstash/context7-mcp npm:@upstash/context7-mcp"
+  ],
   "mounts_ro": [
     "~/.zenv_apikey_perplexity",
     "~/.zenv_apikey_context7",
@@ -10,8 +15,9 @@
   "env": [
     "XDG_CONFIG_HOME"
   ],
-  "prehooks": [
-    "source ~/.zenv_apikey_github_ro"
+  "pre_run_hooks": [
+    "source ~/.zenv_apikey_github_ro",
+    "export PATH=${HOME}/.deno/bin:${PATH}"
   ],
   "tools": {}
 }
