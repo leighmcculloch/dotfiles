@@ -2,12 +2,12 @@
   "mcpServers": {
     "github": {
       "type": "stdio",
-      "command": "sh",
+      "command": "bash",
       "args": [ "-c", "source ~/.zenv_apikey_github_ro ; source ~/.zenv_apikey_github ; github-mcp-server stdio" ]
     },
     "perplexity": {
       "type": "stdio",
-      "command": "sh",
+      "command": "bash",
       "args": [ "-c", "source ~/.zenv_apikey_perplexity && mcp-server-perplexity-ask" ]
     },
     "deepwiki": {
@@ -16,7 +16,7 @@
     },
     "context7": {
       "type": "stdio",
-      "command": "sh",
+      "command": "bash",
       "args": [ "-c", "source ~/.zenv_apikey_context7 && context7-mcp" ]
     }
   }
