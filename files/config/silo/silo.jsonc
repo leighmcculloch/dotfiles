@@ -20,5 +20,15 @@
     "source ~/.zenv_apikey_github_ro",
     "export PATH=${HOME}/.deno/bin:${PATH}"
   ],
-  "tools": {}
+  "tools": {
+    "copilot": {
+      "mounts_ro": [
+        "~/.zenv_apikey_github_copilot"
+      ],
+      "pre_run_hooks": [
+        "source ~/.zenv_apikey_github_copilot",
+        "export GITHUB_TOKEN=\"${COPILOT_GITHUB_TOKEN}\""
+      ]
+    }
+  }
 }
