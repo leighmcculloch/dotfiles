@@ -227,14 +227,18 @@ Close #$issue_number"
   fi
 
   # Create the PR
-  gh pr create \
+  local pr_url="$(gh pr create \
     --draft \
     --base "$base_branch" \
     --title "$title" \
     --body "$body" \
     --reviewer "$(echo -n "$reviewer" | tr '\n' ',')" \
-    $@
+    $@)"
+  echo "$pr_url"
   echo
+
+  # Open PR in browser
+  open "$pr_url"
 
   # Request Copilot review the PR
   if [[ "$owner" == "stellar" && "$is_private" == "true" ]]; then
