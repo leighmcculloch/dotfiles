@@ -1,4 +1,5 @@
 {
+  "$schema": "https://raw.githubusercontent.com/leighmcculloch/silo/main/silo.schema.json",
   "backend": "container",
   "post_build_hooks": [
     "curl -fsSL https://deno.land/install.sh | sh",
