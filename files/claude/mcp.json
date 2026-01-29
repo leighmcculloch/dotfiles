@@ -3,7 +3,7 @@
     "github": {
       "type": "stdio",
       "command": "bash",
-      "args": [ "-c", "source ~/.zenv_apikey_github_ro ; source ~/.zenv_apikey_github ; GITHUB_PERSONAL_ACCESS_TOKEN=\"$GITHUB_TOKEN\" github-mcp-server stdio" ]
+      "args": [ "-c", "source ~/.zenv_apikey_github || source ~/.zenv_apikey_github_ro ; GITHUB_PERSONAL_ACCESS_TOKEN=\"$GITHUB_TOKEN\" github-mcp-server stdio" ]
     },
     "perplexity": {
       "type": "stdio",
