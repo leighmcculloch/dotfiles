@@ -58,7 +58,8 @@ ${diff}"
 
   local ai=""
   if (( mdm_enrolled )); then
-    ai="opencode run -m github-copilot/claude-opus-4.5"
+    #ai="opencode run -m github-copilot/claude-opus-4.5"
+    ai="claude --model claude-opus-4-5 -p"
   else
     ai="claude --model claude-opus-4-5 -p"
   fi
