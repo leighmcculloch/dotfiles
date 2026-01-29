@@ -5,11 +5,16 @@ set -o nounset
 function {
   # Parse arguments
   local issue_number=""
+  local context_file=""
   local args=()
   while [[ $# -gt 0 ]]; do
     case "$1" in
       -i|--issue)
         issue_number="$2"
+        shift 2
+        ;;
+      -f|--file)
+        context_file="$2"
         shift 2
         ;;
       *)
@@ -50,10 +55,19 @@ function {
   # Build context as JSON (jq handles escaping automatically, preventing prompt injection)
   local repo_url="$(git remote get-url origin | sed 's/\.git$//')"
   local context_json=""
+  local file_contents=""
+  if [[ -n "$context_file" ]]; then
+    if [[ ! -f "$context_file" ]]; then
+      echo "Error: File not found: $context_file"
+      return 1
+    fi
+    file_contents="$(cat "$context_file")"
+    echo "Context file: $context_file"
+  fi
   if [[ -n "$issue_number" ]]; then
     local issue_json="$(gh issue view "$issue_number" --json url,number,title,body,comments)"
     echo Issue: $(<<< "$issue_json" jq -r '.url + " - " + .title')
-    context_json="$(jq -n --arg repo "$repo_url" --argjson issue "$issue_json" '{
+    context_json="$(jq -n --arg repo "$repo_url" --argjson issue "$issue_json" --arg file "$file_contents" '{
       repository: $repo,
       issue: {
         number: $issue.number,
@@ -61,9 +75,9 @@ function {
         body: $issue.body,
         comments: [$issue.comments[] | {author: .author.login, body: .body}]
       }
-    }')"
+    } + (if $file != "" then {additional_context: $file} else {} end)')"
   else
-    context_json="$(jq -n --arg repo "$repo_url" '{repository: $repo}')"
+    context_json="$(jq -n --arg repo "$repo_url" --arg file "$file_contents" '{repository: $repo} + (if $file != "" then {additional_context: $file} else {} end)')"
   fi
 
   local mdm_enrolled=0
@@ -92,6 +106,8 @@ The first section is under the heading \"What\" and describes what has changed. 
 Start the title with a capital letter but do not end with a full stop. Use full sentences for what and why. Avoid generic phrases.
 
 If you need clarity to write a better description, you may include specific pointed questions in the questions field. Do not ask general questions like \"why was this change made?\" - instead ask specific questions like \"Is X intended to replace Y, or work alongside it?\" or \"Does this change affect Z?\". Only ask if truly needed.
+
+If the context includes an \"additional_context\" field, it contains developer-provided notes, context, or a pre-prepared PR description. Use this to inform the title and description. If it contains a full PR description, use it as a starting point and refine it based on the actual diff.
 
 Context:
 ${context_json}
