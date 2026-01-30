@@ -13,10 +13,14 @@ export const NotificationPlugin: Plugin = async ({ $, client, directory }) => {
       if (event.type === "session.idle" || event.type === "question.asked") {
         // Check if this is from the primary agent (no parentID means root session)
         const sessionID = event.properties.sessionID
-        const session = await client.session.get({ path: { sessionID } })
-        if (session.data?.parentID) {
-          // This is a subagent session, skip notification
-          return
+        try {
+          const session = await client.session.get({ path: { id: sessionID } })
+          if (session.data?.parentID) {
+            // This is a subagent session, skip notification
+            return
+          }
+        } catch {
+          // If we can't determine the session type, notify anyway
         }
 
         // Ring terminal bell
