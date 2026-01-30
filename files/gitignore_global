@@ -15,6 +15,7 @@ __debug_bin
 .aider*
 .claude/
 crush.md
+.opencode/
 /target/
 
 # Notes files in repos not intended to be committed.
