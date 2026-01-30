@@ -230,6 +230,7 @@ Close #$issue_number"
   local pr_url="$(gh pr create \
     --draft \
     --base "$base_branch" \
+    --head "$current_branch" \
     --title "$title" \
     --body "$body" \
     --reviewer "$(echo -n "$reviewer" | tr '\n' ',')" \
