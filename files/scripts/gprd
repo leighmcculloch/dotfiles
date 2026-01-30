@@ -226,6 +226,9 @@ $why"
 Close #$issue_number"
   fi
 
+  # Push the code
+  git push -u origin HEAD
+
   # Create the PR
   local pr_url="$(gh pr create \
     --draft \
