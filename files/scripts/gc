@@ -1,6 +1,7 @@
 #!/usr/bin/env zsh
 
 set -o nounset
+export SCRIPT=gc
 
 function {
   local message=""

@@ -1,6 +1,7 @@
 #!/usr/bin/env zsh
 
 set -o nounset
+export SCRIPT=gprd
 
 function {
   # Parse arguments

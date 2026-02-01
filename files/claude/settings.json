@@ -261,7 +261,7 @@
           },
           {
             "type": "command",
-            "command": "input=$(cat); cwd=$(echo \"$input\" | jq -r '.cwd // empty'); transcript=$(echo \"$input\" | jq -r '.transcript_path // empty'); project=$(basename \"$cwd\"); last_msg=\"\"; if [ -n \"$transcript\" ] && [ -f \"$transcript\" ]; then last_msg=$(tac \"$transcript\" | grep -m1 '\"type\":\"assistant\"' | jq -r '.message.content // empty' 2>/dev/null | head -c 200); fi; source ~/.zenv_apikey_pushover && curl -s -X POST https://api.pushover.net/1/messages.json -d token=\"$PUSHOVER_TOKEN\" -d user=\"$PUSHOVER_USER\" -d \"message=[$project] Stopped${last_msg:+: $last_msg}\" > /dev/null 2>&1 || true"
+            "command": "[ -n \"$SCRIPT\" ] && exit 0; input=$(cat); cwd=$(echo \"$input\" | jq -r '.cwd // empty'); transcript=$(echo \"$input\" | jq -r '.transcript_path // empty'); project=$(basename \"$cwd\"); last_msg=\"\"; if [ -n \"$transcript\" ] && [ -f \"$transcript\" ]; then last_msg=$(tac \"$transcript\" | grep -m1 '\"type\":\"assistant\"' | jq -r '.message.content // empty' 2>/dev/null | head -c 200); fi; source ~/.zenv_apikey_pushover && curl -s -X POST https://api.pushover.net/1/messages.json -d token=\"$PUSHOVER_TOKEN\" -d user=\"$PUSHOVER_USER\" -d \"message=[$project] Stopped${last_msg:+: $last_msg}\" > /dev/null 2>&1 || true"
           }
         ]
       }
@@ -276,7 +276,7 @@
           },
           {
             "type": "command",
-            "command": "input=$(cat); cwd=$(echo \"$input\" | jq -r '.cwd // empty'); msg=$(echo \"$input\" | jq -r '.message // \"Claude Code notification\"'); project=$(basename \"$cwd\"); source ~/.zenv_apikey_pushover && curl -s -X POST https://api.pushover.net/1/messages.json -d token=\"$PUSHOVER_TOKEN\" -d user=\"$PUSHOVER_USER\" -d \"message=[$project] $msg\" > /dev/null 2>&1 || true"
+            "command": "[ -n \"$SCRIPT\" ] && exit 0; input=$(cat); cwd=$(echo \"$input\" | jq -r '.cwd // empty'); msg=$(echo \"$input\" | jq -r '.message // \"Claude Code notification\"'); project=$(basename \"$cwd\"); source ~/.zenv_apikey_pushover && curl -s -X POST https://api.pushover.net/1/messages.json -d token=\"$PUSHOVER_TOKEN\" -d user=\"$PUSHOVER_USER\" -d \"message=[$project] $msg\" > /dev/null 2>&1 || true"
           }
         ]
       }

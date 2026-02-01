@@ -1,6 +1,7 @@
 #!/usr/bin/env zsh
 
 set -o nounset
+export SCRIPT=gbb
 
 function {
   local branches="${${$(git branch --all --format='%(refname:short)' | jq -R -s '.')%\"}#\"}"
