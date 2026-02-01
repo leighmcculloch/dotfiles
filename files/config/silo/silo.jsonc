@@ -1,6 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/leighmcculloch/silo/main/silo.schema.json",
   "backend": "container",
+  "tool": "claude",
   "post_build_hooks": [
     "curl -fsSL https://deno.land/install.sh | sh",
     "~/.deno/bin/deno install --global --deny-read --allow-env --allow-net npm:server-perplexity-ask",
