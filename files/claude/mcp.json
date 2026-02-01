@@ -11,8 +11,8 @@
       "args": [ "-c", "source ~/.zenv_apikey_perplexity && mcp-server-perplexity-ask" ]
     },
     "deepwiki": {
-      "type": "sse",
-      "url": "https://mcp.deepwiki.com/sse"
+      "type": "http",
+      "url": "https://mcp.deepwiki.com/mcp"
     },
     "context7": {
       "type": "stdio",

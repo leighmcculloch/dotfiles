@@ -7,8 +7,8 @@
       "tools": ["perplexity_ask"]
     },
     "deepwiki": {
-      "type": "sse",
-      "url": "https://mcp.deepwiki.com/sse",
+      "type": "http",
+      "url": "https://mcp.deepwiki.com/mcp",
       "tools": ["read_wiki_structure", "read_wiki_contents", "ask_question"]
     },
     "context7": {
