@@ -241,8 +241,8 @@ EOF
     }' -f username="$username" 2>/dev/null | \
     jq -r '.data.user.contributionsCollection.pullRequestReviewContributions.nodes[] | [.occurredAt, .pullRequest.url, .pullRequest.title, .pullRequest.author.login] | @tsv' | \
     while IFS=$'\t' read -r occurred_at url title author; do
-      # Filter to current year
-      if [[ "${occurred_at:0:4}" == "$year" ]]; then
+      # Filter to current year and exclude self-authored PRs
+      if [[ "${occurred_at:0:4}" == "$year" && "$author" != "$username" ]]; then
         append_contribution "$occurred_at" "PR" "reviewed" "$url" "$title" "$author"
       fi
     done
@@ -279,8 +279,8 @@ EOF
     }' -f username="$username" 2>/dev/null | \
     jq -r '.data.user.issueComments.nodes[] | [.createdAt, .issue.url, .issue.title, .issue.author.login] | @tsv' | \
     while IFS=$'\t' read -r created_at url title author; do
-      # Filter to current year
-      if [[ "${created_at:0:4}" == "$year" ]]; then
+      # Filter to current year and exclude self-authored issues/PRs
+      if [[ "${created_at:0:4}" == "$year" && "$author" != "$username" ]]; then
         # Determine if it's a PR or Issue based on URL
         if [[ "$url" == */pull/* ]]; then
           append_contribution "$created_at" "PR" "commented" "$url" "$title" "$author"
@@ -334,8 +334,8 @@ EOF
     }' -f username="$username" 2>/dev/null | \
     jq -r '.data.user.repositoryDiscussionComments.nodes[] | [.createdAt, .discussion.url, .discussion.title, .discussion.author.login] | @tsv' | \
     while IFS=$'\t' read -r created_at url title author; do
-      # Filter to current year
-      if [[ "${created_at:0:4}" == "$year" ]]; then
+      # Filter to current year and exclude self-authored discussions
+      if [[ "${created_at:0:4}" == "$year" && "$author" != "$username" ]]; then
         append_contribution "$created_at" "Discussion" "commented" "$url" "$title" "$author"
       fi
     done
