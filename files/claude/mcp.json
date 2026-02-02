@@ -18,6 +18,10 @@
       "type": "stdio",
       "command": "bash",
       "args": [ "-c", "source ~/.zenv_apikey_context7 && context7-mcp" ]
+    },
+    "grep": {
+      "type": "http",
+      "url": "https://mcp.grep.app"
     }
   }
 }

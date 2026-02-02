@@ -182,6 +182,11 @@
       "type": "local",
       "command": ["bash", "-c", "source ~/.zenv_apikey_context7 && context7-mcp"],
       "enabled": true
+    },
+    "grep": {
+      "type": "remote",
+      "url": "https://mcp.grep.app",
+      "enabled": true
     }
   },
   "experimental": {

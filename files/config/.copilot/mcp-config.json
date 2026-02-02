@@ -16,6 +16,11 @@
       "command": "sh",
       "args": ["-c", "source ~/.zenv_apikey_context7 && deno run --allow-env --allow-net npm:@upstash/context7-mcp"],
       "tools": ["resolve-library-id", "get-library-docs"]
+    },
+    "grep": {
+      "type": "http",
+      "url": "https://mcp.grep.app",
+      "tools": ["searchGitHub"]
     }
   }
 }
