@@ -8,3 +8,5 @@ macos-option-as-alt = true
 window-height = 40
 window-width = 128
 title = " "
+clipboard-read = allow
+clipboard-write = allow
