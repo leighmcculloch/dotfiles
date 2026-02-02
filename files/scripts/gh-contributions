@@ -1,0 +1,445 @@
+#!/usr/bin/env zsh
+
+set -o nounset
+
+# === Helper: Get week number from date (YYYY-MM-DD) ===
+# Week 1 = first full week where Monday is in January
+# Week 0 = any days before that first Monday
+_gh_contributions_get_week() {
+  local d="$1"
+  local yr="${d:0:4}"
+
+  # Find the first Monday in January
+  local jan1="${yr}-01-01"
+  local jan1_dow
+  if [[ "$(uname)" == "Darwin" ]]; then
+    jan1_dow=$(date -j -f "%Y-%m-%d" "$jan1" "+%u")  # 1=Mon, 7=Sun
+  else
+    jan1_dow=$(date -d "$jan1" "+%u")
+  fi
+
+  # Calculate first Monday: if Jan 1 is Monday (dow=1), it's Jan 1
+  # Otherwise, it's Jan 1 + (8 - dow) days
+  local first_monday_day
+  if [[ "$jan1_dow" -eq 1 ]]; then
+    first_monday_day=1
+  else
+    first_monday_day=$((1 + 8 - jan1_dow))
+  fi
+
+  # Get day of year for the input date
+  local day_of_year
+  if [[ "$(uname)" == "Darwin" ]]; then
+    day_of_year=$(date -j -f "%Y-%m-%d" "$d" "+%-j")
+  else
+    day_of_year=$(date -d "$d" "+%-j")
+  fi
+
+  # Calculate week number
+  if [[ "$day_of_year" -lt "$first_monday_day" ]]; then
+    echo "0"
+  else
+    local days_since_first_monday=$((day_of_year - first_monday_day))
+    local week=$((days_since_first_monday / 7 + 1))
+    echo "$week"
+  fi
+}
+
+# === Helper: Get week date range string ===
+_gh_contributions_get_week_range() {
+  local week_num="$1"
+  local yr="$2"
+
+  # Find the first Monday in January
+  local jan1="${yr}-01-01"
+  local jan1_dow
+  if [[ "$(uname)" == "Darwin" ]]; then
+    jan1_dow=$(date -j -f "%Y-%m-%d" "$jan1" "+%u")
+  else
+    jan1_dow=$(date -d "$jan1" "+%u")
+  fi
+
+  local first_monday_day
+  if [[ "$jan1_dow" -eq 1 ]]; then
+    first_monday_day=1
+  else
+    first_monday_day=$((1 + 8 - jan1_dow))
+  fi
+
+  if [[ "$week_num" -eq 0 ]]; then
+    # Week 0: Jan 1 to day before first Monday
+    local end_day=$((first_monday_day - 1))
+    if [[ "$(uname)" == "Darwin" ]]; then
+      local week_start="Jan 1"
+      local week_end=$(date -j -f "%Y-%m-%d" "${yr}-01-${end_day}" "+%b %-d")
+    else
+      local week_start="Jan 1"
+      local week_end=$(date -d "${yr}-01-${end_day}" "+%b %-d")
+    fi
+    echo "${week_start} - ${week_end}"
+  else
+    # Week N: starts at first_monday + (N-1)*7 days
+    local days_offset=$(( (week_num - 1) * 7 ))
+    if [[ "$(uname)" == "Darwin" ]]; then
+      local first_monday="${yr}-01-$(printf '%02d' $first_monday_day)"
+      local week_start=$(date -j -v+${days_offset}d -f "%Y-%m-%d" "$first_monday" "+%b %-d")
+      local week_end=$(date -j -v+${days_offset}d -v+6d -f "%Y-%m-%d" "$first_monday" "+%b %-d")
+    else
+      local first_monday="${yr}-01-${first_monday_day}"
+      local week_start=$(date -d "$first_monday +${days_offset} days" "+%b %-d")
+      local week_end=$(date -d "$first_monday +$((days_offset + 6)) days" "+%b %-d")
+    fi
+    echo "${week_start} - ${week_end}"
+  fi
+}
+
+function {
+  # === Help ===
+  if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
+    cat <<'EOF'
+Usage: gh-contributions [OPTIONS]
+
+Collect GitHub contributions (PRs, issues, discussions) organized by week.
+
+Options:
+  -y, --year YEAR        Year to collect (default: current year)
+  -h, --help             Show this help
+
+Output format:
+  ## Week 0 (Jan 1-5)
+  
+  ### PR
+  - [repo#123](url) - title
+  
+  ### Issue
+  - [repo#456](url) - title
+  
+  ### Reviewed
+  - [repo#101](url) - title
+  
+  ### Comment
+  - [repo#789](url) - title
+EOF
+    return 0
+  fi
+
+  # === Parse Arguments ===
+  local year="$(date +%Y)"
+
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      -y|--year)
+        year="$2"
+        shift 2
+        ;;
+      *)
+        echo "Unknown option: $1" >&2
+        return 1
+        ;;
+    esac
+  done
+
+  # === Get authenticated user ===
+  local username
+  username="$(gh api user -q .login)" || {
+    echo "Error: Failed to get GitHub username. Are you logged in?" >&2
+    return 1
+  }
+
+  # === Date range for the year ===
+  local year_start="${year}-01-01"
+  local year_end="${year}-12-31"
+
+  # === Temp file for collecting contributions ===
+  local tmpfile
+  tmpfile="$(mktemp)"
+  trap "rm -f '$tmpfile'" EXIT
+
+  # === Helper: Convert UTC timestamp to AEST (Australia/Brisbane, UTC+10) ===
+  # Input: ISO 8601 timestamp (e.g., 2026-01-15T14:30:00Z)
+  # Output: YYYY-MM-DD in AEST
+  to_aest() {
+    local utc_ts="$1"
+    if [[ "$(uname)" == "Darwin" ]]; then
+      # macOS: Parse as UTC, then convert to AEST
+      # First get the epoch seconds (parsing in UTC)
+      local epoch
+      epoch=$(TZ=UTC date -j -f "%Y-%m-%dT%H:%M:%SZ" "$utc_ts" "+%s" 2>/dev/null) || \
+      epoch=$(TZ=UTC date -j -f "%Y-%m-%dT%H:%M:%S" "${utc_ts%Z}" "+%s" 2>/dev/null) || \
+      { echo "${utc_ts:0:10}"; return; }
+      # Then format in AEST
+      TZ=Australia/Brisbane date -r "$epoch" "+%Y-%m-%d"
+    else
+      TZ=Australia/Brisbane date -d "$utc_ts" "+%Y-%m-%d" 2>/dev/null || echo "${utc_ts:0:10}"
+    fi
+  }
+
+  # === Helper: Append contribution to tmpfile ===
+  # Format: WEEK|CATEGORY|DATE|URL|TITLE|AUTHOR
+  # Categories: PR (authored), Issue (authored), Discussion (authored), Comment, Reviewed
+  # AUTHOR is empty for authored items, set for reviewed/commented items
+  append_contribution() {
+    local dt="$1" type="$2" action="$3" url="$4" title="$5" author="${6:-}"
+    local week category aest_date
+    
+    # Convert timestamp to AEST
+    aest_date=$(to_aest "$dt")
+    
+    week=$(_gh_contributions_get_week "$aest_date")
+    # Remove leading zero for sorting
+    week=$((10#$week))
+    
+    # Map type+action to category
+    case "$action" in
+      created)
+        category="$type"  # PR, Issue, or Discussion
+        ;;
+      commented)
+        category="Comment"
+        ;;
+      reviewed)
+        category="Reviewed"
+        ;;
+    esac
+    
+    printf '%02d|%s|%s|%s|%s|%s\n' "$week" "$category" "$aest_date" "$url" "$title" "$author" >> "$tmpfile"
+  }
+
+  echo "Fetching contributions for @${username} in ${year}..." >&2
+
+  # === Fetch PRs authored ===
+  echo "  - PRs authored..." >&2
+  local query="author:${username} is:pr created:${year_start}..${year_end}"
+  gh api -X GET /search/issues -f q="$query" --paginate 2>/dev/null | \
+    jq -r '.items[] | [.created_at, .html_url, .title] | @tsv' | \
+    while IFS=$'\t' read -r created_at url title; do
+      append_contribution "$created_at" "PR" "created" "$url" "$title"
+    done
+
+  # === Fetch PRs reviewed ===
+  # Use GraphQL to get actual review timestamps
+  echo "  - PRs reviewed..." >&2
+  gh api graphql --paginate -f query='
+    query($username: String!, $endCursor: String) {
+      user(login: $username) {
+        contributionsCollection {
+          pullRequestReviewContributions(first: 100, after: $endCursor) {
+            nodes {
+              occurredAt
+              pullRequest {
+                title
+                url
+                author {
+                  login
+                }
+              }
+            }
+            pageInfo { hasNextPage endCursor }
+          }
+        }
+      }
+    }' -f username="$username" 2>/dev/null | \
+    jq -r '.data.user.contributionsCollection.pullRequestReviewContributions.nodes[] | [.occurredAt, .pullRequest.url, .pullRequest.title, .pullRequest.author.login] | @tsv' | \
+    while IFS=$'\t' read -r occurred_at url title author; do
+      # Filter to current year
+      if [[ "${occurred_at:0:4}" == "$year" ]]; then
+        append_contribution "$occurred_at" "PR" "reviewed" "$url" "$title" "$author"
+      fi
+    done
+
+  # === Fetch Issues authored ===
+  echo "  - Issues authored..." >&2
+  query="author:${username} is:issue created:${year_start}..${year_end}"
+  gh api -X GET /search/issues -f q="$query" --paginate 2>/dev/null | \
+    jq -r '.items[] | [.created_at, .html_url, .title] | @tsv' | \
+    while IFS=$'\t' read -r created_at url title; do
+      append_contribution "$created_at" "Issue" "created" "$url" "$title"
+    done
+
+  # === Fetch Issues/PRs commented ===
+  # Use GraphQL to get actual comment timestamps
+  echo "  - Issue comments..." >&2
+  gh api graphql --paginate -f query='
+    query($username: String!, $endCursor: String) {
+      user(login: $username) {
+        issueComments(first: 100, after: $endCursor) {
+          nodes {
+            createdAt
+            issue {
+              title
+              url
+              author {
+                login
+              }
+            }
+          }
+          pageInfo { hasNextPage endCursor }
+        }
+      }
+    }' -f username="$username" 2>/dev/null | \
+    jq -r '.data.user.issueComments.nodes[] | [.createdAt, .issue.url, .issue.title, .issue.author.login] | @tsv' | \
+    while IFS=$'\t' read -r created_at url title author; do
+      # Filter to current year
+      if [[ "${created_at:0:4}" == "$year" ]]; then
+        # Determine if it's a PR or Issue based on URL
+        if [[ "$url" == */pull/* ]]; then
+          append_contribution "$created_at" "PR" "commented" "$url" "$title" "$author"
+        else
+          append_contribution "$created_at" "Issue" "commented" "$url" "$title" "$author"
+        fi
+      fi
+    done
+
+  # === Fetch Discussions (GraphQL) ===
+  echo "  - Discussions authored..." >&2
+  gh api graphql --paginate -f query='
+    query($username: String!, $endCursor: String) {
+      user(login: $username) {
+        repositoryDiscussions(first: 100, after: $endCursor) {
+          nodes {
+            title
+            url
+            createdAt
+          }
+          pageInfo { hasNextPage endCursor }
+        }
+      }
+    }' -f username="$username" 2>/dev/null | \
+    jq -r '.data.user.repositoryDiscussions.nodes[] | [.createdAt, .url, .title] | @tsv' | \
+    while IFS=$'\t' read -r created_at url title; do
+      # Filter to current year
+      if [[ "${created_at:0:4}" == "$year" ]]; then
+        append_contribution "$created_at" "Discussion" "created" "$url" "$title"
+      fi
+    done
+
+  echo "  - Discussions commented..." >&2
+  gh api graphql --paginate -f query='
+    query($username: String!, $endCursor: String) {
+      user(login: $username) {
+        repositoryDiscussionComments(first: 100, after: $endCursor) {
+          nodes {
+            createdAt
+            discussion {
+              title
+              url
+              author {
+                login
+              }
+            }
+          }
+          pageInfo { hasNextPage endCursor }
+        }
+      }
+    }' -f username="$username" 2>/dev/null | \
+    jq -r '.data.user.repositoryDiscussionComments.nodes[] | [.createdAt, .discussion.url, .discussion.title, .discussion.author.login] | @tsv' | \
+    while IFS=$'\t' read -r created_at url title author; do
+      # Filter to current year
+      if [[ "${created_at:0:4}" == "$year" ]]; then
+        append_contribution "$created_at" "Discussion" "commented" "$url" "$title" "$author"
+      fi
+    done
+
+  echo "" >&2
+
+  # === Deduplicate and sort ===
+  # Dedupe by URL (keep first occurrence per category)
+  # Sort by week, then category (PR, Issue, Discussion, Reviewed, Comment), then date
+  local sorted_file
+  sorted_file="$(mktemp)"
+  trap "rm -f '$tmpfile' '$sorted_file'" EXIT
+
+  # Define category sort order: PR=1, Issue=2, Discussion=3, Reviewed=4, Comment=5
+  sort -t'|' -k1,1n -k3,3 "$tmpfile" | \
+    awk -F'|' '
+      {
+        key = $2 "|" $4  # CATEGORY|URL
+        if (!(key in seen)) {
+          seen[key] = 1
+          # Add sort key for category
+          cat_order = ($2 == "PR" ? 1 : ($2 == "Issue" ? 2 : ($2 == "Discussion" ? 3 : ($2 == "Reviewed" ? 4 : 5))))
+          print $1 "|" cat_order "|" $0
+        }
+      }
+    ' | sort -t'|' -k1,1n -k2,2n -k5,5 | cut -d'|' -f3- > "$sorted_file"
+
+  # === Calculate counts per week ===
+  local counts_file
+  counts_file="$(mktemp)"
+  trap "rm -f '$tmpfile' '$sorted_file' '$counts_file'" EXIT
+  
+  awk -F'|' '
+    {
+      week = $1
+      category = $2
+      weeks[week]++
+      cats[week "|" category]++
+    }
+    END {
+      for (week in weeks) {
+        pr = cats[week "|PR"] + 0
+        issue = cats[week "|Issue"] + 0
+        discussion = cats[week "|Discussion"] + 0
+        reviewed = cats[week "|Reviewed"] + 0
+        comment = cats[week "|Comment"] + 0
+        total = weeks[week]
+        print week "|" total "|" pr "|" issue "|" discussion "|" reviewed "|" comment
+      }
+    }
+  ' "$sorted_file" | sort -t'|' -k1,1n > "$counts_file"
+
+  # === Output Markdown ===
+  local current_week="" current_category=""
+  local repo_name number
+  
+  # Load counts into associative array
+  typeset -A week_counts
+  while IFS='|' read -r w total pr issue discussion reviewed comment; do
+    week_counts[$w]="$total|$pr|$issue|$discussion|$reviewed|$comment"
+  done < "$counts_file"
+  
+  while IFS='|' read -r week category date url title author; do
+    # New week
+    if [[ "$week" != "$current_week" ]]; then
+      [[ -n "$current_week" ]] && echo ""
+      local week_range
+      week_range=$(_gh_contributions_get_week_range "$week" "$year")
+      
+      # Parse counts for this week
+      local counts="${week_counts[$week]}"
+      local total pr issue discussion reviewed comment
+      IFS='|' read -r total pr issue discussion reviewed comment <<< "$counts"
+      
+      # Build count string
+      local count_parts=()
+      count_parts+=("$total total")
+      [[ "$pr" -gt 0 ]] && count_parts+=("$pr PRs")
+      [[ "$issue" -gt 0 ]] && count_parts+=("$issue Issues")
+      [[ "$discussion" -gt 0 ]] && count_parts+=("$discussion Discussions")
+      [[ "$reviewed" -gt 0 ]] && count_parts+=("$reviewed Reviews")
+      [[ "$comment" -gt 0 ]] && count_parts+=("$comment Comments")
+      
+      local count_str="${(j:, :)count_parts}"
+      echo "## Week $week ($week_range) ($count_str)"
+      current_week="$week"
+      current_category=""
+    fi
+    # New category within week
+    if [[ "$category" != "$current_category" ]]; then
+      echo ""
+      echo "### $category"
+      echo ""
+      current_category="$category"
+    fi
+    # Extract repo name and number from URL
+    repo_name="${${url%/*/*}##*/}"
+    number="${url##*/}"
+    # Include author for Reviewed and Comment categories
+    if [[ "$category" == "Reviewed" || "$category" == "Comment" ]] && [[ -n "$author" ]]; then
+      echo "- [$repo_name#$number]($url) - $title - @$author"
+    else
+      echo "- [$repo_name#$number]($url) - $title"
+    fi
+  done < "$sorted_file"
+
+} "$@"
