@@ -93,6 +93,7 @@ if OS.mac?
 
   if mdm_enrolled
     cask "nordlayer"
+    cask "gcloud-cli"
     mas "Slack", id: 803453959
     mas "Telegram", id: 747648890
   else
