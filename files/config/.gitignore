@@ -10,4 +10,5 @@ stellar/
 colima/
 pnpm/
 swiftpm/
+gcloud/
 */ssh/agent.toml
