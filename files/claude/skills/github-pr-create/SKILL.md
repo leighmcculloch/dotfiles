@@ -118,32 +118,41 @@ flowchart LR
 
 Use green (#ccffcc) for added components, red (#ffcccc) for removed.
 
-### 6. Present Draft for Review
+### 6. Write Draft and Present for Review
 
-Present the generated content:
+**Step 1: Write the draft to NOTES_PR.md**
 
-```
-## Pull Request Draft
+Write the complete draft PR to `NOTES_PR.md` in the current working directory:
+
+```markdown
+# Draft Pull Request
 
 **Base branch:** {base_branch}
 
-### Title
+## Title
 {title}
 
-### What
+## What
 {what}
 
-### Why
+## Why
 {why}
 
 {examples_section_if_applicable}
 
 {diagram_section_if_applicable}
+```
+
+**Step 2: Present for review**
+
+After writing the file, inform the user:
+```
+I've written the draft PR to NOTES_PR.md for your review.
 
 Would you like me to create the PR with this content, or would you like to make changes?
 ```
 
-Wait for user confirmation before proceeding.
+Wait for user confirmation before proceeding. If the user requests modifications, update `NOTES_PR.md` with the changes before creating the PR.
 
 ### 7. Get Reviewers
 

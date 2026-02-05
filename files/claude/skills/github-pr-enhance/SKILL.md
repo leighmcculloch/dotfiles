@@ -128,32 +128,40 @@ flowchart LR
 
 ### 5. Draft and Review (REQUIRED)
 
-**IMPORTANT: Always present the proposed changes for review before updating.**
+**IMPORTANT: Always write the proposed changes to a file and present them for review before updating.**
 
-Present in this format:
-```
-## PR Enhancement Draft
+**Step 1: Write the draft to NOTES_PR.md**
+
+Write the complete enhancement draft to `NOTES_PR.md` in the current working directory:
+
+```markdown
+# PR Enhancement Draft
 
 **Repository:** {owner}/{repo}
 **PR:** #{number} - {title}
 
-### Current Description
----
+## Current Description
+
 {current body}
----
 
-### Proposed Description
----
+## Proposed Description
+
 {enhanced body with changes}
----
 
-### Summary of Changes
+## Summary of Changes
 - [List what was added/changed/removed]
+```
+
+**Step 2: Present for review**
+
+After writing the file, inform the user:
+```
+I've written the PR enhancement draft to NOTES_PR.md for your review.
 
 Would you like me to update the PR with this enhanced description, or would you like to make any changes?
 ```
 
-Wait for explicit user confirmation before proceeding.
+Wait for explicit user confirmation before proceeding. If the user requests modifications, update `NOTES_PR.md` with the changes before updating the PR.
 
 ### 6. Update the PR
 

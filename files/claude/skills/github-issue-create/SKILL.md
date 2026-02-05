@@ -69,24 +69,34 @@ flowchart LR
 
 ### 4. Draft and Review (REQUIRED)
 
-**IMPORTANT: Always present the complete draft issue to the user for review before creating it.**
+**IMPORTANT: Always write the draft to a file and present it to the user for review before creating the issue.**
 
-Present the draft in this format:
-```
-## Draft Issue Preview
+**Step 1: Write the draft to NOTES_ISSUE.md**
+
+Write the complete draft issue to `NOTES_ISSUE.md` in the current working directory:
+
+```markdown
+# Draft Issue
 
 **Repository:** {owner}/{repo}
 **Title:** {title}
 **Labels:** {labels}
 
 ---
+
 {full issue body}
----
+```
+
+**Step 2: Present for review**
+
+After writing the file, inform the user:
+```
+I've written the draft issue to NOTES_ISSUE.md for your review.
 
 Would you like me to create this issue, or would you like to make any changes?
 ```
 
-Wait for explicit user confirmation before proceeding. Accept modifications if requested.
+Wait for explicit user confirmation before proceeding. If the user requests modifications, update `NOTES_ISSUE.md` with the changes before creating the issue.
 
 ### 5. Create the Issue
 
