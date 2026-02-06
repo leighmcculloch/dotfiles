@@ -4,7 +4,7 @@
   "enabled_providers": [
     "github-copilot"
   ],
-  "model": "github-copilot/claude-opus-4.5",
+  "model": "github-copilot/claude-opus-4.6",
   "small_model": "github-copilot/gpt-5.2-codex",
   "default_agent": "plan",
   "autoupdate": false,

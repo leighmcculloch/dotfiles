@@ -59,10 +59,10 @@ ${diff}"
 
   local ai=""
   if (( mdm_enrolled )); then
-    #ai="opencode run -m github-copilot/claude-opus-4.5"
-    ai="claude --model claude-opus-4-5 -p"
+    #ai="opencode run -m github-copilot/claude-opus-4.6"
+    ai="claude --model claude-opus-4-6 -p"
   else
-    ai="claude --model claude-opus-4-5 -p"
+    ai="claude --model claude-opus-4-6 -p"
   fi
 
   printf "○ %s\n" "$ai"

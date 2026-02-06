@@ -35,9 +35,9 @@
     }
   },
   "repos": {
-    "github.com/stellar": {
-      "tool": "opencode"
-    },
+    //"github.com/stellar": {
+    //  "tool": "opencode"
+    //},
     "github.com/stellar/stellar-core": {
       "post_build_hooks": [
         "sudo apt-get update",

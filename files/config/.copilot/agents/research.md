@@ -1,7 +1,7 @@
 ---
 name: research
 description: Research agent for gathering information from external sources. Use for looking up documentation, exploring GitHub repositories, finding current information, and answering questions that require external knowledge.
-model: claude-opus-4.5
+model: claude-opus-4.6
 tools:
   - perplexity-perplexity_ask
   - deepwiki-read_wiki_structure

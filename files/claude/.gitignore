@@ -9,6 +9,7 @@ debug/
 file-history/
 plans/
 tasks/
+usage-data/
 plugins/marketplaces/
 plugins/cache/
 plugins/known_marketplaces.json
