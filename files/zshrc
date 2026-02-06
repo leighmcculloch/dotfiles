@@ -23,7 +23,7 @@ compdef() { __compdef_queue+=("$@") }
 
 # Process queued compdef calls after compinit
 __process_compdef_queue() {
-  unfunction compdef  # Remove stub
+  # compinit already overwrote the stub with the real compdef
   for args in "${__compdef_queue[@]}"; do
     compdef ${=args}  # Call real compdef with queued args
   done
