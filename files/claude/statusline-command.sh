@@ -9,48 +9,60 @@ PURPLE='\033[1;35m'              # purple - git branch color
 GREEN='\033[32m'
 RED='\033[31m'
 DIM='\033[2m'
+RED_BG='\033[41;97m'             # red background, bright white text
 RESET='\033[0m'
 
 # Read JSON from stdin
 input=$(cat)
 
-# Parse values using jq
-cwd=$(echo "$input" | jq -r '.cwd // "-"')
-model_display_name=$(echo "$input" | jq -r '.model.display_name // "-"')
-cost_usd=$(echo "$input" | jq -r 'if .cost.total_cost_usd then ((.cost.total_cost_usd) | . * 100 | ceil | . / 100 | tostring | if contains(".") then . else . + ".00" end | if test("\\.[0-9]$") then . + "0" else . end) else "-" end')
-lines_added=$(echo "$input" | jq -r '.cost.total_lines_added // 0')
-lines_removed=$(echo "$input" | jq -r '.cost.total_lines_removed // 0')
-duration_ms=$(echo "$input" | jq -r '.cost.total_duration_ms // 0')
-context_size=$(echo "$input" | jq -r '.context_window.context_window_size // 0')
-current_usage=$(echo "$input" | jq -r '.context_window.current_usage // null')
+# Parse all values in a single jq call
+eval "$(echo "$input" | jq -r '
+  @sh "cwd=\(.cwd // "-")",
+  @sh "model_display_name=\(.model.display_name // "-")",
+  @sh "cost_usd=\(if .cost.total_cost_usd then ((.cost.total_cost_usd) | . * 100 | ceil | . / 100 | tostring | if contains(".") then . else . + ".00" end | if test("\\.[0-9]$") then . + "0" else . end) else "-" end)",
+  @sh "lines_added=\(.cost.total_lines_added // 0)",
+  @sh "lines_removed=\(.cost.total_lines_removed // 0)",
+  @sh "duration_ms=\(.cost.total_duration_ms // 0)",
+  @sh "api_duration_ms=\(.cost.total_api_duration_ms // 0)",
+  @sh "context_percent=\(.context_window.used_percentage // 0)",
+  @sh "exceeds_200k=\(.exceeds_200k_tokens // false)",
+  @sh "agent_name=\(.agent.name // "")"
+')"
 
-# Calculate context percentage
-if [ "$current_usage" != "null" ] && [ "$context_size" -gt 0 ]; then
-    current_tokens=$(echo "$input" | jq -r '.context_window.current_usage | .input_tokens + .cache_creation_input_tokens + .cache_read_input_tokens')
-    context_percent=$((current_tokens * 100 / context_size))
-else
-    context_percent=0
-fi
+# Format duration in human-friendly units (pure bash, no bc)
+format_duration() {
+  local ms=$1
+  if [ "$ms" -ge 3600000 ]; then
+    echo "$((ms / 3600000)).$((ms % 3600000 / 360000))h"
+  elif [ "$ms" -ge 60000 ]; then
+    echo "$((ms / 60000)).$((ms % 60000 / 6000))m"
+  elif [ "$ms" -ge 1000 ]; then
+    echo "$((ms / 1000)).$((ms % 1000 / 100))s"
+  else
+    echo "${ms}ms"
+  fi
+}
 
-# Format duration in human-friendly units
-if [ "$duration_ms" -ge 3600000 ]; then
-  # Hours (with one decimal)
-  duration_formatted=$(echo "scale=1; $duration_ms / 3600000" | bc)h
-elif [ "$duration_ms" -ge 60000 ]; then
-  # Minutes (with one decimal)
-  duration_formatted=$(echo "scale=1; $duration_ms / 60000" | bc)m
-elif [ "$duration_ms" -ge 1000 ]; then
-  # Seconds (with one decimal)
-  duration_formatted=$(echo "scale=1; $duration_ms / 1000" | bc)s
-else
-  # Milliseconds
-  duration_formatted="${duration_ms}ms"
-fi
+duration_formatted=$(format_duration "$duration_ms")
+api_duration_formatted=$(format_duration "$api_duration_ms")
 
 # Shorten paths with home directory to ~
 if [ "$cwd" != "-" ]; then
   cwd="${cwd/#$HOME/~}"
 fi
 
+# Build context display (red background if exceeds 200k tokens)
+if [ "$exceeds_200k" = "true" ]; then
+  context_display="${RED_BG} ${context_percent}% ${RESET}"
+else
+  context_display="${DIM}${context_percent}%${RESET}"
+fi
+
+# Build model/agent display
+model_display="${PURPLE}${model_display_name}${RESET}"
+if [ -n "$agent_name" ]; then
+  model_display="${model_display} ${DIM}(${agent_name})${RESET}"
+fi
+
 # Output statusline
-printf "${BLUE}%s${RESET} ${DIM}•${RESET} ${GREEN}+%s${RESET} ${RED}-%s${RESET} ${DIM}•${RESET} ${DIM}%s${RESET} ${DIM}•${RESET} ${PURPLE}%s${RESET} ${DIM}•${RESET} ${DIM}%s%%${RESET} ${DIM}•${RESET} ${DIM}%s${RESET}" "$cwd" "$lines_added" "$lines_removed" "$duration_formatted" "$model_display_name" "$context_percent" "$([ "$cost_usd" = "-" ] && echo "-" || echo "\$$cost_usd")"
+printf "${BLUE}%s${RESET} ${DIM}•${RESET} ${GREEN}+%s${RESET} ${RED}-%s${RESET} ${DIM}•${RESET} ${DIM}%s${RESET} ${DIM}(%s)${RESET} ${DIM}•${RESET} %b ${DIM}•${RESET} %b ${DIM}•${RESET} ${DIM}%s${RESET}" "$cwd" "$lines_added" "$lines_removed" "$duration_formatted" "$api_duration_formatted" "$model_display" "$context_display" "$([ "$cost_usd" = "-" ] && echo "-" || echo "\$$cost_usd")"
