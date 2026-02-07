@@ -67,8 +67,14 @@ if OS.mac?
   cask "ghostty"
   cask "sublime-text"
 
+  # Deployment Tools
+  brew "flyctl"
+  brew "awscli"
+  tap "aws/tap"
+  brew "aws/tap/copilot-cli"
+
   # AI desktop tools
-  cask "lm-studio"
+  # cask "lm-studio" - unused at the moment
   cask "voiceink"
   cask "claude"
   cask "claude"
@@ -77,7 +83,7 @@ if OS.mac?
   brew "container"
   # brew "opencode" - updated too infrequently, must be installed with npm
   cask "claude-code"
-  cask "copilot-cli"
+  # cask "copilot-cli" - unused at the moment
 
   brew "mas"
   mas "Numbers", id: 409203825
