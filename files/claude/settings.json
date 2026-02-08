@@ -229,16 +229,6 @@
     "defaultMode": "plan"
   },
   "hooks": {
-    "UserPromptSubmit": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/caffeinate-acquire.sh"
-          }
-        ]
-      }
-    ],
     "PostToolUse": [
       {
         "matcher": "Edit|Write",
@@ -272,20 +262,6 @@
           {
             "type": "command",
             "command": "~/.claude/hooks/pushover-stop.sh"
-          },
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/caffeinate-release.sh"
-          }
-        ]
-      }
-    ],
-    "SessionEnd": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/caffeinate-release.sh"
           }
         ]
       }
