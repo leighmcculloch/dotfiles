@@ -124,6 +124,7 @@ fi
 alias scratch="cd ~/Code/scratch/"
 alias l="ls -lah"
 alias p="source ~/.zenv_apikey_perplexity && deno run --allow-env=PERPLEXITY_API_KEY --allow-net=api.perplexity.ai:443 jsr:@leigh/perplexity-cli"
+alias caff="caffeinate -i"
 if (( $+commands[nvim] )); then
   alias vim=nvim
 fi
