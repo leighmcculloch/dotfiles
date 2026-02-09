@@ -13,6 +13,7 @@
     "GIT_CONFIG_VALUE_0": "false",
     "RUSTC_WRAPPER": ""
   },
+  "teammate-mode": "tmux",
   "includeCoAuthoredBy": false,
   "permissions": {
     "allow": [
