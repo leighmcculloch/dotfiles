@@ -21,6 +21,7 @@ brew "watchexec"
 brew "zstd"
 brew "prettier"
 brew "mermaid-cli"
+brew "presenterm"
 
 brew "rustup"
 brew "sccache"
