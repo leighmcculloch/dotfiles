@@ -23,6 +23,9 @@ function {
   done
 
   if [[ -n "$message" ]]; then
+    if [[ -n "${CLAUDE_SESSION_ID:-}" ]]; then
+      message="$(echo "$message" | git interpret-trailers --trailer "Agent-Session-Id: $CLAUDE_SESSION_ID")"
+    fi
     git commit -m "$message" "$@"
     return
   fi
@@ -82,5 +85,8 @@ ${diff}"
     message="$(gum write --width 80 --char-limit 99999 --prompt '| ' --value "$message")"
   fi
 
+  if [[ -n "${CLAUDE_SESSION_ID:-}" ]]; then
+    message="$(echo "$message" | git interpret-trailers --trailer "Agent-Session-Id: $CLAUDE_SESSION_ID")"
+  fi
   git commit -m "$message" ${@:+"$@"}
 } ${@:+"$@"}
