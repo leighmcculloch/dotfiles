@@ -22,9 +22,16 @@ function {
     shift
   done
 
+  if [[ ! -t 0 ]]; then
+    yes=1
+  fi
+
   if [[ -n "$message" ]]; then
     if [[ -n "${CLAUDE_SESSION_ID:-}" ]]; then
-      message="$(echo "$message" | git interpret-trailers --trailer "Agent-Session-Id: $CLAUDE_SESSION_ID")"
+      message="$(echo "$message" | git interpret-trailers --trailer "Agent: Claude Code" --trailer "Agent-Session-Id: $CLAUDE_SESSION_ID")"
+      if [[ -n "${CLAUDE_CODE_MODEL:-}" ]]; then
+        message="$(echo "$message" | git interpret-trailers --trailer "Agent-Model: $CLAUDE_CODE_MODEL")"
+      fi
     fi
     git commit -m "$message" "$@"
     return
@@ -86,7 +93,10 @@ ${diff}"
   fi
 
   if [[ -n "${CLAUDE_SESSION_ID:-}" ]]; then
-    message="$(echo "$message" | git interpret-trailers --trailer "Agent-Session-Id: $CLAUDE_SESSION_ID")"
+    message="$(echo "$message" | git interpret-trailers --trailer "Agent: Claude Code" --trailer "Agent-Session-Id: $CLAUDE_SESSION_ID")"
+    if [[ -n "${CLAUDE_CODE_MODEL:-}" ]]; then
+      message="$(echo "$message" | git interpret-trailers --trailer "Agent-Model: $CLAUDE_CODE_MODEL")"
+    fi
   fi
   git commit -m "$message" ${@:+"$@"}
 } ${@:+"$@"}
