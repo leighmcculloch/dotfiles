@@ -67,6 +67,7 @@ if OS.mac?
   cask "discord"
   cask "ghostty"
   cask "sublime-text"
+  cask "gitbutler"
 
   # Deployment Tools
   brew "flyctl"
