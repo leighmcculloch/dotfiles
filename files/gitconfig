@@ -18,10 +18,10 @@
 [gpg.ssh]
 	allowedSignersFile = ~/.gitallowedsignersfile
 [log]
-[pretty]
-	signature = format:%C(auto)%h %C(green)[%G?:%GS]%C(reset) %s%C(auto)%d
-[format]
-	pretty = signature
+#[pretty]
+#	signature = format:%C(auto)%h %C(green)[%G?:%GS]%C(reset) %s%C(auto)%d
+#[format]
+#	pretty = signature
 [interactive]
 	diffFilter = delta --color-only
 [advice]
