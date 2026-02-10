@@ -28,9 +28,10 @@ function {
 
   if [[ -n "$message" ]]; then
     if [[ -n "${CLAUDE_SESSION_ID:-}" ]]; then
-      message="$(echo "$message" | git interpret-trailers --trailer "Agent: Claude Code" --trailer "Agent-Session-Id: $CLAUDE_SESSION_ID")"
       if [[ -n "${CLAUDE_CODE_MODEL:-}" ]]; then
-        message="$(echo "$message" | git interpret-trailers --trailer "Agent-Model: $CLAUDE_CODE_MODEL")"
+        message="$(echo "$message" | git interpret-trailers --trailer "Agent: Claude Code" --trailer "Agent-Model: $CLAUDE_CODE_MODEL" --trailer "Agent-Session-Id: $CLAUDE_SESSION_ID")"
+      else
+        message="$(echo "$message" | git interpret-trailers --trailer "Agent: Claude Code" --trailer "Agent-Session-Id: $CLAUDE_SESSION_ID")"
       fi
     fi
     git commit -m "$message" "$@"
@@ -93,9 +94,10 @@ ${diff}"
   fi
 
   if [[ -n "${CLAUDE_SESSION_ID:-}" ]]; then
-    message="$(echo "$message" | git interpret-trailers --trailer "Agent: Claude Code" --trailer "Agent-Session-Id: $CLAUDE_SESSION_ID")"
     if [[ -n "${CLAUDE_CODE_MODEL:-}" ]]; then
-      message="$(echo "$message" | git interpret-trailers --trailer "Agent-Model: $CLAUDE_CODE_MODEL")"
+      message="$(echo "$message" | git interpret-trailers --trailer "Agent: Claude Code" --trailer "Agent-Model: $CLAUDE_CODE_MODEL" --trailer "Agent-Session-Id: $CLAUDE_SESSION_ID")"
+    else
+      message="$(echo "$message" | git interpret-trailers --trailer "Agent: Claude Code" --trailer "Agent-Session-Id: $CLAUDE_SESSION_ID")"
     fi
   fi
   git commit -m "$message" ${@:+"$@"}
