@@ -48,6 +48,8 @@ if OS.mac?
   brew "leighmcculloch/paste-markdown/paste-markdown", args: ["HEAD"]
   tap "leighmcculloch/usage"
   brew "leighmcculloch/usage/usage", args: ["HEAD"]
+  tap "leighmcculloch/silo"
+  brew "leighmcculloch/silo/silo", args: ["HEAD"]
 
   brew "autoconf"
   brew "automake"
