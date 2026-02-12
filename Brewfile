@@ -44,6 +44,11 @@ go "github.com/github/github-mcp-server/cmd/github-mcp-server"
 brew "stellar-cli"
 
 if OS.mac?
+  tap "leighmcculloch/paste-markdown"
+  brew "leighmcculloch/paste-markdown/paste-markdown", args: ["HEAD"]
+  tap "leighmcculloch/usage"
+  brew "leighmcculloch/usage/usage", args: ["HEAD"]
+
   brew "autoconf"
   brew "automake"
   brew "clang-format"
@@ -72,8 +77,6 @@ if OS.mac?
   # Deployment Tools
   brew "flyctl"
   brew "awscli"
-  tap "aws/tap"
-  brew "aws/tap/copilot-cli"
 
   # AI desktop tools
   # cask "lm-studio" - unused at the moment
