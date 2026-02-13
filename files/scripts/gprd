@@ -135,10 +135,10 @@ function {
     echo "Error: No repositories found"
     return 1
   elif (( ${#gum_repo_items} == 1 )); then
-    target_repo="${gum_repo_items[1]%% (*}"
+    target_repo="${gum_repo_items[1]%% \(*}"
   else
     local repo_choice="$(gum choose --header "Target repository:" "${gum_repo_items[@]}")"
-    target_repo="${repo_choice%% (*}"
+    target_repo="${repo_choice%% \(*}"
   fi
   echo "Target: ${target_repo}"
 
