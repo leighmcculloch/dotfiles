@@ -13,7 +13,6 @@
     "GIT_CONFIG_VALUE_0": "false",
     "RUSTC_WRAPPER": ""
   },
-  "teammate-mode": "tmux",
   "includeCoAuthoredBy": false,
   "permissions": {
     "allow": [
@@ -314,10 +313,12 @@
       "static.crates.io"
     ]
   },
+  "teammate-mode": "tmux",
   "preferences": {
     "loadingTips": false
   },
   "feedbackSurveyState": {
     "lastShownTime": 1753919494306
-  }
+  },
+  "skipDangerousModePermissionPrompt": true
 }
