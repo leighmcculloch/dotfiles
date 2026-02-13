@@ -14,14 +14,16 @@
     "~/.zenv_apikey_perplexity",
     "~/.zenv_apikey_context7",
     "~/.zenv_apikey_pushover",
-    "~/.zenv_apikey_github_ro"
+    "~/.zenv_apikey_github_ro",
+    "~/.zenv_apikey_github_ro_plus_w_issues_prs"
   ],
   "mounts_rw": [],
   "env": [
     "XDG_CONFIG_HOME"
   ],
   "pre_run_hooks": [
-    "source ~/.zenv_apikey_github_ro",
+    //"source ~/.zenv_apikey_github_ro",
+    "source ~/.zenv_apikey_github_ro_plus_w_issues_prs",
     "export PATH=${HOME}/.deno/bin:${PATH}"
   ],
   "tools": {
