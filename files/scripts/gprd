@@ -62,7 +62,7 @@ function {
   for rname in $(git remote); do
     rurl="$(git remote get-url "$rname" 2>/dev/null || true)"
     [[ -z "$rurl" ]] && continue
-    slug="$(echo "$rurl" | sed -E 's#.*[:/]([^/]+/[^/]+?)(\.git)?$#\1#')"
+    slug="$(echo "$rurl" | sed -E -e 's/\.git$//' -e 's#.*[:/]([^/]+/[^/]+)$#\1#')"
     [[ -z "$slug" ]] && continue
     local label="${rname}"
     [[ "$rname" == "$tracking_remote" ]] && label="${label}, tracking"
@@ -80,7 +80,7 @@ function {
   for rname in origin upstream; do
     rurl="$(git remote get-url "$rname" 2>/dev/null || true)"
     [[ -z "$rurl" ]] && continue
-    slug="$(echo "$rurl" | sed -E 's#.*[:/]([^/]+/[^/]+?)(\.git)?$#\1#')"
+    slug="$(echo "$rurl" | sed -E -e 's/\.git$//' -e 's#.*[:/]([^/]+/[^/]+)$#\1#')"
     local org="${slug%%/*}"
     local repo_base="${slug##*/}"
     (( ${orgs_checked[(Ie)$org]} )) && continue
@@ -97,7 +97,7 @@ function {
     local origin_slug=""
     rurl="$(git remote get-url origin 2>/dev/null || true)"
     if [[ -n "$rurl" ]]; then
-      origin_slug="$(echo "$rurl" | sed -E 's#.*[:/]([^/]+/[^/]+?)(\.git)?$#\1#')"
+      origin_slug="$(echo "$rurl" | sed -E -e 's/\.git$//' -e 's#.*[:/]([^/]+/[^/]+)$#\1#')"
     fi
     local repo_basename="${origin_slug##*/}"
     if [[ -n "$repo_basename" ]]; then
@@ -115,7 +115,7 @@ function {
   if [[ -n "$tracking_remote" ]]; then
     local tracking_url="$(git remote get-url "$tracking_remote" 2>/dev/null || true)"
     if [[ -n "$tracking_url" ]]; then
-      default_slug="$(echo "$tracking_url" | sed -E 's#.*[:/]([^/]+/[^/]+?)(\.git)?$#\1#')"
+      default_slug="$(echo "$tracking_url" | sed -E -e 's/\.git$//' -e 's#.*[:/]([^/]+/[^/]+)$#\1#')"
     fi
   fi
   [[ -z "$default_slug" ]] && default_slug="$gh_default_repo"
@@ -131,7 +131,10 @@ function {
   done
 
   local target_repo=""
-  if (( ${#gum_repo_items} <= 1 )); then
+  if (( ${#gum_repo_items} == 0 )); then
+    echo "Error: No repositories found"
+    return 1
+  elif (( ${#gum_repo_items} == 1 )); then
     target_repo="${gum_repo_items[1]%% (*}"
   else
     local repo_choice="$(gum choose --header "Target repository:" "${gum_repo_items[@]}")"
@@ -148,7 +151,7 @@ function {
   else
     push_remote="${tracking_remote:-origin}"
     local push_url="$(git remote get-url "$push_remote" 2>/dev/null || true)"
-    push_slug="$(echo "$push_url" | sed -E 's#.*[:/]([^/]+/[^/]+?)(\.git)?$#\1#')"
+    push_slug="$(echo "$push_url" | sed -E -e 's/\.git$//' -e 's#.*[:/]([^/]+/[^/]+)$#\1#')"
   fi
   local head_ref="$current_branch"
   if [[ "$push_slug" != "$target_repo" ]]; then
