@@ -45,6 +45,117 @@ function {
   fi
   echo "Base branch: ${base_branch}"
 
+  # Determine target repository for PR
+  local tracking_remote=""
+  local tracking_ref="$(git rev-parse --abbrev-ref --symbolic-full-name @{u} 2>/dev/null || true)"
+  if [[ -n "$tracking_ref" ]]; then
+    tracking_remote="${tracking_ref%%/*}"
+  fi
+
+  local gh_default_repo="$(gh repo set-default --view 2>/dev/null || true)"
+  local gh_user="$(gh api /user --jq .login 2>/dev/null || true)"
+
+  # Collect repos from remotes
+  local -A slug_labels   # owner/repo -> comma-separated labels
+  local -A slug_remotes  # owner/repo -> remote name
+  local rname rurl slug
+  for rname in $(git remote); do
+    rurl="$(git remote get-url "$rname" 2>/dev/null || true)"
+    [[ -z "$rurl" ]] && continue
+    slug="$(echo "$rurl" | sed -E 's#.*[:/]([^/]+/[^/]+?)(\.git)?$#\1#')"
+    [[ -z "$slug" ]] && continue
+    local label="${rname}"
+    [[ "$rname" == "$tracking_remote" ]] && label="${label}, tracking"
+    slug_labels[$slug]="${slug_labels[$slug]:+${slug_labels[$slug]}, }${label}"
+    [[ -z "${slug_remotes[$slug]:-}" ]] && slug_remotes[$slug]="$rname"
+  done
+
+  # Mark gh CLI default
+  if [[ -n "$gh_default_repo" ]]; then
+    slug_labels[$gh_default_repo]="${slug_labels[$gh_default_repo]:+${slug_labels[$gh_default_repo]}, }default"
+  fi
+
+  # Check for internal- prefixed repos in orgs of origin/upstream
+  local -a orgs_checked=()
+  for rname in origin upstream; do
+    rurl="$(git remote get-url "$rname" 2>/dev/null || true)"
+    [[ -z "$rurl" ]] && continue
+    slug="$(echo "$rurl" | sed -E 's#.*[:/]([^/]+/[^/]+?)(\.git)?$#\1#')"
+    local org="${slug%%/*}"
+    local repo_base="${slug##*/}"
+    (( ${orgs_checked[(Ie)$org]} )) && continue
+    orgs_checked+=("$org")
+    local internal_slug="${org}/internal-${repo_base}"
+    [[ -n "${slug_labels[$internal_slug]:-}" ]] && continue
+    if gh api "/repos/${internal_slug}" --silent 2>/dev/null; then
+      slug_labels[$internal_slug]="internal"
+    fi
+  done
+
+  # Check for authenticated user's fork
+  if [[ -n "$gh_user" ]]; then
+    local origin_slug=""
+    rurl="$(git remote get-url origin 2>/dev/null || true)"
+    if [[ -n "$rurl" ]]; then
+      origin_slug="$(echo "$rurl" | sed -E 's#.*[:/]([^/]+/[^/]+?)(\.git)?$#\1#')"
+    fi
+    local repo_basename="${origin_slug##*/}"
+    if [[ -n "$repo_basename" ]]; then
+      local fork_slug="${gh_user}/${repo_basename}"
+      if [[ -z "${slug_labels[$fork_slug]:-}" ]]; then
+        if gh api "/repos/${fork_slug}" --silent 2>/dev/null; then
+          slug_labels[$fork_slug]="fork"
+        fi
+      fi
+    fi
+  fi
+
+  # Determine default selection: tracking remote's repo, then gh CLI default
+  local default_slug=""
+  if [[ -n "$tracking_remote" ]]; then
+    local tracking_url="$(git remote get-url "$tracking_remote" 2>/dev/null || true)"
+    if [[ -n "$tracking_url" ]]; then
+      default_slug="$(echo "$tracking_url" | sed -E 's#.*[:/]([^/]+/[^/]+?)(\.git)?$#\1#')"
+    fi
+  fi
+  [[ -z "$default_slug" ]] && default_slug="$gh_default_repo"
+
+  # Build gum options with default first
+  local -a gum_repo_items=()
+  if [[ -n "$default_slug" && -n "${slug_labels[$default_slug]:-}" ]]; then
+    gum_repo_items+=("${default_slug} (${slug_labels[$default_slug]})")
+  fi
+  for slug label in "${(@kv)slug_labels}"; do
+    [[ "$slug" == "$default_slug" ]] && continue
+    gum_repo_items+=("${slug} (${label})")
+  done
+
+  local target_repo=""
+  if (( ${#gum_repo_items} <= 1 )); then
+    target_repo="${gum_repo_items[1]%% (*}"
+  else
+    local repo_choice="$(gum choose --header "Target repository:" "${gum_repo_items[@]}")"
+    target_repo="${repo_choice%% (*}"
+  fi
+  echo "Target: ${target_repo}"
+
+  # Determine push remote and head ref for cross-repo PRs
+  local push_remote=""
+  local push_slug=""
+  if [[ -n "${slug_remotes[$target_repo]:-}" ]]; then
+    push_remote="${slug_remotes[$target_repo]}"
+    push_slug="$target_repo"
+  else
+    push_remote="${tracking_remote:-origin}"
+    local push_url="$(git remote get-url "$push_remote" 2>/dev/null || true)"
+    push_slug="$(echo "$push_url" | sed -E 's#.*[:/]([^/]+/[^/]+?)(\.git)?$#\1#')"
+  fi
+  local head_ref="$current_branch"
+  if [[ "$push_slug" != "$target_repo" ]]; then
+    local push_owner="${push_slug%%/*}"
+    head_ref="${push_owner}:${current_branch}"
+  fi
+
   # Get the diff and log between base branch and HEAD
   local diff="$(git diff ${base_branch}..HEAD)"
   local log="$(git log ${base_branch}..HEAD)"
@@ -197,7 +308,7 @@ Reply only with valid JSON format {\"title\":\"\",\"what\":\"\",\"why\":\"\"}, o
   echo "$why"
   echo
   echo "### Reviewer:"
-  local repo_info=$(gh api '/repos/{owner}/{repo}')
+  local repo_info=$(gh api "/repos/${target_repo}")
   local owner=$(<<< "$repo_info" jq -r '.owner.login')
   local owner_type=$(<<< "$repo_info" jq -r '.owner.type')
   local is_private=$(<<< "$repo_info" jq -r '.private')
@@ -206,7 +317,7 @@ Reply only with valid JSON format {\"title\":\"\",\"what\":\"\",\"why\":\"\"}, o
     teams=("${(@f)$(gh api "/orgs/$owner/teams" --jq ".[] | \"$owner/\" + .slug")}")
   fi
   local reviewer="$(gum filter --no-limit --height 15 \
-    $(gh api '/repos/{owner}/{repo}/contributors' --jq '.[].login') \
+    $(gh api "/repos/${target_repo}/contributors" --jq '.[].login') \
     "${teams[@]}"
   )"
   echo "$reviewer"
@@ -228,13 +339,14 @@ Close #$issue_number"
   fi
 
   # Push the code
-  git push -u origin HEAD
+  git push -u "$push_remote" HEAD
 
   # Create the PR
   local pr_url="$(gh pr create \
+    --repo "$target_repo" \
     --draft \
     --base "$base_branch" \
-    --head "$current_branch" \
+    --head "$head_ref" \
     --title "$title" \
     --body "$body" \
     --reviewer "$(echo -n "$reviewer" | tr '\n' ',')" \
@@ -250,7 +362,7 @@ Close #$issue_number"
     echo "Skipping Copilot review (private stellar repo)"
   else
     echo "Requesting review from Copilot..."
-    gh pr edit --add-reviewer 'copilot-pull-request-reviewer[bot]' || true
+    gh pr edit "$pr_url" --add-reviewer 'copilot-pull-request-reviewer[bot]' || true
   fi
   echo
 
