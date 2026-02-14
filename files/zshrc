@@ -41,10 +41,14 @@ function __deferred_compinit() {
     compinit -C
   fi
   (( $+functions[__process_compdef_queue] )) && __process_compdef_queue
+  # Rebind Tab to real completion before sourcing fzf-tab so it captures
+  # the correct fallback widget (not the now-orphaned __deferred_compinit)
+  bindkey '^I' expand-or-complete
   # Load fzf-tab (must be after compinit and compdef calls)
   source "$DOTFILES/files/vendor/fzf-tab/fzf-tab.plugin.zsh"
-  # Trigger completion now that everything is loaded
-  zle fzf-tab-complete
+  # Replay Tab through fzf-tab (can't call zle fzf-tab-complete directly
+  # from inside another widget — fzf's terminal takeover glitches)
+  zle -U $'\t'
 }
 zle -N __deferred_compinit
 bindkey '^I' __deferred_compinit
@@ -61,6 +65,7 @@ __ensure_compinit() {
     (( $+functions[__process_compdef_queue] )) && __process_compdef_queue
     # Load fzf-tab if not already loaded
     if ! (( $+functions[fzf-tab-complete] )); then
+      bindkey '^I' expand-or-complete
       source "$DOTFILES/files/vendor/fzf-tab/fzf-tab.plugin.zsh"
     fi
   fi
