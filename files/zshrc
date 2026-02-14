@@ -41,9 +41,10 @@ function __deferred_compinit() {
     compinit -C
   fi
   (( $+functions[__process_compdef_queue] )) && __process_compdef_queue
-  # Re-bind Tab to the real completion widget and trigger it
-  bindkey '^I' expand-or-complete
-  zle expand-or-complete
+  # Load fzf-tab (must be after compinit and compdef calls)
+  source "$DOTFILES/files/vendor/fzf-tab/fzf-tab.plugin.zsh"
+  # Trigger completion now that everything is loaded
+  zle fzf-tab-complete
 }
 zle -N __deferred_compinit
 bindkey '^I' __deferred_compinit
@@ -58,8 +59,10 @@ __ensure_compinit() {
       compinit -C
     fi
     (( $+functions[__process_compdef_queue] )) && __process_compdef_queue
-    # Also rebind Tab now that compinit is loaded
-    bindkey '^I' expand-or-complete
+    # Load fzf-tab if not already loaded
+    if ! (( $+functions[fzf-tab-complete] )); then
+      source "$DOTFILES/files/vendor/fzf-tab/fzf-tab.plugin.zsh"
+    fi
   fi
 }
 
@@ -105,14 +108,9 @@ if (( $+commands[tmux] )); then
   alias clear="tmux send-keys C-l \; send-keys -R \; clear-history"
 fi
 
-# FZF key bindings (Ctrl-R for history, Ctrl-T for files)
+# FZF key bindings (Ctrl-R for history, Ctrl-T for files, Alt-C for cd)
 if (( $+commands[fzf] )); then
   source $BREW_PREFIX/opt/fzf/shell/key-bindings.zsh
-  export FZF_COMPLETION_TRIGGER=''  # Use FZF for tab completion (no ** trigger needed)
-  # Only show current directory level for tab completion (not recursive)
-  _fzf_compgen_path() { fd --max-depth 1 --hidden . "$1" 2>/dev/null | sort }
-  _fzf_compgen_dir() { fd --max-depth 1 --hidden --type d . "$1" 2>/dev/null | sort }
-  source $BREW_PREFIX/opt/fzf/shell/completion.zsh
 fi
 
 # Use a simplified prompt when recording in asciinema
