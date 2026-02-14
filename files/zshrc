@@ -219,6 +219,11 @@ zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
 
 # zsh opts
 unsetopt HIST_VERIFY
+setopt COMPLETE_IN_WORD    # Complete from cursor position, not just end of word
+setopt ALWAYS_TO_END       # Move cursor to end of completed word
+setopt AUTO_MENU           # Show completion menu on second Tab press
+setopt GLOB_DOTS           # Include dotfiles in glob completions
+setopt LIST_PACKED         # Tighter completion list layout
 
 # Bell on every new prompt. (See tmux config, which silences it on the active window.)
 precmd() { print -n '\a' }
