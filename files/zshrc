@@ -177,7 +177,7 @@ alias grb='git rebase'
 alias grbi='git rebase -i'
 alias grbc='git rebase --continue'
 alias grba='git rebase --abort'
-alias glog='git log --pretty=signature --decorate --graph'
+alias glog='git log --oneline --decorate --graph'
 alias gm='git merge'
 alias gma='git merge --abort'
 
