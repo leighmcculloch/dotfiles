@@ -21,9 +21,9 @@ function {
   local ai=""
   if (( mdm_enrolled )); then
     #ai="opencode run -m github-copilot/claude-opus-4.6"
-    ai="claude --model claude-opus-4-6 -p"
+    ai="claude --model claude-sonnet-4-6 --effort low -p"
   else
-    ai="claude --model claude-opus-4-6 -p"
+    ai="claude --model claude-sonnet-4-6 --effort low -p"
   fi
 
   printf "○ %s\n" "$ai"

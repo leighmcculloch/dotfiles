@@ -228,6 +228,7 @@
     ],
     "defaultMode": "plan"
   },
+  "model": "sonnet",
   "hooks": {
     "SessionStart": [
       {
