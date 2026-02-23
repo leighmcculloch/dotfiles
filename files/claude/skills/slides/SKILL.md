@@ -672,10 +672,53 @@ Every presentation should include:
    - Mouse wheel navigation
    - Progress bar updates
    - Navigation dots
+   - **URL hash tracking** (see below)
 
 2. **Intersection Observer** — For scroll-triggered animations
    - Add `.visible` class when slides enter viewport
    - Trigger CSS animations efficiently
+
+3. **URL Hash Slide Tracking (REQUIRED)**
+
+   Every presentation MUST store the current slide number in the URL hash (e.g. `#3`) and restore position on page load. This allows refreshing without losing your place, and sharing links to specific slides.
+
+   Implementation requirements:
+   - On scroll/navigation, update the hash to `#N` (1-indexed) using `replaceState` to avoid polluting browser history
+   - On page load, read the hash and scroll to the corresponding slide
+   - Use the Intersection Observer (already tracking `.visible`) to detect which slide is current
+   - The hash must stay in sync whether the user navigates via keyboard, scroll, swipe, dots, or any other method
+
+   Reference implementation:
+
+   ```javascript
+   // Inside SlidePresentation constructor or init:
+   this.slides = document.querySelectorAll('.slide');
+
+   // Restore slide position from hash on load
+   const initialSlide = this.getSlideFromHash();
+   if (initialSlide) {
+       // Use instant scroll to avoid animation on load
+       initialSlide.scrollIntoView({ behavior: 'instant' });
+   }
+
+   // Update hash when current slide changes (in your Intersection Observer callback):
+   // When a slide becomes the active/visible slide:
+   updateHash(slideIndex) {
+       // slideIndex is 0-based, hash is 1-based
+       history.replaceState(null, '', `#${slideIndex + 1}`);
+   }
+
+   getSlideFromHash() {
+       const match = window.location.hash.match(/^#(\d+)$/);
+       if (match) {
+           const index = parseInt(match[1], 10) - 1;
+           if (index >= 0 && index < this.slides.length) {
+               return this.slides[index];
+           }
+       }
+       return null;
+   }
+   ```
 
 3. **Optional Enhancements** (based on style):
    - Custom cursor with trail
@@ -759,6 +802,7 @@ Your presentation is ready!
 - Arrow keys (← →) or Space to navigate
 - Scroll/swipe also works
 - Click the dots on the right to jump to a slide
+- URL updates with current slide — refresh to stay in place, or share a link to a specific slide
 
 **To customize:**
 - Colors: Look for `:root` CSS variables at the top
