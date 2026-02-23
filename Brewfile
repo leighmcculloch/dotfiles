@@ -79,12 +79,10 @@ if OS.mac?
 
   # Deployment Tools
   brew "flyctl"
-  brew "awscli"
 
   # AI desktop tools
   # cask "lm-studio" - unused at the moment
   cask "voiceink"
-  cask "claude"
   cask "claude"
 
   # AI CLI tools
