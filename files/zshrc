@@ -201,6 +201,7 @@ alias 'gacnf!'="ga . && gcn! && gp -f"
 alias gs="git stash"
 alias gsp="git stash pop"
 alias gsl="git stash list"
+alias gski="git stash --keep-index"
 alias gupp="gup && gp"
 alias gwa="git worktree add"
 alias gwau='() { command gwau "$1" && cd "../${PWD##*/}-$1" ; }'
