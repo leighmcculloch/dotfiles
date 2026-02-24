@@ -18,6 +18,18 @@ map("n", "gk", function()
   vim.diagnostic.config({ virtual_lines = on })
 end, { desc = "Toggle diagnostic virtual lines" })
 
+map("v", "gw", function()
+  vim.ui.input({ prompt = "Wrap at: ", default = tostring(vim.bo.textwidth) }, function(input)
+    if not input then return end
+    local width = tonumber(input)
+    if not width then return end
+    local old_tw = vim.bo.textwidth
+    vim.bo.textwidth = width
+    vim.cmd("normal! gvgw")
+    vim.bo.textwidth = old_tw
+  end)
+end, { desc = "Reformat paragraph at width" })
+
 map("n", "yp", function()
   vim.fn.setreg("+", vim.fn.expand("%:."))
   vim.fn.system(string.format('printf %%s %s | tmux load-buffer -', vim.fn.shellescape(vim.fn.expand("%:."))))
