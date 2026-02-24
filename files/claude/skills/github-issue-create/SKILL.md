@@ -16,7 +16,10 @@ If the user provides GitHub issue or PR links:
 
 ### 2. Discover Issue Templates
 
-**Step 1: Check target repository**
+**Step 1: Find issue templates**
+Do steps 1a and 1b in parallel:
+
+**Step 1a: Check target repository**
 Use `mcp__github__get_file_contents` to check for templates:
 ```
 owner: {repo_owner}
@@ -24,14 +27,19 @@ repo: {repo_name}
 path: .github/ISSUE_TEMPLATE/
 ```
 
-**Step 2: If no templates found, check org's .github repository**
+**Step 1b: Check org's .github repository**
 ```
 owner: {repo_owner}
 repo: .github
 path: .github/ISSUE_TEMPLATE/
 ```
 
-**Step 3: Select appropriate template**
+**Step 2: Make list of issue templates to choose from**
+Make a list of issue templates to choose from:
+- Use the results from Step 1a if available.
+- Otherwise use the results from Step 1b.
+
+**Step 3: Select appropriate template from the list**
 Analyze the user's request and auto-select the most appropriate template:
 - Bug reports: templates containing "bug" in name
 - Feature requests: templates containing "feature" or "request" or "proposal" or "rfc"
