@@ -720,7 +720,78 @@ Every presentation should include:
    }
    ```
 
-3. **Optional Enhancements** (based on style):
+3. **Presenter Notes with Separate Window (REQUIRED)**
+
+   Every presentation MUST include a presenter notes system. The audience sees only the slides; the presenter opens a separate synced window with notes, timer, and navigation.
+
+   **How it works:**
+   - Press **P** to open the presenter window (pop-up)
+   - Both windows sync via `BroadcastChannel` — navigate from either window
+   - The keyboard hint should mention the P key: `← → or Space · P presenter`
+
+   **Presenter window must include:**
+   - Slide counter (e.g. "3 / 15")
+   - Elapsed timer (MM:SS, starts when presenter window opens)
+   - Current slide's speaker notes in large readable text
+   - "Up Next" showing the title of the next slide
+   - Prev/Next buttons + arrow key navigation
+   - Progress bar matching the main presentation's accent color
+   - Dark theme matching the presentation's aesthetic
+
+   **Implementation pattern:**
+
+   ```javascript
+   // 1. Define notes as a JS array (one entry per slide)
+   const SPEAKER_NOTES = [
+       "Welcome everyone...",        // slide 0
+       "Let's start with...",        // slide 1
+       // ... one entry per slide
+   ];
+
+   // 2. BroadcastChannel for two-way sync
+   const PRESENTER_CHANNEL = 'slide-presenter-sync';
+   let presenterWindow = null;
+   let channel = null;
+
+   function initPresenterSync(presentation) {
+       channel = new BroadcastChannel(PRESENTER_CHANNEL);
+       // Listen for navigation commands from presenter window
+       channel.onmessage = (e) => {
+           if (e.data.type === 'nav') {
+               presentation.goToSlide(e.data.slide);
+           }
+       };
+   }
+
+   // 3. Broadcast current slide index on every navigation
+   function broadcastSlide(index) {
+       if (channel) {
+           channel.postMessage({
+               type: 'slide',
+               slide: index,
+               total: document.querySelectorAll('.slide').length
+           });
+       }
+   }
+
+   // 4. Open presenter window with document.write()
+   //    - Dynamically generate HTML/CSS/JS for the presenter view
+   //    - Embed SPEAKER_NOTES and slide titles via JSON.stringify
+   //    - The presenter window listens on the same BroadcastChannel
+   //    - Prev/Next buttons and arrow keys send 'nav' messages back
+
+   // 5. Wire it up:
+   //    - Monkey-patch goToSlide to also call broadcastSlide()
+   //    - Add 'P' keydown handler to call openPresenterWindow()
+   ```
+
+   **Speaker notes content:**
+   - Write draft speaker notes for every slide based on its content
+   - Use a conversational presenter voice
+   - Cover key talking points and transitions between slides
+   - Notes should help the presenter remember what to say, not be a script
+
+4. **Optional Enhancements** (based on style):
    - Custom cursor with trail
    - Particle system background (canvas)
    - Parallax effects
@@ -803,6 +874,7 @@ Your presentation is ready!
 - Scroll/swipe also works
 - Click the dots on the right to jump to a slide
 - URL updates with current slide — refresh to stay in place, or share a link to a specific slide
+- Press **P** to open presenter notes (separate window with notes, timer, and navigation)
 
 **To customize:**
 - Colors: Look for `:root` CSS variables at the top
