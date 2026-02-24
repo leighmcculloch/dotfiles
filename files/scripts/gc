@@ -100,5 +100,6 @@ ${diff}"
       message="$(echo "$message" | git interpret-trailers --trailer "Agent: Claude Code" --trailer "Agent-Session-Id: $CLAUDE_SESSION_ID")"
     fi
   fi
+  echo "$message"
   git commit -m "$message" ${@:+"$@"}
 } ${@:+"$@"}
