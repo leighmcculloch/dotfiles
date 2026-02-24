@@ -18,17 +18,20 @@ map("n", "gk", function()
   vim.diagnostic.config({ virtual_lines = on })
 end, { desc = "Toggle diagnostic virtual lines" })
 
+local gw_last_width = nil
 map("v", "gw", function()
-  vim.ui.input({ prompt = "Wrap at: ", default = tostring(vim.bo.textwidth) }, function(input)
+  local default = gw_last_width or vim.bo.textwidth
+  vim.ui.input({ prompt = "Wrap at: ", default = tostring(default) }, function(input)
     if not input then return end
     local width = tonumber(input)
     if not width then return end
+    gw_last_width = width
     local old_tw = vim.bo.textwidth
     vim.bo.textwidth = width
     vim.cmd("normal! gvgw")
     vim.bo.textwidth = old_tw
   end)
-end, { desc = "Reformat paragraph at width" })
+end, { desc = "Reformat selection at width" })
 
 map("n", "yp", function()
   vim.fn.setreg("+", vim.fn.expand("%:."))
