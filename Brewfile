@@ -67,7 +67,7 @@ if OS.mac?
 
   cask "obsidian"
   cask "arc"
-  cask "vivaldi"
+  cask "comet"
   cask "font-fira-code"
   cask "font-fira-code-nerd-font"
   cask "orbstack"
