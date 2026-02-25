@@ -1,5 +1,5 @@
 ---
-name: github-issue-from-wip
+name: issue-wip
 description: Create a GitHub issue from work-in-progress by analyzing changes against the base branch
 ---
 
@@ -55,14 +55,14 @@ Review all gathered context and create a summary that:
 
 ### 5. Hand Off to GitHub Issue Skill
 
-After gathering and analyzing the context, invoke the `github-issue` skill using the Skill tool.
+After gathering and analyzing the context, invoke the `issue` skill using the Skill tool.
 
 Provide this context to the skill:
 - A description of what needs to be done (framed in future tense)
 - Key technical details from the diff that inform the implementation
 - Any relevant file paths that will be affected
 
-The `github-issue` skill will handle:
+The `issue` skill will handle:
 - Template discovery
 - Creating diagrams if needed
 - Drafting and reviewing the issue with the user

@@ -1,5 +1,5 @@
 ---
-name: github-pr-create
+name: pr
 description: Create a GitHub pull request with AI-generated title and description based on the diff
 ---
 

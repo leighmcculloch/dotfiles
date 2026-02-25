@@ -1,5 +1,5 @@
 ---
-name: github-pr-enhance
+name: pr-enhance
 description: Enhance an existing PR by analyzing the diff against the description and updating with examples, diagrams, and context
 ---
 

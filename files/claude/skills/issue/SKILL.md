@@ -1,5 +1,5 @@
 ---
-name: github-issue
+name: issue
 description: Create GitHub issues with templates, diagrams for proposals, and context from linked issues/PRs
 ---
 

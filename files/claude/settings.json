@@ -17,10 +17,10 @@
   "permissions": {
     "allow": [
       "Skill(commit)",
-      "Skill(github-pr-create)",
-      "Skill(github-issue-create)",
-      "Skill(github-issue-create-from-wip)",
-      "Skill(github-pr-enhance)",
+      "Skill(pr)",
+      "Skill(issue)",
+      "Skill(issue-wip)",
+      "Skill(pr-enhance)",
       "Skill(mermaid-diagram)",
       "Skill(review)",
       "Bash(claude:*)",
