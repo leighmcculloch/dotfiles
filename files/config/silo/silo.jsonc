@@ -11,6 +11,7 @@
     "~/.deno/bin/deno install --global --allow-env npm:@mermaid-js/mermaid-cli"
   ],
   "mounts_ro": [
+    "~/.dotfiles/files/scripts",
     "~/.zenv_apikey_perplexity",
     "~/.zenv_apikey_context7",
     "~/.zenv_apikey_pushover",
@@ -24,6 +25,7 @@
   "pre_run_hooks": [
     //"source ~/.zenv_apikey_github_ro",
     "source ~/.zenv_apikey_github_ro_plus_w_issues_prs",
+    "export PATH=${HOME}/.dotfiles/files/scripts:${PATH}",
     "export PATH=${HOME}/.deno/bin:${PATH}"
   ],
   "tools": {
