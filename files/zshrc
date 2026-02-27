@@ -208,6 +208,11 @@ alias gwau='() { command gwau "$1" && cd "../${PWD##*/}-$1" ; }'
 alias gwr="git worktree remove"
 alias gwl="git worktree list"
 alias gwp="git worktree prune"
+function cdmain() {
+  local gitdir="$(git rev-parse --git-dir 2>/dev/null)" || { echo "cdmain: not a git directory" >&2; return 1; }
+  [[ -f "$gitdir" ]] || { echo "cdmain: not a worktree" >&2; return 1; }
+  cd "$(git rev-parse --git-common-dir | xargs dirname)"
+}
 alias grbs="git rebase --exec 'git commit --amend --no-edit -n -S' -i"
 
 # gh aliases
