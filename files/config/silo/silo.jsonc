@@ -23,8 +23,8 @@
     "XDG_CONFIG_HOME"
   ],
   "pre_run_hooks": [
-    //"source ~/.zenv_apikey_github_ro",
-    "source ~/.zenv_apikey_github_ro_plus_w_issues_prs",
+    //"source ~/.zenv_apikey_github_ro_plus_w_issues_prs",
+    "source ~/.zenv_apikey_github_ro",
     "export PATH=${HOME}/.dotfiles/files/scripts:${PATH}",
     "export PATH=${HOME}/.deno/bin:${PATH}"
   ],
