@@ -27,13 +27,6 @@ function {
   fi
 
   if [[ -n "$message" ]]; then
-    if [[ -n "${CLAUDE_SESSION_ID:-}" ]]; then
-      if [[ -n "${CLAUDE_CODE_MODEL:-}" ]]; then
-        message="$(echo "$message" | git interpret-trailers --trailer "Agent: Claude Code" --trailer "Agent-Model: $CLAUDE_CODE_MODEL" --trailer "Agent-Session-Id: $CLAUDE_SESSION_ID")"
-      else
-        message="$(echo "$message" | git interpret-trailers --trailer "Agent: Claude Code" --trailer "Agent-Session-Id: $CLAUDE_SESSION_ID")"
-      fi
-    fi
     git commit -m "$message" "$@"
     return
   fi
@@ -93,13 +86,6 @@ ${diff}"
     message="$(gum write --width 80 --char-limit 99999 --prompt '| ' --value "$message")"
   fi
 
-  if [[ -n "${CLAUDE_SESSION_ID:-}" ]]; then
-    if [[ -n "${CLAUDE_CODE_MODEL:-}" ]]; then
-      message="$(echo "$message" | git interpret-trailers --trailer "Agent: Claude Code" --trailer "Agent-Model: $CLAUDE_CODE_MODEL" --trailer "Agent-Session-Id: $CLAUDE_SESSION_ID")"
-    else
-      message="$(echo "$message" | git interpret-trailers --trailer "Agent: Claude Code" --trailer "Agent-Session-Id: $CLAUDE_SESSION_ID")"
-    fi
-  fi
   echo "$message"
   git commit -m "$message" ${@:+"$@"}
 } ${@:+"$@"}
