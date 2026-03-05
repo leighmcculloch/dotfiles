@@ -24,3 +24,4 @@ __store.db
 stats-cache.json
 chrome/chrome-native-host
 .credentials.json
+policy-limits.json
