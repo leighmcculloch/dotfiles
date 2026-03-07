@@ -5,20 +5,6 @@
       "command": "bash",
       "args": [ "-c", "source ~/.zenv_apikey_github || source ~/.zenv_apikey_github_ro ; GITHUB_PERSONAL_ACCESS_TOKEN=\"$GITHUB_TOKEN\" github-mcp-server stdio" ]
     },
-    "perplexity": {
-      "type": "stdio",
-      "command": "bash",
-      "args": [ "-c", "source ~/.zenv_apikey_perplexity && mcp-server-perplexity-ask" ]
-    },
-    "deepwiki": {
-      "type": "http",
-      "url": "https://mcp.deepwiki.com/mcp"
-    },
-    "context7": {
-      "type": "stdio",
-      "command": "bash",
-      "args": [ "-c", "source ~/.zenv_apikey_context7 && context7-mcp" ]
-    },
     "grep": {
       "type": "http",
       "url": "https://mcp.grep.app"
