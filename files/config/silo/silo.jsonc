@@ -3,7 +3,6 @@
   "backend": "container",
   "tool": "claude",
   "post_build_hooks": [
-    // mpc servers
     "curl -fsSL https://deno.land/install.sh | sh"
   ],
   "mounts_ro": [
