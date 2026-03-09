@@ -3,7 +3,8 @@
   "backend": "container",
   "tool": "claude",
   "post_build_hooks": [
-    "curl -fsSL https://deno.land/install.sh | sh"
+    "curl -fsSL https://deno.land/install.sh | sh",
+    "curl -fsSL https://github.com/stellar/stellar-cli/raw/main/install.sh | sh -s -- --install-deps"
   ],
   "mounts_ro": [
     "~/.dotfiles/files/scripts",
