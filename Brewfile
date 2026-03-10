@@ -84,7 +84,7 @@ if OS.mac?
   # cask "lm-studio" - unused at the moment
   cask "claude"
   cask "voiceink"
-  case "wispr-flow"
+  cask "wispr-flow"
 
   # AI CLI tools
   brew "container"
