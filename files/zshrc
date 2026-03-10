@@ -12,6 +12,25 @@ bindkey "^[d" kill-word               # Alt-d (delete word forward)
 bindkey "^[b" backward-word           # Alt-b (move word backward)
 bindkey "^[f" forward-word            # Alt-f (move word forward)
 
+# Bracketed paste: auto-wrap complex text (newlines/quotes) in a heredoc
+conditional_heredoc_paste() {
+  emulate -L zsh
+  # Save buffer state, then let the built-in widget collect the paste
+  local save_LBUFFER=$LBUFFER save_RBUFFER=$RBUFFER
+  LBUFFER="" RBUFFER=""
+  zle .bracketed-paste
+  local pasted=$LBUFFER
+  LBUFFER=$save_LBUFFER
+  RBUFFER=$save_RBUFFER
+  if [[ $pasted == *$'\n'* || $pasted == *\'* || $pasted == *\"* ]]; then
+    local delim="EOF_${RANDOM}_${RANDOM}_EOF"
+    LBUFFER+="\"\$(cat <<'${delim}'"$'\n'"${pasted}"$'\n'"${delim}"$'\n)\"'
+  else
+    LBUFFER+="$pasted"
+  fi
+}
+zle -N bracketed-paste conditional_heredoc_paste
+
 # free up the c-q shortcut for use in vim
 stty start undef
 
