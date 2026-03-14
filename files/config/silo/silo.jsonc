@@ -1,6 +1,12 @@
 {
   "$schema": "https://raw.githubusercontent.com/leighmcculloch/silo/main/silo.schema.json",
   "backend": "container",
+  "backends": {
+    "fly": {
+      "app": "silovms",
+      "region": "syd"
+    }
+  },
   "tool": "claude",
   "post_build_hooks": [
     "curl -fsSL https://deno.land/install.sh | sh",
