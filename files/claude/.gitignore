@@ -13,6 +13,7 @@ teams/
 session-env/
 usage-data/
 backups/
+sessions/
 plugins/marketplaces/
 plugins/cache/
 plugins/known_marketplaces.json
