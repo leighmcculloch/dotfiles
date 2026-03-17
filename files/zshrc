@@ -243,6 +243,9 @@ alias ghprco="gh pr checkout"
 # go aliases
 alias goi="go install"
 
+# claude aliases
+alias ccy="claude --permission-mode default --continue yes"
+
 # Completion matching: partial/substring matching (like Oh My Zsh)
 # Allows typing end of directory name and matching from anywhere
 zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}' 'r:|=*' 'l:|=* r:|=*'
