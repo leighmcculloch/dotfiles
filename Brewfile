@@ -91,6 +91,7 @@ if OS.mac?
   # brew "opencode" - updated too infrequently, must be installed with npm
   cask "claude-code"
   # cask "copilot-cli" - unused at the moment
+  brew "mistral-vibe"
 
   brew "mas"
   mas "Numbers", id: 409203825
