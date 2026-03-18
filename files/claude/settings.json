@@ -305,6 +305,7 @@
       "static.crates.io"
     ]
   },
+  "effortLevel": "medium",
   "skipDangerousModePermissionPrompt": true,
   "teammate-mode": "tmux",
   "preferences": {
@@ -313,5 +314,5 @@
   "feedbackSurveyState": {
     "lastShownTime": 1753919494306
   },
-  "effortLevel": "medium"
+  "voiceEnabled": true
 }
