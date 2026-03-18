@@ -1,6 +1,6 @@
 {
   "$schema": "https://raw.githubusercontent.com/leighmcculloch/silo/main/silo.schema.json",
-  "backend": "container",
+  "backend": "docker",
   "backends": {
     "fly": {
       "app": "silovms",
