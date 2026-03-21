@@ -1,0 +1,12 @@
+/log/
+/memories/
+/sessions/
+/shell_snapshots/
+/tmp/
+.personality_migration
+auth.json
+history.jsonl
+instructions.md
+*.sqlite*
+models_cache.json
+version.json
