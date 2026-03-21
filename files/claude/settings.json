@@ -305,9 +305,10 @@
       "static.crates.io"
     ]
   },
-  "effortLevel": "medium",
+  "effortLevel": "max",
   "skipDangerousModePermissionPrompt": true,
-  "teammate-mode": "tmux",
+  "teammateMode": "in-process",
+  "prefersReducedMotion": true,
   "preferences": {
     "loadingTips": false
   },
