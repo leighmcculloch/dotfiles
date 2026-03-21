@@ -1,3 +1,8 @@
+---
+name: git-resolve-merge-conflicts
+description: Resolve git merge conflicts in the working directory
+---
+
 # Resolve Merge Conflicts
 
 This skill resolves git merge conflicts in the current repository.
