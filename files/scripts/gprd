@@ -203,9 +203,9 @@ function {
   local ai=""
   if (( mdm_enrolled )); then
     #ai="opencode run -m github-copilot/gpt-5.2-codex"
-    ai="claude --model claude-sonnet-4-6 --effort high -p"
+    ai="claude --model claude-sonnet-4-6 --effort medium -p"
   else
-    ai="claude --model claude-sonnet-4-6 --effort high -p"
+    ai="claude --model claude-sonnet-4-6 --effort medium -p"
   fi
 
   printf "○ %s\n" "$ai"

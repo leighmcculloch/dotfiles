@@ -306,6 +306,7 @@
     ]
   },
   "effortLevel": "max",
+  "voiceEnabled": true,
   "skipDangerousModePermissionPrompt": true,
   "teammateMode": "in-process",
   "prefersReducedMotion": true,
@@ -314,6 +315,5 @@
   },
   "feedbackSurveyState": {
     "lastShownTime": 1753919494306
-  },
-  "voiceEnabled": true
+  }
 }
