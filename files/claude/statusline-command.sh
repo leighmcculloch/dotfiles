@@ -26,7 +26,9 @@ eval "$(echo "$input" | jq -r '
   @sh "api_duration_ms=\(.cost.total_api_duration_ms // 0)",
   @sh "context_percent=\(.context_window.used_percentage // 0)",
   @sh "exceeds_200k=\(.exceeds_200k_tokens // false)",
-  @sh "agent_name=\(.agent.name // "")"
+  @sh "agent_name=\(.agent.name // "")",
+  @sh "five_hour_pct=\(.rate_limits.five_hour.used_percentage // "")",
+  @sh "seven_day_pct=\(.rate_limits.seven_day.used_percentage // "")"
 ')"
 
 # Format duration in human-friendly units (pure bash, no bc)
@@ -64,5 +66,11 @@ if [ -n "$agent_name" ]; then
   model_display="${model_display} ${DIM}(${agent_name})${RESET}"
 fi
 
+# Build usage display
+usage_display=""
+if [ -n "$five_hour_pct" ] && [ -n "$seven_day_pct" ]; then
+  usage_display=" ${DIM}•${RESET} ${DIM}5h:${RESET}${five_hour_pct}% ${DIM}7d:${RESET}${seven_day_pct}%"
+fi
+
 # Output statusline
-printf "${BLUE}%s${RESET} ${DIM}•${RESET} ${GREEN}+%s${RESET} ${RED}-%s${RESET} ${DIM}•${RESET} ${DIM}%s${RESET} ${DIM}(%s)${RESET} ${DIM}•${RESET} %b ${DIM}•${RESET} %b ${DIM}•${RESET} ${DIM}%s${RESET}" "$cwd" "$lines_added" "$lines_removed" "$duration_formatted" "$api_duration_formatted" "$model_display" "$context_display" "$([ "$cost_usd" = "-" ] && echo "-" || echo "\$$cost_usd")"
+printf "${BLUE}%s${RESET} ${DIM}•${RESET} ${GREEN}+%s${RESET} ${RED}-%s${RESET} ${DIM}•${RESET} ${DIM}%s${RESET} ${DIM}(%s)${RESET} ${DIM}•${RESET} %b ${DIM}•${RESET} %b ${DIM}•${RESET} ${DIM}%s${RESET}%b" "$cwd" "$lines_added" "$lines_removed" "$duration_formatted" "$api_duration_formatted" "$model_display" "$context_display" "$([ "$cost_usd" = "-" ] && echo "-" || echo "\$$cost_usd")" "$usage_display"

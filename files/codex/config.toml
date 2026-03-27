@@ -3,3 +3,27 @@ model_reasoning_effort = "xhigh"
 
 [notice.model_migrations]
 "gpt-5.3-codex" = "gpt-5.4"
+
+[projects."/Users/leighmcculloch/Code/one-way-channel"]
+trust_level = "trusted"
+
+[projects."/Users/leighmcculloch/Code/scratch"]
+trust_level = "trusted"
+
+[projects."/Users/leighmcculloch/Code/raw-soroban-inc3"]
+trust_level = "trusted"
+
+[projects."/Users/leighmcculloch/Code/scratch/raw-soroban-inc3"]
+trust_level = "trusted"
+
+[projects."/Users/leighmcculloch/Code"]
+trust_level = "trusted"
+
+[projects."/Users/leighmcculloch/Code/timer"]
+trust_level = "trusted"
+
+[projects."/Users/leighmcculloch/Code/silo"]
+trust_level = "trusted"
+
+[projects."/Users/leighmcculloch/Code/leighmcculloch.com"]
+trust_level = "trusted"
