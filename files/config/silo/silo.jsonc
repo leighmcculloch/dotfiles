@@ -13,7 +13,6 @@
     "curl -fsSL https://github.com/stellar/stellar-cli/raw/main/install.sh | sh -s -- --install-deps"
   ],
   "mounts_ro": [
-    "~/.dotfiles/files/scripts",
     "~/.zenv_apikey_pushover",
     "~/.zenv_apikey_github_ro",
     "~/.zenv_apikey_github_ro_plus_w_issues_prs"
@@ -24,7 +23,6 @@
   ],
   "pre_run_hooks": [
     "source ~/.zenv_apikey_github_ro_plus_w_issues_prs 2>/dev/null || source ~/.zenv_apikey_github_ro",
-    "export PATH=${HOME}/.dotfiles/files/scripts:${PATH}",
     "export PATH=${HOME}/.deno/bin:${PATH}"
   ],
   "tools": {
