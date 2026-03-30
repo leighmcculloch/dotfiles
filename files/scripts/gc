@@ -38,22 +38,20 @@ function {
 
   local branch="${${$(git branch --format='%(refname:short)' --show-current | jq -R -s '.')%\"}#\"}"
 
-  local diff="$(git diff --staged)"
-  if [ -z "$diff" ]; then
+  if ! git diff --staged --quiet; then
+    :
+  else
     echo "No staged changes"
     return 1
   fi
 
   local prompt="You are a senior software engineer.
 
-Given the following git diff, suggest a concise, commit message that says in present tense with imperative mood what has changed without saying why (max 50 characters).
+Run 'git diff --staged' to see what has changed. Then suggest a concise commit message that says in present tense with imperative mood what has changed without saying why (max 50 characters).
 
 Reply only with the commit message, nothing else. Do not use convention commit format. Start the commit message with a lower case letter and do not end with a full stop. Avoid generic phrases.
 
-Branch: ${branch}
-
-Diff:
-${diff}"
+Branch: ${branch}"
 
   # Detect MDM enrollment
   local mdm_enrolled=0

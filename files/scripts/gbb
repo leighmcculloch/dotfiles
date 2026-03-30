@@ -6,8 +6,7 @@ export SCRIPT=gbb
 function {
   local branches="${${$(git branch --all --format='%(refname:short)' | jq -R -s '.')%\"}#\"}"
 
-  local diff="$(git diff HEAD)"
-  if [ -z "$diff" ]; then
+  if git diff HEAD --quiet; then
     echo "No changes detected in working directory"
     return 1
   fi
@@ -30,14 +29,11 @@ function {
   local start_time=$(gdate +%s%6N)
   local name="$(${=ai} -p "You are a senior software engineer.
 
-Given the following git diff, suggest a concise, kebab-case branch name that describes the changes (max 5 words).
+Run 'git diff HEAD' to see what has changed. Then suggest a concise, kebab-case branch name that describes the changes (max 5 words).
 
 Reply only with the branch name, nothing else.
 
-Do not use any of these names: ${branches}.
-
-Diff:
-${diff}" | tr '[:upper:] ' '[:lower:]-')"
+Do not use any of these names: ${branches}." | tr '[:upper:] ' '[:lower:]-')"
   local end_time=$(gdate +%s%6N)
   local elapsed_us=$((end_time - start_time))
   local elapsed_s=$(printf '%d.%06d' $((elapsed_us / 1000000)) $((elapsed_us % 1000000)))
