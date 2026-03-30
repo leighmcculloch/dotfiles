@@ -305,11 +305,10 @@
       "static.crates.io"
     ]
   },
-  "effortLevel": "max",
   "voiceEnabled": true,
+  "prefersReducedMotion": true,
   "skipDangerousModePermissionPrompt": true,
   "teammateMode": "in-process",
-  "prefersReducedMotion": true,
   "preferences": {
     "loadingTips": false
   },
