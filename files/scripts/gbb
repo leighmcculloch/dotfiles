@@ -5,8 +5,22 @@ export SCRIPT=gbb
 
 function {
   local branches="${${$(git branch --all --format='%(refname:short)' | jq -R -s '.')%\"}#\"}"
+  local current_branch="$(git rev-parse --abbrev-ref HEAD)"
+  local default_branch="$(gh repo view --json defaultBranchRef --jq .defaultBranchRef.name)"
 
-  if git diff HEAD --quiet; then
+  local on_default=0
+  local commits_ahead=0
+  if [[ "$current_branch" == "$default_branch" ]]; then
+    on_default=1
+    commits_ahead="$(git rev-list --count @{upstream}..HEAD 2>/dev/null || echo 0)"
+  fi
+
+  # On default branch with commits ahead of upstream: move commits to a new branch.
+  if (( on_default && commits_ahead > 0 )); then
+    local diff_source="@{upstream}..HEAD"
+  elif ! git diff HEAD --quiet; then
+    local diff_source="HEAD"
+  else
     echo "No changes detected in working directory"
     return 1
   fi
@@ -25,11 +39,12 @@ function {
     ai="claude --model claude-sonnet-4-6 --effort low -p"
   fi
 
+  local diff_cmd="git diff ${diff_source}"
   printf "○ %s\n" "$ai"
   local start_time=$(gdate +%s%6N)
   local name="$(${=ai} -p "You are a senior software engineer.
 
-Run 'git diff HEAD' to see what has changed. Then suggest a concise, kebab-case branch name that describes the changes (max 5 words).
+Run '${diff_cmd}' to see what has changed. Then suggest a concise, kebab-case branch name that describes the changes (max 5 words).
 
 Reply only with the branch name, nothing else.
 
@@ -46,5 +61,14 @@ Do not use any of these names: ${branches}." | tr '[:upper:] ' '[:lower:]-')"
 
   local name="$(gum input --width 50 --char-limit 50 --prompt '| ' --value "$name")"
 
-  git checkout -b "$name" $@
+  if (( on_default && commits_ahead > 0 )); then
+    # Create the new branch at current HEAD (includes the commits).
+    git branch "$name"
+    # Walk the default branch back to match upstream.
+    git reset --hard @{upstream}
+    # Switch to the new branch.
+    git checkout "$name"
+  else
+    git checkout -b "$name" $@
+  fi
 }
