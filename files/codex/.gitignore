@@ -3,6 +3,8 @@
 /sessions/
 /shell_snapshots/
 /tmp/
+/cache/
+/.tmp/
 .personality_migration
 auth.json
 history.jsonl
