@@ -17,7 +17,9 @@
     "~/.zenv_apikey_github_ro",
     "~/.zenv_apikey_github_ro_plus_w_issues_prs"
   ],
-  "mounts_rw": [],
+  "mounts_rw": [
+    "~/Code/conductor"
+  ],
   "env": [
     "XDG_CONFIG_HOME"
   ],

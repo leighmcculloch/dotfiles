@@ -2,4 +2,6 @@
 
 set -o nounset
 
-silo claude -- "$@"
+echo "$(date -u '+%Y-%m-%dT%H:%M:%SZ') conductor-claude $@" >> "$HOME/.conductor.log"
+
+silo -q --no-tty claude -- "$@"
