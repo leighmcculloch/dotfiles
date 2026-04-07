@@ -235,6 +235,25 @@ function cdmain() {
   cd "$(git rev-parse --git-common-dir | xargs dirname)"
 }
 alias grbs="git rebase --exec 'git commit --amend --no-edit -n -S' -i"
+function gpm() {
+  local main=$(git_main_branch)
+  # Check if main is checked out in a worktree
+  local wt=$(git worktree list --porcelain | awk -v b="$main" '/^worktree /{wt=$2} /^branch refs\/heads\//{if ($2 == "refs/heads/"b) print wt}')
+  if [[ -n "$wt" ]]; then
+    # Check if that worktree has a dirty working tree
+    if ! git -C "$wt" diff --quiet 2>/dev/null || ! git -C "$wt" diff --cached --quiet 2>/dev/null; then
+      echo "gpm: $main is checked out at $wt and has uncommitted changes" >&2
+      return 1
+    fi
+  fi
+  git config receive.denyCurrentBranch ignore
+  git push . HEAD:$main
+  git config --unset receive.denyCurrentBranch
+  # Reset the worktree if main was checked out somewhere
+  if [[ -n "$wt" ]]; then
+    git -C "$wt" reset --hard $main
+  fi
+}
 
 # gh aliases
 alias ghco="gh co"
