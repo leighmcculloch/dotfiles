@@ -2,5 +2,5 @@
 
 echo "$(date -u '+%Y-%m-%dT%H:%M:%SZ') conductor-codex $*" >> "$HOME/.conductor.log"
 
-silo codex -- "$@" >>"$HOME/.conductor.log" 2>&1
+silo --verbose --no-tty=false codex -- "$@" >>"$HOME/.conductor.log" 2>&1
 echo "$(date -u '+%Y-%m-%dT%H:%M:%SZ') conductor-codex exit=$?" >> "$HOME/.conductor.log"
