@@ -333,8 +333,10 @@ function {
 
   git worktree prune
   if git show-ref --verify --quiet "refs/heads/$branch"; then
-    git worktree add "$dir" "$branch"
+    git worktree add "$dir" "$branch" >&2
   else
-    git worktree add -b "$branch" "$dir"
+    git worktree add -b "$branch" "$dir" >&2
   fi
+
+  printf '%s\n' "$dir"
 } "$@"

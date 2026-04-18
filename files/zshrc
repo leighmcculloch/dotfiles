@@ -224,7 +224,12 @@ alias gsl="git stash list"
 alias gski="git stash --keep-index"
 alias gupp="gup && gp"
 alias gwa="git worktree add"
-alias gwau='() { command gwau "$1" && cd "../${PWD##*/}-$1" ; }'
+function gwau() {
+  local dir
+
+  dir="$(command gwau "$@")" || return $?
+  cd "$dir"
+}
 alias gwr="git worktree remove"
 alias gwl="git worktree list"
 alias gwp="git worktree prune"
