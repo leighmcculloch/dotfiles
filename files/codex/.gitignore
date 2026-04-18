@@ -5,6 +5,11 @@
 /tmp/
 /cache/
 /.tmp/
+/ambient-suggestions/
+/sqlite/
+/vendor_imports/
+/installation_id
+.codex-global-state.json
 .personality_migration
 auth.json
 history.jsonl
