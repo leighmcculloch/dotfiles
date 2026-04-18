@@ -45,19 +45,25 @@ function {
     return 1
   fi
 
+  local diff
+  diff="$(git diff --staged)"
+  local max_chars=10000
+  if (( ${#diff} > max_chars )); then
+    diff="$(git diff --staged --stat)
+
+[full diff omitted (${#diff} chars); showing stat summary only]"
+  fi
+
   local prompt="You are a senior software engineer.
 
-Run 'git diff --staged' to see what has changed. Then suggest a concise commit message that says in present tense with imperative mood what has changed without saying why (max 50 characters).
+Suggest a concise commit message that says in present tense with imperative mood what has changed without saying why (max 50 characters).
 
 Reply only with the commit message, nothing else. Do not use convention commit format. Start the commit message with a lower case letter and do not end with a full stop. Avoid generic phrases.
 
-Branch: ${branch}"
+Branch: ${branch}
 
-  # Detect MDM enrollment
-  local mdm_enrolled=0
-  if profiles status -type enrollment 2>/dev/null | grep -q "Yes"; then
-    mdm_enrolled=1
-  fi
+Staged diff:
+${diff}"
 
   local ai="gemma"
 
