@@ -59,13 +59,7 @@ Branch: ${branch}"
     mdm_enrolled=1
   fi
 
-  local ai=""
-  if (( mdm_enrolled )); then
-    #ai="opencode run -m github-copilot/claude-opus-4.6"
-    ai="claude --model claude-opus-4-6 --effort medium -p"
-  else
-    ai="claude --model claude-opus-4-6 --effort medium -p"
-  fi
+  local ai="gemma"
 
   printf "○ %s\n" "$ai"
   local start_time=$(gdate +%s%6N)
