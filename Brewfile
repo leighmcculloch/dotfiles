@@ -82,8 +82,10 @@ if OS.mac?
 
   # AI desktop tools
   # cask "lm-studio" - unused at the moment
-  cask "claude"
   cask "voiceink"
+  cask "claude"
+  cask "chatgpt"
+  cask "codex-app"
 
   # AI CLI tools
   brew "container"
