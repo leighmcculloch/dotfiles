@@ -146,7 +146,7 @@ fi
 # general aliases
 alias scratch="cd ~/Code/scratch/"
 alias l="eza -lah --git-repos --ignore-glob='.DS_Store'"
-alias ll="eza -lah --no-user --no-time --git-repos --ignore-glob='.DS_Store'"
+alias ll="eza -lah --no-user --no-time --no-filesize --no-permissions --classify=always --git-repos --ignore-glob='.DS_Store'"
 alias p="source ~/.zenv_apikey_perplexity && deno run --allow-env=PERPLEXITY_API_KEY --allow-net=api.perplexity.ai:443 jsr:@leigh/perplexity-cli"
 function caff() {
   mkdir -p /tmp/caffeinate
