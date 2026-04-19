@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# CLI Approach:
+# To import the model first:
+#   litert-lm import --from-huggingface-repo=litert-community/gemma-4-E2B-it-litert-lm gemma-4-E2B-it.litertlm
+# litert-lm run gemma-4-E2B-it.litertlm --prompt="$*"
+
+# LM-Studio Approach:
+curl -sS http://localhost:1234/api/v1/chat \
+  -H "Content-Type: application/json" \
+  -d "$(jq -n --arg input "$*" '{
+    model: "gemma-4-e2b-it-mlx",
+    system_prompt: "You are a senior software engineer.",
+    input: $input
+  }')" \
+  | jq -r '[.output[] | select(.type == "message") | .content] | join("\n")'
