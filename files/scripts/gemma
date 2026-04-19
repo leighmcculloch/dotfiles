@@ -10,7 +10,7 @@ set -euo pipefail
 curl -sS http://localhost:1234/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d "$(jq -n --arg input "$*" '{
-    model: "gemma-4-e2b-it-mlx",
+    model: "gemma-4-e2b-it-mlx@4bit",
     messages: [
       { role: "system", content: "You are a senior software engineer." },
       { role: "user", content: $input }
