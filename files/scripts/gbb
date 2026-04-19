@@ -4,6 +4,11 @@ set -o nounset
 export SCRIPT=gbb
 
 function {
+  local git_diff="git diff"
+  if command -v rtk >/dev/null 2>&1; then
+    git_diff="rtk git diff"
+  fi
+
   local branches="${${$(git branch --all --format='%(refname:short)' | jq -R -s '.')%\"}#\"}"
   local current_branch="$(git rev-parse --abbrev-ref HEAD)"
   local default_branch="$(gh repo view --json defaultBranchRef --jq .defaultBranchRef.name)"
@@ -18,37 +23,41 @@ function {
   # On default branch with commits ahead of upstream: move commits to a new branch.
   if (( on_default && commits_ahead > 0 )); then
     local diff_source="@{upstream}..HEAD"
-  elif ! git diff HEAD --quiet; then
+  elif ! ${=git_diff} --staged --quiet; then
+    local diff_source="--staged"
+  elif ! ${=git_diff} HEAD --quiet; then
     local diff_source="HEAD"
   else
     echo "No changes detected in working directory"
     return 1
   fi
 
-  # Detect MDM enrollment
-  local mdm_enrolled=0
-  if profiles status -type enrollment 2>/dev/null | grep -q "Yes"; then
-    mdm_enrolled=1
+  local diff
+  diff="$(${=git_diff} ${diff_source})"
+  local max_chars=10000
+  if (( ${#diff} > max_chars )); then
+    diff="$(${=git_diff} ${diff_source} --stat)
+
+[full diff omitted (${#diff} chars); showing stat summary only]"
   fi
 
-  local ai=""
-  if (( mdm_enrolled )); then
-    #ai="opencode run -m github-copilot/claude-opus-4.6"
-    ai="claude --model claude-sonnet-4-6 --effort low -p"
-  else
-    ai="claude --model claude-sonnet-4-6 --effort low -p"
-  fi
+  local prompt="You are a senior software engineer.
 
-  local diff_cmd="git diff ${diff_source}"
-  printf "○ %s\n" "$ai"
-  local start_time=$(gdate +%s%6N)
-  local name="$(${=ai} -p "You are a senior software engineer.
-
-Run '${diff_cmd}' to see what has changed. Then suggest a concise, kebab-case branch name that describes the changes (max 5 words).
+Suggest a concise, kebab-case branch name that describes the changes (max 5 words).
 
 Reply only with the branch name, nothing else.
 
-Do not use any of these names: ${branches}." | tr '[:upper:] ' '[:lower:]-')"
+Do not use any of these names: ${branches}.
+
+Diff:
+${diff}"
+
+  echo "$prompt" >&2
+
+  local ai="gemma"
+  printf "○ %s\n" "$ai"
+  local start_time=$(gdate +%s%6N)
+  local name="$(${=ai} "$prompt" | tr '[:upper:] ' '[:lower:]-')"
   local end_time=$(gdate +%s%6N)
   local elapsed_us=$((end_time - start_time))
   local elapsed_s=$(printf '%d.%06d' $((elapsed_us / 1000000)) $((elapsed_us % 1000000)))

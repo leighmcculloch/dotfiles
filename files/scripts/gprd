@@ -159,8 +159,13 @@ function {
     head_ref="${push_owner}:${current_branch}"
   fi
 
+  local git_diff="git diff"
+  if command -v rtk >/dev/null 2>&1; then
+    git_diff="rtk git diff"
+  fi
+
   # Check for changes between base branch and HEAD
-  if git diff ${base_branch}..HEAD --quiet; then
+  if ${=git_diff} ${base_branch}..HEAD --quiet; then
     echo "No changes detected in working directory"
     return 1
   fi
@@ -212,7 +217,7 @@ function {
   
   local prompt="You are a senior software engineer.
 
-Run 'git diff ${base_branch}..HEAD' to see what has changed and 'git log ${base_branch}..HEAD' to see the commit log. Then suggest a concise pull request title (max 50 characters) and description, where the description is separated into two sections. Use imperative mood, which means do not lead with a plural. e.g. Upgrade vs upgrades. Enable vs enables. Add vs adds. Be direct, eliminate filler words and phrases. Think like a journalist.
+Run '${git_diff} ${base_branch}..HEAD' to see what has changed. Then suggest a concise pull request title (max 50 characters) and description, where the description is separated into two sections. Use imperative mood, which means do not lead with a plural. e.g. Upgrade vs upgrades. Enable vs enables. Add vs adds. Be direct, eliminate filler words and phrases. Think like a journalist.
 
 The first section is under the heading \"What\" and describes what has changed. The second section is under the heading \"Why\" and describes why the change is being made. Be concise with why, and avoid generic statements.
 
@@ -221,8 +226,6 @@ Start the title with a capital letter but do not end with a full stop. Use full 
 If you need clarity to write a better description, you may include specific pointed questions in the questions field. Do not ask general questions like \"why was this change made?\" - instead ask specific questions like \"Is X intended to replace Y, or work alongside it?\" or \"Does this change affect Z?\". Only ask if truly needed.
 
 If the context includes an \"additional_context\" field, it contains developer-provided notes, context, or a pre-prepared PR description. Use this to inform the title and description. If it contains a full PR description, use it as a starting point and refine it based on the actual diff.
-
-Note: The commit log may contain implementation details, experimentation, and multiple attempts. Be critical about whether it represents the intent of the final change or just artifacts of the development process.
 
 Context:
 ${context_json}"

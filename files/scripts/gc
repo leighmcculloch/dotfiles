@@ -36,9 +36,14 @@ function {
     return
   fi
 
+  local git_diff="git diff"
+  if command -v rtk >/dev/null 2>&1; then
+    git_diff="rtk git diff"
+  fi
+
   local branch="${${$(git branch --format='%(refname:short)' --show-current | jq -R -s '.')%\"}#\"}"
 
-  if ! git diff --staged --quiet; then
+  if ! ${=git_diff} --staged --quiet; then
     :
   else
     echo "No staged changes"
@@ -46,10 +51,10 @@ function {
   fi
 
   local diff
-  diff="$(git diff --staged)"
+  diff="$(${=git_diff} --staged)"
   local max_chars=10000
   if (( ${#diff} > max_chars )); then
-    diff="$(git diff --staged --stat)
+    diff="$(${=git_diff} --staged --stat)
 
 [full diff omitted (${#diff} chars); showing stat summary only]"
   fi
