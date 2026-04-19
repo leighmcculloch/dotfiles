@@ -20,26 +20,34 @@ function {
     commits_ahead="$(git rev-list --count @{upstream}..HEAD 2>/dev/null || echo 0)"
   fi
 
+  local diff_source=""
   # On default branch with commits ahead of upstream: move commits to a new branch.
   if (( on_default && commits_ahead > 0 )); then
-    local diff_source="@{upstream}..HEAD"
+    diff_source="@{upstream}..HEAD"
   elif ! ${=git_diff} --staged --quiet; then
-    local diff_source="--staged"
+    diff_source="--staged"
   elif ! ${=git_diff} HEAD --quiet; then
-    local diff_source="HEAD"
-  else
-    echo "No changes detected in working directory"
-    return 1
+    diff_source="HEAD"
   fi
 
-  local diff
-  diff="$(${=git_diff} ${diff_source})"
-  local max_chars=10000
-  local diff_len=${#diff}
-  if (( diff_len > max_chars )); then
-    diff="${diff:0:$max_chars}
+  local diff=""
+  if [[ -n "$diff_source" ]]; then
+    diff="$(${=git_diff} ${diff_source})"
+    local max_chars=10000
+    local diff_len=${#diff}
+    if (( diff_len > max_chars )); then
+      diff="${diff:0:$max_chars}
 
 [diff truncated at ${max_chars} of ${diff_len} chars]"
+    fi
+  fi
+
+  local first_ask="$(claude-transcript 0 2>/dev/null || true)"
+  local last_ask="$(claude-transcript -1 2>/dev/null || true)"
+
+  if [[ -z "$diff" && -z "$first_ask" && -z "$last_ask" ]]; then
+    echo "No changes detected and no transcript context available"
+    return 1
   fi
 
   local prompt="You are a senior software engineer.
@@ -50,15 +58,19 @@ Reply only with the branch name, nothing else.
 
 Do not use any of these names: ${branches}.
 
+Original user request:
+${first_ask}
+
+Latest user request:
+${last_ask}
+
 Diff:
 ${diff}"
-
-  echo "$prompt" >&2
 
   local ai="gemma"
   printf "○ %s\n" "$ai"
   local start_time=$(gdate +%s%6N)
-  local name="$(${=ai} "$prompt" | tr '[:upper:] ' '[:lower:]-')"
+  local name="$(${=ai} "$prompt" 2>/dev/null | tr '[:upper:] ' '[:lower:]-' | awk 'NF' | head -1)"
   local end_time=$(gdate +%s%6N)
   local elapsed_us=$((end_time - start_time))
   local elapsed_s=$(printf '%d.%06d' $((elapsed_us / 1000000)) $((elapsed_us % 1000000)))
@@ -71,14 +83,20 @@ ${diff}"
 
   name="$(gum input --width 50 --char-limit 50 --prompt '| ' --value "$name")" || return $?
 
+  local previous_upstream="$(git rev-parse --abbrev-ref --symbolic-full-name @{u} 2>/dev/null || true)"
+
   if (( on_default && commits_ahead > 0 )); then
     # Create the new branch at current HEAD (includes the commits).
-    git branch "$name"
+    git branch --no-track "$name"
     # Walk the default branch back to match upstream.
     git reset --hard @{upstream}
     # Switch to the new branch.
     git checkout "$name"
   else
-    git checkout -b "$name" $@
+    git checkout -b "$name" --no-track $@
+  fi
+
+  if [[ -n "$previous_upstream" ]]; then
+    git branch --set-upstream-to="$previous_upstream" "$name"
   fi
 }
