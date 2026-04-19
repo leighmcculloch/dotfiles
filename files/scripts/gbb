@@ -74,7 +74,7 @@ ${diff}"
     return 1
   fi
 
-  local name="$(gum input --width 50 --char-limit 50 --prompt '| ' --value "$name")"
+  name="$(gum input --width 50 --char-limit 50 --prompt '| ' --value "$name")" || return $?
 
   if (( on_default && commits_ahead > 0 )); then
     # Create the new branch at current HEAD (includes the commits).

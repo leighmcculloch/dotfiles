@@ -102,7 +102,7 @@ ${diff}"
   fi
 
   if (( yes == 0 )); then
-    message="$(gum write --width 80 --char-limit 99999 --prompt '| ' --value "$message")"
+    message="$(gum write --width 80 --char-limit 99999 --prompt '| ' --value "$message")" || return $?
   fi
 
   if [[ -z "$message" ]]; then
