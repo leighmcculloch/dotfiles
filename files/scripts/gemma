@@ -10,7 +10,7 @@ set -euo pipefail
 curl -sS http://localhost:1234/api/v1/chat \
   -H "Content-Type: application/json" \
   -d "$(jq -n --arg input "$*" '{
-    model: "google/gemma-4-e2b",
+    model: "gemma-4-e2b-it-mlx",
     system_prompt: "You are a senior software engineer.",
     input: $input
   }')" \
