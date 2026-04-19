@@ -1,0 +1,59 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+encoded="$(pwd | tr '/.' '--')"
+proj="${HOME}/.claude/projects/${encoded}"
+
+files=()
+while IFS= read -r f; do files+=("$f"); done < <(ls -tr "$proj"/*.jsonl 2>/dev/null || true)
+
+if (( ${#files[@]} == 0 )); then
+  echo "No transcripts for $(pwd)" >&2
+  exit 1
+fi
+
+messages=()
+for f in "${files[@]}"; do
+  while IFS= read -r line; do
+    messages+=("$line")
+  done < <(jq -r '
+    select(.type == "user")
+    | select(.isMeta != true)
+    | .message.content
+    | if type == "string" then .
+      elif type == "array" then
+        (map(select(.type == "text")
+             | .text
+             | select(startswith("<system-reminder>") | not)
+             | select(startswith("<user-prompt-submit-hook>") | not)
+             | select(startswith("<command-name>") | not)
+             | select(startswith("[Request interrupted by user") | not))
+         | join("\n"))
+      else "" end
+    | select(. != "")
+    | @base64
+  ' "$f")
+done
+
+count=${#messages[@]}
+if (( count == 0 )); then
+  echo "No human messages found" >&2
+  exit 1
+fi
+
+indices=("$@")
+(( ${#indices[@]} == 0 )) && indices=(-1)
+
+for i in "${indices[@]}"; do
+  if (( i < 0 )); then
+    idx=$(( count + i ))
+  else
+    idx=$i
+  fi
+  if (( idx < 0 || idx >= count )); then
+    echo "Index $i out of range (0..$((count-1)) or -1..-$count)" >&2
+    exit 1
+  fi
+  printf '%s\n' "${messages[$idx]}" | base64 --decode
+  printf '\n'
+done
