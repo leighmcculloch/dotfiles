@@ -22,6 +22,7 @@ brew "zstd"
 brew "prettier"
 brew "mermaid-cli"
 brew "presenterm"
+brew "eza"
 
 brew "rustup"
 brew "sccache"
