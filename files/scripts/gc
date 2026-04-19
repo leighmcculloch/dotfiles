@@ -50,8 +50,6 @@ function {
     return 1
   fi
 
-  local stat
-  stat="$(${=git_diff} --staged --stat)"
   local diff
   diff="$(${=git_diff} --staged)"
   local max_chars=10000
@@ -69,9 +67,6 @@ Suggest a concise commit message that says in present tense with imperative mood
 Reply only with the commit message, nothing else. Do not use convention commit format. Start the commit message with a lower case letter and do not end with a full stop. Avoid generic phrases.
 
 Branch: ${branch}
-
-Stat:
-${stat}
 
 Staged diff:
 ${diff}"
