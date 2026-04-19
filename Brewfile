@@ -81,7 +81,7 @@ if OS.mac?
   brew "flyctl"
 
   # AI desktop tools
-  # cask "lm-studio" - unused at the moment
+  cask "lm-studio" - unused at the moment
   cask "voiceink"
   cask "claude"
   cask "chatgpt"
