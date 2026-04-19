@@ -32,13 +32,16 @@ function {
     return 1
   fi
 
+  local stat
+  stat="$(${=git_diff} ${diff_source} --stat)"
   local diff
   diff="$(${=git_diff} ${diff_source})"
   local max_chars=10000
-  if (( ${#diff} > max_chars )); then
-    diff="$(${=git_diff} ${diff_source} --stat)
+  local diff_len=${#diff}
+  if (( diff_len > max_chars )); then
+    diff="${diff:0:$max_chars}
 
-[full diff omitted (${#diff} chars); showing stat summary only]"
+[diff truncated at ${max_chars} of ${diff_len} chars]"
   fi
 
   local prompt="You are a senior software engineer.
@@ -48,6 +51,9 @@ Suggest a concise, kebab-case branch name that describes the changes (max 5 word
 Reply only with the branch name, nothing else.
 
 Do not use any of these names: ${branches}.
+
+Stat:
+${stat}
 
 Diff:
 ${diff}"
