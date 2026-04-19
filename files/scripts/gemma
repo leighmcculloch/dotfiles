@@ -7,11 +7,13 @@ set -euo pipefail
 # litert-lm run gemma-4-E2B-it.litertlm --prompt="$*"
 
 # LM-Studio Approach:
-curl -sS http://localhost:1234/api/v1/chat \
+curl -sS http://localhost:1234/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d "$(jq -n --arg input "$*" '{
     model: "gemma-4-e2b-it-mlx",
-    system_prompt: "You are a senior software engineer.",
-    input: $input
+    messages: [
+      { role: "system", content: "You are a senior software engineer." },
+      { role: "user", content: $input }
+    ]
   }')" \
-  | jq -r '[.output[] | select(.type == "message") | .content] | join("\n")'
+  | jq -r '.choices[0].message.content'
