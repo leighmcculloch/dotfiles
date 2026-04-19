@@ -7,13 +7,25 @@ set -euo pipefail
 # litert-lm run gemma-4-E2B-it.litertlm --prompt="$*"
 
 # LM-Studio Approach:
-curl -sS http://localhost:1234/v1/chat/completions \
+curl -sS http://localhost:1234/api/v1/chat \
   -H "Content-Type: application/json" \
   -d "$(jq -n --arg input "$*" '{
     model: "gemma-4-e2b-it-mlx@4bit",
-    messages: [
-      { role: "system", content: "You are a senior software engineer." },
-      { role: "user", content: $input }
+    system_prompt: "You are a senior software engineer. Be very concise. Use exa mcp to websearch. Use grep to find code on github. Use grep to find code on github.",
+    input: $input,
+    integrations: [
     ]
   }')" \
-  | jq -r '.choices[0].message.content'
+  | jq -r '.output[] | select(.type=="message") | .content'
+
+# Integrations:
+#     {
+#       type: "ephemeral_mcp",
+#       server_label: "exa",
+#       server_url: "https://mcp.exa.ai/mcp"
+#     },
+#     {
+#       type: "ephemeral_mcp",
+#       server_label: "grep",
+#       server_url: "https://mcp.grep.app"
+#     }
