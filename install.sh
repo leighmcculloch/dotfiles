@@ -81,12 +81,12 @@ nvim +PlugInstall +qall
 echo "$fg[green]Critical install complete.$reset_color"
 
 # install additional packages via brew
-echo "$fg[cyan]Installing additional programs with brew...$reset_color"
+echo "$fg[cyan]Installing additional programs with brew (ignoring failures)...$reset_color"
 if [ -z "${HOMEBREW_GITHUB_API_TOKEN:-}" ] && [ ! -t 0 ]; then
   # disable attestation when non-interactive and no GitHub token available
   export HOMEBREW_NO_VERIFY_ATTESTATIONS=1
 fi
-brew bundle install --no-upgrade
+brew bundle install --no-upgrade || true
 
 # install additional packages
 npm install -g opencode-ai
