@@ -91,7 +91,7 @@ if OS.mac?
   # AI CLI tools
   brew "container"
   # brew "opencode" - updated too infrequently, must be installed with npm
-  cask "claude-code"
+  cask "claude-code@latest"
   # cask "copilot-cli" - unused at the moment
   brew "mistral-vibe"
 
