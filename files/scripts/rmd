@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+
+set -o nounset
+
+dir="${1:-$PWD}"
+
+gum confirm "Remove $dir?" --default=No || exit 1
+
+target=$(realpath "$dir")
+
+panes_to_kill=()
+current_pane=""
+kill_current=0
+
+if [ -n "${TMUX:-}" ]; then
+    current_pane=$(tmux display-message -p '#{pane_id}')
+    while IFS=$'\t' read -r pane_id pane_path; do
+        resolved=$(realpath "$pane_path" 2>/dev/null || echo "$pane_path")
+        if [ "$resolved" = "$target" ] || [[ "$resolved" == "$target"/* ]]; then
+            if [ "$pane_id" = "$current_pane" ]; then
+                kill_current=1
+            else
+                panes_to_kill+=("$pane_id")
+            fi
+        fi
+    done < <(tmux list-panes -s -F '#{pane_id}'$'\t''#{pane_current_path}')
+fi
+
+rm -fr "$target"
+
+for pane in ${panes_to_kill[@]+"${panes_to_kill[@]}"}; do
+    tmux kill-pane -t "$pane"
+done
+
+if [ "$kill_current" -eq 1 ]; then
+    tmux kill-pane -t "$current_pane"
+fi

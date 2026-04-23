@@ -1,6 +1,0 @@
-#!/usr/bin/env bash
-
-set -o nounset
-
-gum confirm "Remove $PWD?" --default=No || exit 1
-rm -fr "$PWD"
