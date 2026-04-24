@@ -1,0 +1,42 @@
+#!/bin/sh
+# Print the color-coded short repo name for a path (hashed from the origin
+# URL so same-repo windows share a color), followed by a trailing space so
+# it sits cleanly before the window index in the tmux status bar. Outputs
+# nothing when the path is not in a git repo with an "origin" remote, or
+# when the previous window in the session shares the same origin — so runs
+# of adjacent same-repo windows collapse to a single labeled group.
+#
+# Usage: tmux-window-repo <path> [session] [index] [reset-fg]
+#   <path>     the window's current directory
+#   <session>  tmux session name (for previous-window lookup)
+#   <index>    this window's index in the session
+#   <reset-fg> tmux color to restore after the colored name (e.g. "white")
+
+path="$1"
+session="$2"
+index="$3"
+reset_fg="${4:-white}"
+[ -n "$path" ] && [ -d "$path" ] || exit 0
+
+origin=$(git -C "$path" config --get remote.origin.url 2>/dev/null)
+[ -n "$origin" ] || exit 0
+
+if [ -n "$session" ] && [ -n "$index" ] && [ "$index" -gt 0 ]; then
+  prev_index=$((index - 1))
+  prev_path=$(tmux list-windows -t "$session" -F '#{window_index} #{pane_current_path}' 2>/dev/null \
+    | awk -v i="$prev_index" '$1==i{ $1=""; sub(/^ /, ""); print }')
+  if [ -n "$prev_path" ]; then
+    prev_origin=$(git -C "$prev_path" config --get remote.origin.url 2>/dev/null)
+    [ "$prev_origin" = "$origin" ] && exit 0
+  fi
+fi
+
+name=${origin%.git}
+name=${name##*/}
+
+set -- 39 208 214 117 141 177 156 222 210 45 81 203 120 183 215
+hash=$(printf '%s' "$origin" | cksum | awk '{print $1}')
+idx=$((hash % $# + 1))
+eval "color=\${$idx}"
+
+printf '#[fg=colour%s]%s#[fg=%s] ' "$color" "$name" "$reset_fg"

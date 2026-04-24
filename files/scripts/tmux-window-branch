@@ -1,0 +1,20 @@
+#!/bin/sh
+# Print the git branch of a path (or the short SHA when on a detached HEAD).
+# Falls back to the path's basename when not in a git repo. Used as the
+# right-hand segment of the tmux window status.
+#
+# Usage: tmux-window-branch <path>
+
+path="$1"
+[ -n "$path" ] && [ -d "$path" ] || exit 0
+
+branch=$(git -C "$path" symbolic-ref --short HEAD 2>/dev/null)
+if [ -z "$branch" ]; then
+  branch=$(git -C "$path" rev-parse --short HEAD 2>/dev/null)
+fi
+
+if [ -n "$branch" ]; then
+  printf '%s' "$branch"
+else
+  printf '%s' "${path##*/}"
+fi

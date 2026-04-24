@@ -1,0 +1,50 @@
+#!/bin/sh
+# Reorder windows in a tmux session so that windows from the same git repo
+# (by remote origin URL) are adjacent. Preserves the active window and pane,
+# the first-appearance order of each repo group, and the relative order of
+# windows within each group. No-op if the windows are already in target
+# order, so it's safe to invoke on every directory change.
+#
+# Usage: tmux-regroup-windows [session]
+
+session="${1:-$(tmux display-message -p '#S' 2>/dev/null)}"
+[ -n "$session" ] || exit 0
+
+mapping=$(tmux list-windows -t "$session" -F '#{window_index} #{window_id} #{pane_current_path}' 2>/dev/null)
+[ -n "$mapping" ] || exit 0
+
+target_ids=$(
+  echo "$mapping" | while read -r idx id path; do
+    origin=$(git -C "$path" config --get remote.origin.url 2>/dev/null)
+    [ -n "$origin" ] || origin="path:$path"
+    printf '%s\t%s\t%s\n' "$idx" "$id" "$origin"
+  done | awk '
+    BEGIN { OFS="\t" }
+    { if (!($3 in gnum)) gnum[$3] = ++ng
+      printf "%06d\t%010d\t%s\n", gnum[$3], $1, $2 }
+  ' | sort | awk '{print $3}'
+)
+
+current_ids=$(echo "$mapping" | awk '{print $2}')
+[ "$current_ids" = "$target_ids" ] && exit 0
+
+active_id=$(tmux display-message -p -t "$session" '#{window_id}')
+base=$(tmux display-message -p -t "$session" '#{base-index}')
+max_idx=$(tmux list-windows -t "$session" -F '#{window_index}' | sort -n | tail -1)
+tmp_start=$((max_idx + 1))
+
+# Two-pass move via unique temporary indices to avoid collisions. -d keeps
+# the active window selection stable across each move.
+i=$tmp_start
+for id in $target_ids; do
+  tmux move-window -d -s "$id" -t "$session:$i" 2>/dev/null
+  i=$((i + 1))
+done
+
+i=$base
+for id in $target_ids; do
+  tmux move-window -d -s "$id" -t "$session:$i" 2>/dev/null
+  i=$((i + 1))
+done
+
+tmux select-window -t "$active_id" 2>/dev/null
