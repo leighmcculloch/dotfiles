@@ -298,7 +298,8 @@
   },
   "statusLine": {
     "type": "command",
-    "command": "/Users/leighmcculloch/.claude/statusline-command.sh"
+    "command": "/Users/leighmcculloch/.claude/statusline-command.sh",
+    "refreshInterval": 10
   },
   "enabledPlugins": {
     "rust-analyzer-lsp@claude-plugins-official": true,

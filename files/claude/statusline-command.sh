@@ -78,10 +78,12 @@ if [ -n "$agent_name" ]; then
   model_display="${model_display} ${DIM}(${agent_name})${RESET}"
 fi
 
-# Build branch display, slotted between cwd and the stats columns.
-branch_display=""
+# Leading slot: branch when we have one, otherwise the cwd takes its place so
+# the top line is never empty. The cwd is always repeated on the second line.
 if [ -n "$branch" ]; then
-  branch_display=" ${PURPLE}${branch}${RESET}"
+  leading_display="${PURPLE}${branch}${RESET}"
+else
+  leading_display="${BLUE}${cwd}${RESET}"
 fi
 
 # Build usage display
@@ -90,5 +92,10 @@ if [ -n "$five_hour_pct" ] && [ -n "$seven_day_pct" ]; then
   usage_display=" ${DIM}•${RESET} ${DIM}5h:${RESET}${five_hour_pct}% ${DIM}7d:${RESET}${seven_day_pct}%"
 fi
 
-# Output statusline
-printf "${BLUE}%s${RESET}%b ${DIM}•${RESET} ${GREEN}+%s${RESET} ${RED}-%s${RESET} ${DIM}•${RESET} ${DIM}%s${RESET} ${DIM}(%s)${RESET} ${DIM}•${RESET} %b ${DIM}•${RESET} %b ${DIM}•${RESET} ${DIM}%s${RESET}%b" "$cwd" "$branch_display" "$lines_added" "$lines_removed" "$duration_formatted" "$api_duration_formatted" "$model_display" "$context_display" "$([ "$cost_usd" = "-" ] && echo "-" || echo "\$$cost_usd")" "$usage_display"
+# Output statusline. Second line carries the cwd under the branch/stats row.
+# When no branch is known the leading slot already holds the cwd, so skip
+# the second line to avoid duplicating it.
+printf "%b ${DIM}•${RESET} ${GREEN}+%s${RESET} ${RED}-%s${RESET} ${DIM}•${RESET} ${DIM}%s${RESET} ${DIM}(%s)${RESET} ${DIM}•${RESET} %b ${DIM}•${RESET} %b ${DIM}•${RESET} ${DIM}%s${RESET}%b" "$leading_display" "$lines_added" "$lines_removed" "$duration_formatted" "$api_duration_formatted" "$model_display" "$context_display" "$([ "$cost_usd" = "-" ] && echo "-" || echo "\$$cost_usd")" "$usage_display"
+if [ -n "$branch" ]; then
+  printf "\n${BLUE}%s${RESET}" "$cwd"
+fi
