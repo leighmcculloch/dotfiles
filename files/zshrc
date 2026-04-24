@@ -129,7 +129,7 @@ if (( $+commands[tmux] )); then
   # Auto-start tmux in ghostty or SSH
   if [[ -z "$TMUX" && ("$TERM_PROGRAM" == "ghostty" || -n "$SSH_CLIENT") ]]; then
     if [[ "$GHOSTTY_QUICK_TERMINAL" == "1" ]]; then
-      tmux attach -t popup 2>/dev/null || tmux new-session -s popup
+      tmux attach -t popup 2>/dev/null || tmux new-session -s popup -c ~/Code/scratch
     else
       tmux attach -t main 2>/dev/null || tmux new-session -s main
     fi
