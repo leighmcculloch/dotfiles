@@ -48,9 +48,17 @@ format_duration() {
 duration_formatted=$(format_duration "$duration_ms")
 api_duration_formatted=$(format_duration "$api_duration_ms")
 
-# Shorten paths with home directory to ~
+# Shorten paths with home directory to ~. The backslash keeps the tilde
+# literal in the replacement; without it, bash tilde-expands back to $HOME
+# and the substitution becomes a no-op.
+if [ "$cwd" != "-" ] && [ -n "${HOME:-}" ]; then
+  cwd="${cwd/#$HOME/\~}"
+fi
+
+# Current git branch, if the cwd is inside a repo.
+branch=""
 if [ "$cwd" != "-" ]; then
-  cwd="${cwd/#$HOME/~}"
+  branch=$(git -C "${cwd/#\~/$HOME}" rev-parse --abbrev-ref HEAD 2>/dev/null || true)
 fi
 
 # Build context display (red background if exceeds 200k tokens)
@@ -66,6 +74,12 @@ if [ -n "$agent_name" ]; then
   model_display="${model_display} ${DIM}(${agent_name})${RESET}"
 fi
 
+# Build branch display, slotted between cwd and the stats columns.
+branch_display=""
+if [ -n "$branch" ]; then
+  branch_display=" ${PURPLE}${branch}${RESET}"
+fi
+
 # Build usage display
 usage_display=""
 if [ -n "$five_hour_pct" ] && [ -n "$seven_day_pct" ]; then
@@ -73,4 +87,4 @@ if [ -n "$five_hour_pct" ] && [ -n "$seven_day_pct" ]; then
 fi
 
 # Output statusline
-printf "${BLUE}%s${RESET} ${DIM}•${RESET} ${GREEN}+%s${RESET} ${RED}-%s${RESET} ${DIM}•${RESET} ${DIM}%s${RESET} ${DIM}(%s)${RESET} ${DIM}•${RESET} %b ${DIM}•${RESET} %b ${DIM}•${RESET} ${DIM}%s${RESET}%b" "$cwd" "$lines_added" "$lines_removed" "$duration_formatted" "$api_duration_formatted" "$model_display" "$context_display" "$([ "$cost_usd" = "-" ] && echo "-" || echo "\$$cost_usd")" "$usage_display"
+printf "${BLUE}%s${RESET}%b ${DIM}•${RESET} ${GREEN}+%s${RESET} ${RED}-%s${RESET} ${DIM}•${RESET} ${DIM}%s${RESET} ${DIM}(%s)${RESET} ${DIM}•${RESET} %b ${DIM}•${RESET} %b ${DIM}•${RESET} ${DIM}%s${RESET}%b" "$cwd" "$branch_display" "$lines_added" "$lines_removed" "$duration_formatted" "$api_duration_formatted" "$model_display" "$context_display" "$([ "$cost_usd" = "-" ] && echo "-" || echo "\$$cost_usd")" "$usage_display"
