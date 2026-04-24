@@ -42,8 +42,8 @@ function {
     fi
   fi
 
-  local first_ask="$(claude-transcript 0 2>/dev/null || true)"
-  local last_ask="$(claude-transcript -1 2>/dev/null || true)"
+  local first_ask="${CLAUDE_PROMPT:-$(claude-transcript 0 2>/dev/null || true)}"
+  local last_ask="${CLAUDE_PROMPT:-$(claude-transcript -1 2>/dev/null || true)}"
 
   if [[ -z "$diff" && -z "$first_ask" && -z "$last_ask" ]]; then
     echo "No changes detected and no transcript context available"
@@ -67,11 +67,14 @@ ${last_ask}
 Diff:
 ${diff}"
 
+  local date_cmd="date"
+  command -v gdate >/dev/null 2>&1 && date_cmd="gdate"
+
   local ai="gemma"
   printf "○ %s\n" "$ai"
-  local start_time=$(gdate +%s%6N)
+  local start_time=$(${date_cmd} +%s%6N)
   local name="$(${=ai} "$prompt" 2>/dev/null | tr '[:upper:] ' '[:lower:]-' | awk 'NF' | head -1)"
-  local end_time=$(gdate +%s%6N)
+  local end_time=$(${date_cmd} +%s%6N)
   local elapsed_us=$((end_time - start_time))
   local elapsed_s=$(printf '%d.%06d' $((elapsed_us / 1000000)) $((elapsed_us % 1000000)))
   printf "\033[1A● %s (${elapsed_s}s)\033[K\n" "$ai"
@@ -80,6 +83,15 @@ ${diff}"
     echo "Error: Failed to get branch name"
     return 1
   fi
+
+  # Bump numeric suffix until the branch name is free.
+  local candidate="$name"
+  local i=2
+  while git show-ref --verify --quiet "refs/heads/$candidate" && (( i <= 99 )); do
+    candidate="${name}-${i}"
+    ((i++))
+  done
+  name="$candidate"
 
   name="$(gum input --width 50 --char-limit 50 --prompt '| ' --value "$name")" || return $?
 

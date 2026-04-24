@@ -283,6 +283,17 @@
           }
         ]
       }
+    ],
+    "UserPromptSubmit": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/first-message-create-branch.sh"
+          }
+        ]
+      }
     ]
   },
   "statusLine": {
