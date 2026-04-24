@@ -10,3 +10,9 @@ window-width = 128
 title = " "
 clipboard-read = allow
 clipboard-write = allow
+quick-terminal-position = center
+quick-terminal-autohide = true
+quick-terminal-size = 40%,80%
+keybind = global:ctrl+`=toggle_quick_terminal
+keybind = global:ctrl+==toggle_quick_terminal
+confirm-close-surface = false

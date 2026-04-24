@@ -128,7 +128,11 @@ fi
 if (( $+commands[tmux] )); then
   # Auto-start tmux in ghostty or SSH
   if [[ -z "$TMUX" && ("$TERM_PROGRAM" == "ghostty" || -n "$SSH_CLIENT") ]]; then
-    tmux attach 2>/dev/null || tmux new-session -s main
+    if [[ "$GHOSTTY_QUICK_TERMINAL" == "1" ]]; then
+      tmux attach -t popup 2>/dev/null || tmux new-session -s popup
+    else
+      tmux attach -t main 2>/dev/null || tmux new-session -s main
+    fi
   fi
   alias clear="tmux send-keys C-l \; send-keys -R \; clear-history"
 fi
