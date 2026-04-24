@@ -11,7 +11,7 @@ curl -sS http://${GEMMA_HOST:-localhost}:1234/api/v1/chat \
   -H "Content-Type: application/json" \
   -d "$(jq -n --arg input "$*" '{
     model: "gemma-4-e2b-it-mlx@4bit",
-    system_prompt: "You are a senior software engineer. Be very concise. Use exa mcp to websearch. Use grep to find code on github. Use grep to find code on github.",
+    system_prompt: "You are a senior software engineer. Be very concise.",
     input: $input,
     integrations: [
     ]
