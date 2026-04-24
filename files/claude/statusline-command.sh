@@ -48,17 +48,21 @@ format_duration() {
 duration_formatted=$(format_duration "$duration_ms")
 api_duration_formatted=$(format_duration "$api_duration_ms")
 
-# Shorten paths with home directory to ~. The backslash keeps the tilde
-# literal in the replacement; without it, bash tilde-expands back to $HOME
-# and the substitution becomes a no-op.
+# Shorten paths with home directory to ~. The tilde lives in a variable
+# because bare `~` in a parameter-expansion replacement is tilde-expanded
+# back to $HOME (making the substitution a no-op), and `\~` is preserved
+# literally on bash >=5.2 with patsub_replacement on (leaving a visible
+# backslash). A pre-expanded variable sidesteps both.
+tilde='~'
 if [ "$cwd" != "-" ] && [ -n "${HOME:-}" ]; then
-  cwd="${cwd/#$HOME/\~}"
+  cwd="${cwd/#$HOME/$tilde}"
 fi
 
-# Current git branch, if the cwd is inside a repo.
+# Current git branch, if the cwd is inside a repo. Re-expand the leading ~
+# so git sees a real path.
 branch=""
 if [ "$cwd" != "-" ]; then
-  branch=$(git -C "${cwd/#\~/$HOME}" rev-parse --abbrev-ref HEAD 2>/dev/null || true)
+  branch=$(git -C "${cwd/#$tilde/$HOME}" rev-parse --abbrev-ref HEAD 2>/dev/null || true)
 fi
 
 # Build context display (red background if exceeds 200k tokens)
