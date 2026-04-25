@@ -8,7 +8,9 @@
 /ambient-suggestions/
 /sqlite/
 /vendor_imports/
+/archived_sessions/
 /installation_id
+/automations/
 .codex-global-state.json
 .personality_migration
 auth.json
@@ -17,3 +19,4 @@ instructions.md
 *.sqlite*
 models_cache.json
 version.json
+session_index.jsonl
