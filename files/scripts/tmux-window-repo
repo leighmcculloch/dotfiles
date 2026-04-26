@@ -34,9 +34,4 @@ fi
 name=${origin%.git}
 name=${name##*/}
 
-set -- 39 208 214 117 141 177 156 222 210 45 81 203 120 183 215
-hash=$(printf '%s' "$origin" | cksum | awk '{print $1}')
-idx=$((hash % $# + 1))
-eval "color=\${$idx}"
-
-printf '#[fg=colour%s]%s#[fg=%s] ' "$color" "$name" "$reset_fg"
+printf '#[fg=#99d5fb]%s#[fg=%s] ' "$name" "$reset_fg"
