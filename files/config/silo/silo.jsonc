@@ -5,6 +5,10 @@
     "fly": {
       "app": "silovms",
       "region": "syd"
+    },
+    "namespace": {
+      "size": "m",
+      "site": "sjc1"
     }
   },
   "tool": "claude",
