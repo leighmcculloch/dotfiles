@@ -83,7 +83,7 @@ fi
 if [ -n "$branch" ]; then
   leading_display="${PURPLE}${branch}${RESET}"
 else
-  leading_display="${BLUE}${cwd}${RESET}"
+  leading_display="${BLUE}${cwd}${RESET} ${DIM}•${RESET} ${model_display}"
 fi
 
 # Build usage display
@@ -95,7 +95,7 @@ fi
 # Output statusline. Second line carries the cwd under the branch/stats row.
 # When no branch is known the leading slot already holds the cwd, so skip
 # the second line to avoid duplicating it.
-printf "%b ${DIM}•${RESET} ${GREEN}+%s${RESET} ${RED}-%s${RESET} ${DIM}•${RESET} ${DIM}%s${RESET} ${DIM}(%s)${RESET} ${DIM}•${RESET} %b ${DIM}•${RESET} %b ${DIM}•${RESET} ${DIM}%s${RESET}%b" "$leading_display" "$lines_added" "$lines_removed" "$duration_formatted" "$api_duration_formatted" "$model_display" "$context_display" "$([ "$cost_usd" = "-" ] && echo "-" || echo "\$$cost_usd")" "$usage_display"
+printf "%b ${DIM}•${RESET} ${GREEN}+%s${RESET} ${RED}-%s${RESET} ${DIM}•${RESET} ${DIM}%s${RESET} ${DIM}(%s)${RESET} ${DIM}•${RESET} %b ${DIM}•${RESET} ${DIM}%s${RESET}%b" "$leading_display" "$lines_added" "$lines_removed" "$duration_formatted" "$api_duration_formatted" "$context_display" "$([ "$cost_usd" = "-" ] && echo "-" || echo "\$$cost_usd")" "$usage_display"
 if [ -n "$branch" ]; then
-  printf "\n${BLUE}%s${RESET}" "$cwd"
+  printf "\n${BLUE}%s${RESET} ${DIM}•${RESET} %b" "$cwd" "$model_display"
 fi
