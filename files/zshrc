@@ -156,6 +156,7 @@ fi
 
 # general aliases
 alias code="cd ~/Code"
+alias dotfiles="cd ~/.dotfiles"
 alias scratch="cd ~/Code/scratch/"
 alias l="eza -lah --git-repos --ignore-glob='.DS_Store'"
 alias ll="eza -lah --no-user --no-time --no-filesize --no-permissions --classify=always --git-repos --ignore-glob='.DS_Store'"
