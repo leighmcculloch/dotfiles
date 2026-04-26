@@ -33,6 +33,11 @@
     "export GEMMA_HOST=host.docker.internal"
   ],
   "tools": {
+    "claude": {
+      "env": [
+        "ENABLE_CLAUDEAI_MCP_SERVERS=false"
+      ]
+    },
     "copilot": {
       "mounts_ro": [
         "~/.zenv_apikey_github_copilot"
