@@ -20,9 +20,7 @@
     "~/.dotfiles/files/scripts/claude-transcript",
     "~/.dotfiles/files/scripts/gemma"
   ],
-  "mounts_rw": [
-    "~/Code/conductor"
-  ],
+  "mounts_rw": [],
   "env": [
     "XDG_CONFIG_HOME"
   ],
