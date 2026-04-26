@@ -1,10 +1,15 @@
 #!/bin/sh
 # Print the color-coded short repo name for a path (hashed from the origin
-# URL so same-repo windows share a color), followed by a trailing space so
-# it sits cleanly before the window index in the tmux status bar. Outputs
-# nothing when the path is not in a git repo with an "origin" remote, or
-# when the previous window in the session shares the same origin — so runs
-# of adjacent same-repo windows collapse to a single labeled group.
+# URL so same-repo windows share a color), plus the leading spacing for
+# the window in the tmux status bar.
+#
+# Output rules:
+#   - First window of a repo group:  "  <name> "  (wider gap before the
+#     group, name, then a small gap to the index).
+#   - Continuation of the same repo: " "          (tight intra-group gap
+#     so adjacent same-repo branches feel grouped).
+#   - Non-repo window:                "  "         (treated as its own
+#     group, gets the wider gap).
 #
 # Usage: tmux-window-repo <path> [session] [index] [reset-fg]
 #   <path>     the window's current directory
@@ -16,10 +21,13 @@ path="$1"
 session="$2"
 index="$3"
 reset_fg="${4:-white}"
-[ -n "$path" ] && [ -d "$path" ] || exit 0
+[ -n "$path" ] && [ -d "$path" ] || { printf '  '; exit 0; }
 
 origin=$(git -C "$path" config --get remote.origin.url 2>/dev/null)
-[ -n "$origin" ] || exit 0
+if [ -z "$origin" ]; then
+  printf '  '
+  exit 0
+fi
 
 if [ -n "$session" ] && [ -n "$index" ] && [ "$index" -gt 0 ]; then
   prev_index=$((index - 1))
@@ -27,11 +35,14 @@ if [ -n "$session" ] && [ -n "$index" ] && [ "$index" -gt 0 ]; then
     | awk -v i="$prev_index" '$1==i{ $1=""; sub(/^ /, ""); print }')
   if [ -n "$prev_path" ]; then
     prev_origin=$(git -C "$prev_path" config --get remote.origin.url 2>/dev/null)
-    [ "$prev_origin" = "$origin" ] && exit 0
+    if [ "$prev_origin" = "$origin" ]; then
+      printf ' '
+      exit 0
+    fi
   fi
 fi
 
 name=${origin%.git}
 name=${name##*/}
 
-printf '#[fg=#99d5fb]%s#[fg=%s] ' "$name" "$reset_fg"
+printf '  #[fg=#99d5fb]%s#[fg=%s] ' "$name" "$reset_fg"

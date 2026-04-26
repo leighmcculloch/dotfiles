@@ -1,9 +1,10 @@
 #!/bin/sh
-# Reorder windows in a tmux session so that windows from the same git repo
-# (by remote origin URL) are adjacent. Preserves the active window and pane,
-# the first-appearance order of each repo group, and the relative order of
-# windows within each group. No-op if the windows are already in target
-# order, so it's safe to invoke on every directory change.
+# Reorder windows in a tmux session: non-repo windows come first, sorted
+# alphabetically by path; repo windows follow, sorted alphabetically by
+# repo name with windows from the same git repo (by remote origin URL)
+# grouped adjacently. Preserves the active window and pane and the
+# relative order of windows within each group. No-op if the windows are
+# already in target order, so it's safe to invoke on every directory change.
 #
 # Usage: tmux-regroup-windows [session]
 
@@ -19,10 +20,16 @@ target_ids=$(
     [ -n "$origin" ] || origin="path:$path"
     printf '%s\t%s\t%s\n' "$idx" "$id" "$origin"
   done | awk '
-    BEGIN { OFS="\t" }
-    { if (!($3 in gnum)) gnum[$3] = ++ng
-      printf "%06d\t%010d\t%s\n", gnum[$3], $1, $2 }
-  ' | sort | awk '{print $3}'
+    BEGIN { FS="\t"; OFS="\t" }
+    { if ($3 ~ /^path:/)
+        printf "0\t%s\t\t%010d\t%s\n", $3, $1, $2
+      else {
+        name = $3
+        sub(/\.git$/, "", name)
+        sub(/.*\//, "", name)
+        printf "1\t%s\t%s\t%010d\t%s\n", name, $3, $1, $2
+      } }
+  ' | sort | awk -F'\t' '{print $5}'
 )
 
 current_ids=$(echo "$mapping" | awk '{print $2}')
