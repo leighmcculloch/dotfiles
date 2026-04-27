@@ -253,6 +253,7 @@ function cdmain() {
   [[ -f "$toplevel/.git" ]] || { echo "cdmain: not a worktree" >&2; return 1; }
   cd "$(git rev-parse --git-common-dir | xargs dirname)"
 }
+alias cdm=cdmain
 alias grbs="git rebase --exec 'git commit --amend --no-edit -n -S' -i"
 function gpm() {
   local main=$(git_main_branch)
