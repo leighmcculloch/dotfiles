@@ -86,10 +86,19 @@ else
   leading_display="${BLUE}${cwd}${RESET} ${DIM}•${RESET} ${model_display}"
 fi
 
+# Round percentages to 1 decimal place when they have a fractional part,
+# so values like 14.000000000000002 don't leak through as-is.
+format_pct() {
+  case "$1" in
+    *.*) printf "%.1f" "$1" ;;
+    *) printf "%s" "$1" ;;
+  esac
+}
+
 # Build usage display
 usage_display=""
 if [ -n "$five_hour_pct" ] && [ -n "$seven_day_pct" ]; then
-  usage_display=" ${DIM}•${RESET} ${DIM}5h:${RESET}${five_hour_pct}% ${DIM}7d:${RESET}${seven_day_pct}%"
+  usage_display=" ${DIM}•${RESET} ${DIM}5h:${RESET}$(format_pct "$five_hour_pct")% ${DIM}7d:${RESET}$(format_pct "$seven_day_pct")%"
 fi
 
 # Output statusline. Second line carries the cwd under the branch/stats row.
