@@ -1,0 +1,25 @@
+#!/bin/sh
+# Print "<short-path-padded>  <branch>" with tmux color escapes for the
+# choose-tree window list. The path has $HOME substituted to "~" and is
+# left-padded to a fixed width so the branch column lines up across
+# rows. Branch is the git branch (short SHA on detached HEAD), empty
+# when the path is not a git repo.
+#
+# Usage: tmux-window-list-info <path> [path-width] [branch-width]
+
+path="$1"
+path_width="${2:-40}"
+branch_width="${3:-35}"
+[ -n "$path" ] && [ -d "$path" ] || exit 0
+
+case "$path" in
+  "$HOME"*) short_path="~${path#$HOME}" ;;
+  *)        short_path="$path" ;;
+esac
+
+branch=$(git -C "$path" symbolic-ref --short HEAD 2>/dev/null)
+if [ -z "$branch" ]; then
+  branch=$(git -C "$path" rev-parse --short HEAD 2>/dev/null)
+fi
+
+printf '#[fg=white]%-*s#[default]  #[fg=#99d5fb]%-*s#[default]' "$path_width" "$short_path" "$branch_width" "$branch"
