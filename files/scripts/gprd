@@ -337,11 +337,20 @@ $why"
 Close #$issue_number"
   fi
 
-  # Push the code
-  git push -u "$push_remote" HEAD
+  # Verify HEAD still points at current_branch — protects against the branch
+  # changing between gbinfo and push (e.g. concurrent agent checkout)
+  local actual_branch="$(git rev-parse --abbrev-ref HEAD)"
+  if [[ "$actual_branch" != "$current_branch" ]]; then
+    echo "Error: branch changed during execution (started on $current_branch, now on $actual_branch)"
+    return 1
+  fi
+
+  # Push the captured branch by name (not HEAD) so push and PR-create agree
+  git push -u "$push_remote" "$current_branch"
 
   # Create the PR
-  local pr_url="$(gh pr create \
+  local pr_url
+  if ! pr_url="$(gh pr create \
     --repo "$target_repo" \
     --draft \
     --base "$base_branch" \
@@ -349,7 +358,9 @@ Close #$issue_number"
     --title "$title" \
     --body "$body" \
     --reviewer "$(echo -n "$reviewer" | tr '\n' ',')" \
-    $@)"
+    $@)"; then
+    return 1
+  fi
   echo "$pr_url"
   echo
 
