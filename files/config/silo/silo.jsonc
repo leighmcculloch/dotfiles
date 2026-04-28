@@ -8,7 +8,8 @@
     },
     "namespace": {
       "size": "m",
-      "site": "sjc1"
+      "site": "sjc1",
+      "idle_timeout": "4h"
     }
   },
   "tool": "claude",
