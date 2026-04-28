@@ -320,6 +320,7 @@
   "voiceEnabled": true,
   "prefersReducedMotion": true,
   "skipDangerousModePermissionPrompt": true,
+  "spinnerTipsEnabled": false,
   "teammateMode": "in-process",
   "preferences": {
     "loadingTips": false
