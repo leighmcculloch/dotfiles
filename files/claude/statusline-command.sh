@@ -27,6 +27,7 @@ eval "$(echo "$input" | jq -r '
   @sh "context_percent=\(.context_window.used_percentage // 0)",
   @sh "exceeds_200k=\(.exceeds_200k_tokens // false)",
   @sh "agent_name=\(.agent.name // "")",
+  @sh "effort_level=\(.effort.level // "")",
   @sh "five_hour_pct=\(.rate_limits.five_hour.used_percentage // "")",
   @sh "seven_day_pct=\(.rate_limits.seven_day.used_percentage // "")"
 ')"
@@ -74,6 +75,9 @@ fi
 
 # Build model/agent display
 model_display="${PURPLE}${model_display_name}${RESET}"
+if [ -n "$effort_level" ]; then
+  model_display="${model_display} ${DIM}•${RESET} ${DIM}${effort_level}${RESET}"
+fi
 if [ -n "$agent_name" ]; then
   model_display="${model_display} ${DIM}(${agent_name})${RESET}"
 fi
