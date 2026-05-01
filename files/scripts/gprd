@@ -32,10 +32,12 @@ function {
   local default_branch="$(echo "$branch_info" | jq -r '.default_branch')"
   local ancestor_branch="$(echo "$branch_info" | jq -r '.ancestor_branch // empty')"
 
-  # If an ancestor branch was found (and it's not the default), let user choose.
+  # If an ancestor branch was found (and it's not the default, and doesn't
+  # point at the same commit as the default), let user choose.
   # Otherwise just use the default branch.
   local base_branch=""
-  if [[ -n "$ancestor_branch" && "$ancestor_branch" != "$default_branch" ]]; then
+  if [[ -n "$ancestor_branch" && "$ancestor_branch" != "$default_branch" \
+        && "$(git rev-parse "$ancestor_branch")" != "$(git rev-parse "$default_branch")" ]]; then
     local ancestor_count="$(git rev-list --count ${ancestor_branch}..HEAD)"
     local default_count="$(git rev-list --count ${default_branch}..HEAD)"
     local choice="$(gum choose --header "Base branch:" "${ancestor_branch} (${ancestor_count} commits)" "${default_branch} (${default_count} commits)")"
