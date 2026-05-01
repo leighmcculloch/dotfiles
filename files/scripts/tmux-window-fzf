@@ -1,0 +1,53 @@
+#!/bin/sh
+# Fuzzy-search the current tmux session's windows in a popup and switch
+# to the selected window. Intended to be invoked from `tmux display-popup
+# -E` so the popup closes once the command exits.
+#
+# Each row shows: marker, index, path (~-shortened), branch, current
+# command. The active window is marked with a leading "*". The window
+# index is hidden in fzf field 1 (--with-nth=2..) and used as the
+# select-window target after selection.
+#
+# Usage: tmux-window-fzf
+
+esc=$(printf '\033')
+blue="${esc}[38;2;153;213;251m"
+green="${esc}[32m"
+reset="${esc}[0m"
+tab=$(printf '\t')
+
+# Defined at the top level to dodge a bash 3.2 (/bin/sh on macOS) parser
+# bug that mis-handles case statements nested inside $(...).
+shorten_path() {
+  case "$1" in
+    "$HOME"*) printf '~%s' "${1#"$HOME"}" ;;
+    *)        printf '%s' "$1" ;;
+  esac
+}
+
+selection=$(
+  tmux list-windows -F "#{window_index}${tab}#{window_active}${tab}#{pane_current_path}${tab}#{pane_current_command}" \
+    | while IFS="$tab" read -r index active path command; do
+        marker=' '
+        [ "$active" = "1" ] && marker='*'
+
+        short_path=$(shorten_path "$path")
+
+        branch=''
+        if [ -d "$path" ]; then
+          branch=$(git -C "$path" symbolic-ref --short HEAD 2>/dev/null)
+          [ -n "$branch" ] || branch=$(git -C "$path" rev-parse --short HEAD 2>/dev/null)
+        fi
+
+        printf '%s\t%s%3s  %-40s  %s%-25s%s  %s%s%s\n' \
+          "$index" "$marker" "$index" "$short_path" \
+          "$blue" "$branch" "$reset" \
+          "$green" "$command" "$reset"
+      done \
+    | fzf --ansi --no-sort --reverse \
+          --delimiter='\t' --with-nth=2.. \
+          --header='switch to window' \
+    | cut -f1
+)
+
+[ -n "$selection" ] && tmux select-window -t ":$selection"
