@@ -317,10 +317,16 @@ claude_cmd_widget() {
   CURSOR=${#BUFFER}
   zle reset-prompt
 
+  # Capture the last 30 lines of the current tmux pane for context
+  local pane_context=""
+  if [[ -n "$TMUX" ]]; then
+    pane_context="$(tmux capture-pane -p -S -30 2>/dev/null)"
+  fi
+
   # Call Claude in JSON mode
   local json_schema='{"type":"object","properties":{"command":{"type":"string","description":"The shell command"}},"required":["command"]}'
   local resp err
-  resp="$(claude --model claude-sonnet-4-6 -p "Given this shell command fragment, return exactly one improved or completed shell command. Fragment: $input" --output-format json --json-schema "$json_schema" 2>&1)"
+  resp="$(claude --model claude-sonnet-4-6 -p "Given this shell command fragment, return exactly one improved or completed shell command. Fragment: $input"$'\n\n'"Recent terminal output (last 30 lines of the current tmux pane) for context:"$'\n'"$pane_context" --output-format json --json-schema "$json_schema" 2>&1)"
   if [[ $? -ne 0 ]]; then
     BUFFER="$commented_input"$'\n'"# Error: $resp"
     CURSOR=${#BUFFER}
