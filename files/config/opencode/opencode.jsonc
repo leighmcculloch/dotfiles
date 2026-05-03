@@ -145,16 +145,6 @@
       "uname": "allow",
       "du": "allow",
       "df": "allow",
-      "stellar version": "allow",
-      "stellar xdr decode": "allow",
-      "stellar xdr types": "allow",
-      "stellar network list": "allow",
-      "stellar keys address": "allow",
-      "stellar keys ls": "allow",
-      "stellar contract info": "allow",
-      "stellar contract read": "allow",
-      "stellar-xdr": "allow",
-      "stellar-strkey": "allow",
       "git push --force": "deny",
       "git push -f": "deny",
       "git push --force-with-lease": "deny",
@@ -165,21 +155,6 @@
     "github": {
       "type": "local",
       "command": ["bash", "-c", "source ~/.zenv_apikey_github || source ~/.zenv_apikey_github_ro ; GITHUB_PERSONAL_ACCESS_TOKEN=\"$GITHUB_TOKEN\" github-mcp-server stdio"],
-      "enabled": true
-    },
-    "perplexity": {
-      "type": "local",
-      "command": ["bash", "-c", "source ~/.zenv_apikey_perplexity && mcp-server-perplexity-ask"],
-      "enabled": true
-    },
-    "deepwiki": {
-      "type": "remote",
-      "url": "https://mcp.deepwiki.com/mcp",
-      "enabled": true
-    },
-    "context7": {
-      "type": "local",
-      "command": ["bash", "-c", "source ~/.zenv_apikey_context7 && context7-mcp"],
       "enabled": true
     },
     "grep": {
