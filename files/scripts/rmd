@@ -37,5 +37,6 @@ for pane in ${panes_to_kill[@]+"${panes_to_kill[@]}"}; do
 done
 
 if [ "$kill_current" -eq 1 ]; then
+    tmux select-window -t :-
     tmux kill-pane -t "$current_pane"
 fi
