@@ -1,11 +1,5 @@
 {
   "mcpServers": {
-    "solo": {
-      "type": "stdio",
-      "command": "/Applications/Solo.app/Contents/MacOS/mcp",
-      "args": [],
-      "env": {}
-    },
     "github": {
       "type": "stdio",
       "command": "bash",

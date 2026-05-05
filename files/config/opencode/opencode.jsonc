@@ -146,11 +146,6 @@
     }
   },
   "mcp": {
-    "solo": {
-      "type": "local",
-      "command": ["/Applications/Solo.app/Contents/MacOS/mcp"],
-      "enabled": true
-    },
     "github": {
       "type": "local",
       "command": ["bash", "-c", "source ~/.zenv_apikey_github || source ~/.zenv_apikey_github_ro ; GITHUB_PERSONAL_ACCESS_TOKEN=\"$GITHUB_TOKEN\" github-mcp-server stdio"],
