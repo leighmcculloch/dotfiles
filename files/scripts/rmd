@@ -26,7 +26,11 @@ if [ -n "${TMUX:-}" ]; then
     done < <(tmux list-panes -s -F '#{pane_id}'$'\t''#{pane_current_path}')
 fi
 
-rm -fr "$target"
+if [ -f "$target/.git" ]; then
+    git -C "$target" worktree remove --force "$target"
+else
+    rm -fr "$target"
+fi
 
 for pane in ${panes_to_kill[@]+"${panes_to_kill[@]}"}; do
     tmux kill-pane -t "$pane"
