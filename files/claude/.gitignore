@@ -29,3 +29,4 @@ chrome/chrome-native-host
 policy-limits.json
 mcp-needs-auth-cache.json
 remote-settings.json
+.last-cleanup
