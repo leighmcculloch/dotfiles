@@ -154,23 +154,7 @@ Would you like me to create the PR with this content, or would you like to make 
 
 Wait for user confirmation before proceeding. If the user requests modifications, update `NOTES_PR.md` with the changes before creating the PR.
 
-### 7. Get Reviewers
-
-Fetch potential reviewers:
-
-```bash
-gh api '/repos/{owner}/{repo}/contributors' --jq '.[].login'
-```
-
-For organizations, also fetch teams:
-
-```bash
-gh api '/orgs/{owner}/teams' --jq '.[] | "{owner}/" + .slug'
-```
-
-Ask the user to select reviewers.
-
-### 8. Create the Pull Request
+### 7. Create the Pull Request
 
 After user confirmation:
 
@@ -190,12 +174,12 @@ The body should include:
 - `### Architecture` section with Mermaid diagram (if applicable)
 - `Close #{issue_number}` (if linked to an issue)
 
-### 9. Request Copilot Review
+### 8. Request Copilot Review
 
 ```bash
 gh pr edit --add-reviewer 'copilot-pull-request-reviewer[bot]'
 ```
 
-### 10. Report Result
+### 9. Report Result
 
 Output the created PR URL.
