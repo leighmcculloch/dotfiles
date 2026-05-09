@@ -1,0 +1,13 @@
+{
+  "manifest_version": 3,
+  "name": "Full Page Screenshot",
+  "version": "1.0",
+  "description": "Capture a screenshot of the entire current web page, including content beyond the viewport",
+  "permissions": ["activeTab", "debugger", "downloads"],
+  "action": {
+    "default_title": "Capture full page screenshot"
+  },
+  "background": {
+    "service_worker": "background.js"
+  }
+}
