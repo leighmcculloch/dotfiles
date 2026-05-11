@@ -369,15 +369,6 @@ Close #$issue_number"
   # Open PR in browser
   open "$pr_url"
 
-  # Request Copilot review the PR
-  if [[ "$owner" == "stellar" && "$is_private" == "true" ]]; then
-    echo "Skipping Copilot review (private stellar repo)"
-  else
-    echo "Requesting review from Copilot..."
-    gh pr edit "$pr_url" --add-reviewer 'copilot-pull-request-reviewer[bot]' || true
-  fi
-  echo
-
   # Copy PR info to clipboard
   pr
 } "$@"
