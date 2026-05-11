@@ -1,0 +1,31 @@
+#!/bin/sh
+# Capture the visible content of every pane in the current window except
+# the active pane. Output is stacked with a header per pane, loaded into
+# the tmux buffer, and copied to the system clipboard via pbcopy.
+
+active_id=$(tmux display-message -p '#{pane_id}')
+
+output=$(
+  tmux list-panes -F '#{pane_id}	#{pane_index}	#{pane_current_path}	#{pane_current_command}' |
+  while IFS='	' read -r id idx path cmd; do
+    if [ "$id" = "$active_id" ]; then
+      continue
+    fi
+    if [ "${path#$HOME}" != "$path" ]; then
+      short_path="~${path#$HOME}"
+    else
+      short_path="$path"
+    fi
+    printf '=== Pane %s: %s (%s) ===\n' "$idx" "$short_path" "$cmd"
+    tmux capture-pane -t "$id" -p
+    printf '\n'
+  done
+)
+
+if [ -z "$output" ]; then
+  tmux display-message 'tmux-capture-other-panes: no other panes in this window'
+  exit 0
+fi
+
+printf '%s' "$output" | tmux load-buffer -
+printf '%s' "$output" | pbcopy
