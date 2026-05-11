@@ -26,18 +26,26 @@ function {
   done
   set -- "${args[@]}"
 
-  # Get branch info (current, default, ancestor)
+  # Get current and default branch info from helper.
   local branch_info="$(gbinfo)"
   local current_branch="$(echo "$branch_info" | jq -r '.current_branch')"
   local default_branch="$(echo "$branch_info" | jq -r '.default_branch')"
-  local ancestor_branch="$(echo "$branch_info" | jq -r '.ancestor_branch // empty')"
 
-  # If an ancestor branch was found (and it's not the default, and doesn't
-  # point at the same commit as the default), let user choose.
+  # Walk back through commits to find the nearest ancestor branch. Exclude the
+  # current branch and any branch pointing at the same rev as the default —
+  # those are effectively caught up with default and not useful as a base.
+  local default_rev="$(git rev-parse "$default_branch")"
+  local ancestor_branch=""
+  for commit in $(git rev-list HEAD); do
+    ancestor_branch="$(git branch --points-at "$commit" --format='%(refname:short) %(objectname)' \
+      | awk -v cur="$current_branch" -v def_rev="$default_rev" '$1 != cur && $2 != def_rev {print $1; exit}')"
+    [[ -n "$ancestor_branch" ]] && break
+  done
+
+  # If an ancestor branch was found and it isn't the default, let user choose.
   # Otherwise just use the default branch.
   local base_branch=""
-  if [[ -n "$ancestor_branch" && "$ancestor_branch" != "$default_branch" \
-        && "$(git rev-parse "$ancestor_branch")" != "$(git rev-parse "$default_branch")" ]]; then
+  if [[ -n "$ancestor_branch" && "$ancestor_branch" != "$default_branch" ]]; then
     local ancestor_count="$(git rev-list --count ${ancestor_branch}..HEAD)"
     local default_count="$(git rev-list --count ${default_branch}..HEAD)"
     local choice="$(gum choose --header "Base branch:" "${ancestor_branch} (${ancestor_count} commits)" "${default_branch} (${default_count} commits)")"
