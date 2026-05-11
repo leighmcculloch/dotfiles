@@ -20,6 +20,10 @@
 
 input=$(cat)
 
+# Skip when invoked from gprd — that flow operates on the current branch to
+# create a PR, so renaming the branch mid-run would break it.
+[ "${SCRIPT:-}" = "gprd" ] && exit 0
+
 # jq twice over the same captured input — we need both fields and piping stdin
 # into two separate jq calls would fail.
 session_id=$(printf '%s' "$input" | jq -r '.session_id // ""')
