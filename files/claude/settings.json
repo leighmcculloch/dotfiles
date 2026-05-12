@@ -317,10 +317,10 @@
       "static.crates.io"
     ]
   },
-  "voiceEnabled": true,
+  "spinnerTipsEnabled": false,
   "prefersReducedMotion": true,
   "skipDangerousModePermissionPrompt": true,
-  "spinnerTipsEnabled": false,
+  "voiceEnabled": true,
   "teammateMode": "in-process",
   "preferences": {
     "loadingTips": false
