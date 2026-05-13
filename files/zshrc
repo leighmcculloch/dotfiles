@@ -165,7 +165,7 @@ function caff() {
   pushd /tmp/caffeinate
   echo 'Preventing sleep... Ctrl-C to release.'
   trap 'popd; rm -rf /tmp/caffeinate; trap - INT; return' INT
-  caffeinate -i
+  caffeinate -i "$@"
   trap - INT
   popd
   rm -rf /tmp/caffeinate
