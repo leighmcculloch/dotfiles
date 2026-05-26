@@ -40,7 +40,6 @@ brew "vscode-langservers-extracted"
 
 go "github.com/leighmcculloch/gas/v3"
 go "github.com/leighmcculloch/gate"
-go "github.com/github/github-mcp-server/cmd/github-mcp-server"
 
 brew "stellar-cli"
 
