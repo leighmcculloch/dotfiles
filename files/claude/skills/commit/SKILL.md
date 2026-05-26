@@ -1,13 +1,16 @@
 ---
 name: commit
 description: Commit to Git.
+model: haiku
 ---
 
 # Git Commit
 
-Given the git diff, suggest a concise commit message that says in present tense with imperative mood what has changed without saying why (max 50 characters).
+If the conversation already establishes what changed (recent edits, prior diff output, explicit user description), skip `git status`/`git diff`/`git log` and commit from that context. Only run those commands when the changes are genuinely unknown to you.
 
-Do not use conventional commit format. Start the commit message with a lower case letter and do not end with a full stop. Avoid generic phrases.
+Suggest a concise commit message in present tense, imperative mood, describing what changed (not why), max 50 characters.
+
+Do not use conventional commit format. Start with a lower case letter and do not end with a full stop. Avoid generic phrases.
 
 Use command:
 
