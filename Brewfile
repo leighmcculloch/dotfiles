@@ -45,6 +45,8 @@ go "github.com/github/github-mcp-server/cmd/github-mcp-server"
 brew "stellar-cli"
 
 if OS.mac?
+  tap "homebrew/brew-vulns"
+  brew "homebrew/brew-vulns/brew-vulns"
   tap "leighmcculloch/paste-markdown"
   brew "leighmcculloch/paste-markdown/paste-markdown", args: ["HEAD"]
   tap "leighmcculloch/usage"
