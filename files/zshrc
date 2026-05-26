@@ -14,7 +14,7 @@ bindkey "^[f" forward-word            # Alt-f (move word forward)
 
 # Bracketed paste: auto-wrap complex text (newlines/quotes) in a heredoc
 conditional_heredoc_paste() {
-  emulate -L zsh
+  emulate -L zsh -o extended_glob
   # Save buffer state, then let the built-in widget collect the paste
   local save_LBUFFER=$LBUFFER save_RBUFFER=$RBUFFER
   LBUFFER="" RBUFFER=""
@@ -22,7 +22,8 @@ conditional_heredoc_paste() {
   local pasted=$LBUFFER
   LBUFFER=$save_LBUFFER
   RBUFFER=$save_RBUFFER
-  if [[ $pasted == *$'\n'* || $pasted == *\'* || $pasted == *\"* ]]; then
+  local stripped=${pasted%%$'\n'##}
+  if [[ -n $save_LBUFFER && ($stripped == *$'\n'* || $pasted == *\'* || $pasted == *\"*) ]]; then
     local delim="EOF_${RANDOM}_${RANDOM}_EOF"
     LBUFFER+="\"\$(cat <<'${delim}'"$'\n'"${pasted}"$'\n'"${delim}"$'\n)\"'
   else
