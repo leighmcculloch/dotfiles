@@ -9,7 +9,8 @@ Creates a draft pull request with a title and description generated from the dif
 
 **Formatting rules:**
 - Do not hard-wrap lines. Write paragraphs as a single continuous line; let the renderer wrap.
-- Minimal formatting. The only headings are `### What` and `### Why`. No bullet lists, no tables, no examples, no diagrams.
+- Minimal formatting. No examples, no diagrams. No bullet lists — write prose paragraphs, even when filling in template sections. If a template literally provides a checklist (e.g. `- [ ] Tested`), keep that as-is; do not invent prose bullets of your own.
+- When no template exists, use only `### What` and `### Why` headings.
 
 ## Workflow
 
@@ -43,13 +44,40 @@ gh issue view {issue_number} --json url,number,title,body,comments
 
 The issue's title, body, and comments contain the reasoning and motivation for the change. This context must be incorporated into the PR's "Why" section to echo the problem being solved.
 
-### 4. Generate PR Content
+### 4. Discover PR Templates
+
+**Step 1: Find PR templates**
+Do steps 1a and 1b in parallel.
+
+**Step 1a: Check target repository**
+Try each of these paths via `gh api repos/{owner}/{repo}/contents/{path}` until one returns content:
+- `.github/pull_request_template.md`
+- `.github/PULL_REQUEST_TEMPLATE.md`
+- `.github/PULL_REQUEST_TEMPLATE/` (directory of multiple templates)
+- `docs/pull_request_template.md`
+- `pull_request_template.md`
+
+**Step 1b: Check org's .github repository**
+Try the same paths under the org's `.github` repo.
+
+**Step 2: Select template**
+- If Step 1a returned a single template file, use it.
+- If Step 1a returned a directory of templates, auto-select the one whose name best matches the change (bug fix, feature, etc.). If unclear, briefly list options and ask the user.
+- Otherwise, use the result from Step 1b under the same rules.
+- If neither location has a template, proceed with the What/Why fallback.
+
+### 5. Generate PR Content
 
 **Title:**
 - Max 50 characters
 - Start with a capital letter
 - No trailing period
 - Use imperative mood (Add, Fix, Update, not Adds, Fixes, Updates)
+
+**Body — if a template was found:**
+Populate the template's sections directly. Do not add `### What` or `### Why` headings unless the template itself has them. Keep paragraphs as single unwrapped lines.
+
+**Body — if no template was found, use What/Why:**
 
 **What section:**
 - A single focused paragraph naming the overarching change. Not a list.
@@ -76,11 +104,11 @@ Avoid (machine-generated, lists the *how*):
 Prefer (hyperfocused, names the overarching change):
 > Expand the crate-level docs with sections covering builds without version info, shallow clone support, and the stripping of path-redirecting `GIT_*` env vars.
 
-### 5. Write Draft and Present for Review
+### 6. Write Draft and Present for Review
 
 **Step 1: Write the draft to NOTES_PR.md**
 
-Write the complete draft PR to `NOTES_PR.md` in the current working directory. Write the What and Why paragraphs as single unwrapped lines:
+Write the complete draft PR to `NOTES_PR.md` in the current working directory. Write all paragraphs as single unwrapped lines:
 
 ```markdown
 # Draft Pull Request
@@ -90,12 +118,11 @@ Write the complete draft PR to `NOTES_PR.md` in the current working directory. W
 ## Title
 {title}
 
-## What
-{what}
-
-## Why
-{why}
+## Body
+{body}
 ```
+
+`{body}` is either the populated template (if one was found) or the What/Why sections (if not).
 
 **Step 2: Present for review**
 
@@ -108,7 +135,7 @@ Would you like me to create the PR with this content, or would you like to make 
 
 Wait for user confirmation before proceeding. If the user requests modifications, update `NOTES_PR.md` with the changes before creating the PR.
 
-### 6. Create the Pull Request
+### 7. Create the Pull Request
 
 After user confirmation:
 
@@ -121,13 +148,10 @@ gh pr create \
   --reviewer "{reviewers}"
 ```
 
-The body should include:
-- `### What` section
-- `### Why` section
-- `Close #{issue_number}` (if linked to an issue)
+The body should be either the populated template or the `### What` and `### Why` sections (if no template). Append `Close #{issue_number}` if linked to an issue.
 
-Pass the What and Why paragraphs to `--body` as single unwrapped lines.
+Pass all paragraphs to `--body` as single unwrapped lines.
 
-### 7. Report Result
+### 8. Report Result
 
 Output the created PR URL.
