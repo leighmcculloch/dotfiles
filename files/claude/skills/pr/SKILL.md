@@ -5,7 +5,11 @@ description: Create a GitHub pull request with AI-generated title and descriptio
 
 # GitHub Pull Request Skill
 
-Creates a draft pull request with a comprehensive title and description generated from the diff between the current branch and the base branch. Includes rich content like examples and diagrams where appropriate.
+Creates a draft pull request with a title and description generated from the diff between the current branch and the base branch.
+
+**Formatting rules:**
+- Do not hard-wrap lines. Write paragraphs as a single continuous line; let the renderer wrap.
+- Minimal formatting. The only headings are `### What` and `### Why`. No bullet lists, no tables, no examples, no diagrams.
 
 ## Workflow
 
@@ -39,18 +43,7 @@ gh issue view {issue_number} --json url,number,title,body,comments
 
 The issue's title, body, and comments contain the reasoning and motivation for the change. This context must be incorporated into the PR's "Why" section to echo the problem being solved.
 
-### 4. Analyze the Diff
-
-Examine the diff to identify what rich content would help reviewers:
-
-| Change Type | Rich Content to Include |
-|-------------|------------------------|
-| HTTP endpoints, REST APIs, RPC methods | Request/response examples |
-| Library/SDK public API changes | Before/after code examples |
-| Architectural changes (new components, changed data flow) | Mermaid diagram |
-| Test file changes | Brief test coverage summary |
-
-### 5. Generate PR Content
+### 4. Generate PR Content
 
 **Title:**
 - Max 50 characters
@@ -60,13 +53,14 @@ Examine the diff to identify what rich content would help reviewers:
 
 **What section:**
 - A single focused paragraph naming the overarching change. Not a list.
+- Write as one continuous line. Do not insert line breaks to wrap at any column width.
 - Describe the change as one cohesive thing, not an enumeration of file edits or steps.
 - Never list the *how* (e.g. "update X in lib.rs", "add test for Y", "rename Z"). The diff already shows that.
 - Use imperative mood. Be direct, eliminate filler words.
-- If you find yourself reaching for bullets, you are describing implementation. Rewrite as prose describing the outcome.
 
 **Why section:**
 - A single focused paragraph. Not a list.
+- Write as one continuous line. Do not insert line breaks to wrap at any column width.
 - Name the specific problem, behavior, or constraint that motivated the change — not generic justifications ("improves clarity", "better UX", "for consistency").
 - If linked to an issue, echo the concrete reasoning from the issue.
 - Think like a journalist: what would a reader need to know to understand why this exists?
@@ -82,60 +76,11 @@ Avoid (machine-generated, lists the *how*):
 Prefer (hyperfocused, names the overarching change):
 > Expand the crate-level docs with sections covering builds without version info, shallow clone support, and the stripping of path-redirecting `GIT_*` env vars.
 
-**Examples section (when applicable):**
-
-For API changes, include request/response examples:
-```
-### Example
-
-**Request:**
-POST /api/resource
-Content-Type: application/json
-
-{
-  "field": "value"
-}
-
-**Response:**
-HTTP 201 Created
-
-{
-  "id": "abc123",
-  "field": "value"
-}
-```
-
-For library/SDK changes, show usage:
-```
-### Example
-
-// Before
-let result = old_function(arg);
-
-// After
-let result = new_function(arg, options)?;
-```
-
-**Diagram section (when applicable):**
-
-For architectural changes, include a Mermaid diagram:
-```
-### Architecture
-
-flowchart LR
-    A[Component A] --> B[New Component]
-    B --> C[Dependency]
-
-    style B fill:#ccffcc,stroke:#00ff00
-```
-
-Use green (#ccffcc) for added components, red (#ffcccc) for removed.
-
-### 6. Write Draft and Present for Review
+### 5. Write Draft and Present for Review
 
 **Step 1: Write the draft to NOTES_PR.md**
 
-Write the complete draft PR to `NOTES_PR.md` in the current working directory:
+Write the complete draft PR to `NOTES_PR.md` in the current working directory. Write the What and Why paragraphs as single unwrapped lines:
 
 ```markdown
 # Draft Pull Request
@@ -150,10 +95,6 @@ Write the complete draft PR to `NOTES_PR.md` in the current working directory:
 
 ## Why
 {why}
-
-{examples_section_if_applicable}
-
-{diagram_section_if_applicable}
 ```
 
 **Step 2: Present for review**
@@ -167,7 +108,7 @@ Would you like me to create the PR with this content, or would you like to make 
 
 Wait for user confirmation before proceeding. If the user requests modifications, update `NOTES_PR.md` with the changes before creating the PR.
 
-### 7. Create the Pull Request
+### 6. Create the Pull Request
 
 After user confirmation:
 
@@ -183,10 +124,10 @@ gh pr create \
 The body should include:
 - `### What` section
 - `### Why` section
-- `### Example` section (if applicable)
-- `### Architecture` section with Mermaid diagram (if applicable)
 - `Close #{issue_number}` (if linked to an issue)
 
-### 8. Report Result
+Pass the What and Why paragraphs to `--body` as single unwrapped lines.
+
+### 7. Report Result
 
 Output the created PR URL.
