@@ -81,6 +81,8 @@ if OS.mac?
 
   # Deployment Tools
   brew "flyctl"
+  brew "kagent"
+  brew "helm"
 
   # AI desktop tools
   cask "lm-studio"
