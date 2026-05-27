@@ -1,9 +1,13 @@
 ---
 name: issue
-description: Create GitHub issues with templates, diagrams for proposals, and context from linked issues/PRs
+description: Create GitHub issues with context from linked issues/PRs
 ---
 
 # GitHub Issue Creation Skill
+
+**Formatting rules:**
+- Do not hard-wrap lines. Write paragraphs as a single continuous line; let the renderer wrap.
+- Minimal formatting. No diagrams. No bullet lists — write prose paragraphs, even when filling in template sections. If a template literally provides a checklist (e.g. `- [ ] Tested`), keep that as-is; do not invent prose bullets of your own.
 
 ## Workflow
 
@@ -46,36 +50,7 @@ Analyze the user's request and auto-select the most appropriate template:
 
 If multiple templates exist and the best match is unclear, briefly list options and ask the user.
 
-### 3. Create Proposal Diagrams
-
-For issues that propose changes to architecture, workflows, or systems, create a unified Mermaid diagram showing both current and proposed states.
-
-**Diagram Guidelines:**
-- Draw a single unified diagram containing both current and new states
-- Elements that will be **removed**: style with red (`fill:#ffcccc,stroke:#ff0000`)
-- Elements that are **new/added**: style with green (`fill:#ccffcc,stroke:#00ff00`)
-- Elements that **remain unchanged**: use default styling
-
-**Example:**
-```mermaid
-flowchart LR
-    A[Client] --> B[Old API Gateway]
-    A --> C[New API Gateway]
-    B --> D[Service]
-    C --> D
-    C --> E[New Cache Layer]
-
-    style B fill:#ffcccc,stroke:#ff0000
-    style C fill:#ccffcc,stroke:#00ff00
-    style E fill:#ccffcc,stroke:#00ff00
-```
-
-**Legend:** Always include a legend below the diagram:
-- Red = Current state (to be removed)
-- Green = Proposed state (to be added)
-- Default = Unchanged
-
-### 4. Draft and Review (REQUIRED)
+### 3. Draft and Review (REQUIRED)
 
 **IMPORTANT: Always write the draft to a file and present it to the user for review before creating the issue.**
 
@@ -106,7 +81,7 @@ Would you like me to create this issue, or would you like to make any changes?
 
 Wait for explicit user confirmation before proceeding. If the user requests modifications, update `NOTES_ISSUE.md` with the changes before creating the issue.
 
-### 5. Create the Issue
+### 4. Create the Issue
 
 Only after user confirmation, use `mcp__github__issue_write` with:
 ```
@@ -119,20 +94,4 @@ labels: {from_template_if_available}
 ```
 
 **Fallback Body Structure (when no template available):**
-If using a template, follow its structure. Otherwise use this format with no headings:
-
-```markdown
-[Brief description of the issue/proposal]
-
-[Any relevant context from linked issues/PRs]
-
-[Description of proposed changes, if applicable]
-
-[Mermaid diagram if this is a proposal]
-
-**Legend:**
-- Red = Current state (to be removed)
-- Green = Proposed state (to be added)
-
-[Any other relevant information]
-```
+If using a template, follow its structure. Otherwise write a short paragraph (or two) with no headings, no bullets, and no other formatting — describing the issue or proposal and incorporating any relevant context from linked issues/PRs. Write each paragraph as a single continuous line.
