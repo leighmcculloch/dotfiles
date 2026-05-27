@@ -59,15 +59,28 @@ Examine the diff to identify what rich content would help reviewers:
 - Use imperative mood (Add, Fix, Update, not Adds, Fixes, Updates)
 
 **What section:**
-- Describe what has changed
-- Use imperative mood
-- Be direct, eliminate filler words
+- A single focused paragraph naming the overarching change. Not a list.
+- Describe the change as one cohesive thing, not an enumeration of file edits or steps.
+- Never list the *how* (e.g. "update X in lib.rs", "add test for Y", "rename Z"). The diff already shows that.
+- Use imperative mood. Be direct, eliminate filler words.
+- If you find yourself reaching for bullets, you are describing implementation. Rewrite as prose describing the outcome.
 
 **Why section:**
-- Describe why the change is being made
-- If linked to an issue, echo the reasoning from the issue (the problem, motivation, or request)
-- Be concise, avoid generic statements
-- Think like a journalist
+- A single focused paragraph. Not a list.
+- Name the specific problem, behavior, or constraint that motivated the change — not generic justifications ("improves clarity", "better UX", "for consistency").
+- If linked to an issue, echo the concrete reasoning from the issue.
+- Think like a journalist: what would a reader need to know to understand why this exists?
+
+**Style contrast (study before writing):**
+
+Avoid (machine-generated, lists the *how*):
+> - Emit a warning from the build script when X cannot be derived.
+> - Document in lib.rs and README that downstream should use `option_env!`.
+> - Update the example snippet from `env!` to `option_env!`.
+> - Add test covering the no-git path.
+
+Prefer (hyperfocused, names the overarching change):
+> Expand the crate-level docs with sections covering builds without version info, shallow clone support, and the stripping of path-redirecting `GIT_*` env vars.
 
 **Examples section (when applicable):**
 
