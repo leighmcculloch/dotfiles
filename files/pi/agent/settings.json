@@ -1,0 +1,10 @@
+{
+  "lastChangelogVersion": "0.73.1",
+  "defaultProvider": "openrouter",
+  "defaultModel": "openrouter/owl-alpha",
+  "defaultThinkingLevel": "high",
+  "hideThinkingBlock": true,
+  "quietStartup": true,
+  "collapseChangelog": true,
+  "enableInstallTelemetry": true
+}
