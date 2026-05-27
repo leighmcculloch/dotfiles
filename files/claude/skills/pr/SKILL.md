@@ -187,12 +187,6 @@ The body should include:
 - `### Architecture` section with Mermaid diagram (if applicable)
 - `Close #{issue_number}` (if linked to an issue)
 
-### 8. Request Copilot Review
-
-```bash
-gh pr edit --add-reviewer 'copilot-pull-request-reviewer[bot]'
-```
-
-### 9. Report Result
+### 8. Report Result
 
 Output the created PR URL.
