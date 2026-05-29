@@ -1,8 +1,10 @@
 cache/
+daemon/
 paste-cache/
 image-cache/
 todos/
 statsig/
+jobs/
 projects/
 shell-snapshots/
 debug/
@@ -31,3 +33,6 @@ mcp-needs-auth-cache.json
 remote-settings.json
 .last-cleanup
 .last-update-result.json
+daemon.lock
+daemon.log
+daemon.status.json
