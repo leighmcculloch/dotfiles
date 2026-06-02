@@ -60,6 +60,12 @@ For multi-step tasks, state a brief plan:
 
 Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
 
+## 5. Pull Requests
+
+**Any PR must follow the [pr skill](skills/pr/SKILL.md).**
+
+The [pr skill](skills/pr/SKILL.md) defines how to structure a PR (title, description, content). Use it for every PR you create — no exceptions.
+
 ---
 
 **These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.

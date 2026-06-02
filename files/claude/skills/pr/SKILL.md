@@ -7,8 +7,6 @@ description: Create a GitHub pull request with AI-generated title and descriptio
 
 Creates a draft pull request with a title and description generated from the diff between the current branch and the base branch.
 
-**Never push.** The user always handles pushing themselves. Always assume the branch has already been pushed when creating the PR. Do not run `git push` under any circumstances.
-
 **Formatting rules:**
 - Do not hard-wrap lines. Write paragraphs as a single continuous line; let the renderer wrap.
 - Minimal formatting. No examples, no diagrams. No bullet lists — write prose paragraphs, even when filling in template sections. If a template literally provides a checklist (e.g. `- [ ] Tested`), keep that as-is; do not invent prose bullets of your own.
