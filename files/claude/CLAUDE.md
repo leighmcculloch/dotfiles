@@ -14,8 +14,9 @@ Touch only what the request requires; every changed line should trace to it. Don
 ## 4. Goal-Driven Execution
 Turn tasks into verifiable goals and loop until met (e.g. "fix the bug" → write a failing test that reproduces it, then make it pass; "refactor X" → tests pass before and after). For multi-step work, state a brief plan with a verify check per step.
 
-## 5. Pull Requests, Issues, and Branches
+## 5. Commits, Pull Requests, Issues, and Branches
 No exceptions:
+- Commits → [commit skill](skills/commit/SKILL.md)
 - PRs → [pr skill](skills/pr/SKILL.md)
 - Issues → [issue skill](skills/issue/SKILL.md)
 - Branch names → [branch skill](skills/branch/SKILL.md)
