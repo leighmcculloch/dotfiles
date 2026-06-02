@@ -6,6 +6,12 @@ set -o nounset
 
 autoload -U colors && colors
 
+# install apt packages needed by most scripts in this repo (non-interactive use)
+echo "$fg[cyan]Installing apt packages...$reset_color"
+DEBIAN_FRONTEND=noninteractive apt-get update
+DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    zsh git jq curl gawk xxd docker.io gh
+
 echo "$fg[cyan]Installing claude and git files for $(uname -s -p) in $(echo $0)...$reset_color"
 
 # files to symlink as $HOME/.<name>
