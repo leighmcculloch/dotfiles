@@ -37,6 +37,19 @@ DEBIAN_FRONTEND=noninteractive apt-get install -y \
   docker.io \
   build-essential \
   gh
+if (( ! $+commands[rustc] )); then
+  echo "$fg[cyan]Installing rust...$reset_color"
+  curl --proto '=https' --tlsv1.2 -fsSL https://sh.rustup.rs | sh -s -- -y
+fi
+if (( ! $+commands[go] )); then
+  echo "$fg[cyan]Installing go...$reset_color"
+  go_version=$(curl -fsSL "https://go.dev/dl/?mode=json" | jq -r '.[0].version')
+  curl -fsSL "https://go.dev/dl/${go_version}.linux-amd64.tar.gz" | tar -C /usr/local -xz
+fi
+if (( ! $+commands[deno] )); then
+  echo "$fg[cyan]Installing deno...$reset_color"
+  curl -fsSL https://deno.land/install.sh | sh
+fi
 
 echo "$fg[cyan]Installing claude and git files for $(uname -s -p) in $(echo $0)...$reset_color"
 
