@@ -34,7 +34,6 @@ DEBIAN_FRONTEND=noninteractive apt-get install -y \
   jq \
   curl \
   xxd \
-  docker.io \
   build-essential \
   gh
 if (( ! $+commands[rustc] )); then
