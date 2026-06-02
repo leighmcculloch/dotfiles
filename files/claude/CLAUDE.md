@@ -60,11 +60,13 @@ For multi-step tasks, state a brief plan:
 
 Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
 
-## 5. Pull Requests
+## 5. Pull Requests, Issues, and Branches
 
-**Any PR must follow the [pr skill](skills/pr/SKILL.md).**
+**Any PR must follow the [pr skill](skills/pr/SKILL.md).** It defines how to structure a PR (title, description, content). Use it for every PR you create — no exceptions.
 
-The [pr skill](skills/pr/SKILL.md) defines how to structure a PR (title, description, content). Use it for every PR you create — no exceptions.
+**Any issue must follow the [issue skill](skills/issue/SKILL.md).** It defines how to structure an issue. Use it for every issue you create — no exceptions.
+
+**Any branch must be named via the [branch skill](skills/branch/SKILL.md).** It defines how to derive a concise, kebab-case branch name from the pending changes. Use it whenever you create a branch — no exceptions.
 
 ---
 
