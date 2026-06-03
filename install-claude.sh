@@ -39,6 +39,16 @@ DEBIAN_FRONTEND=noninteractive apt-get install -y \
 if (( ! $+commands[rustc] )); then
   echo "$fg[cyan]Installing rust...$reset_color"
   curl --proto '=https' --tlsv1.2 -fsSL https://sh.rustup.rs | sh -s -- -y
+  # make cargo available to the rest of this script in the same session
+  source "$HOME/.cargo/env"
+fi
+if (( ! $+commands[cargo-deny] )); then
+  echo "$fg[cyan]Installing cargo-deny...$reset_color"
+  cargo install cargo-deny
+fi
+if (( ! $+commands[cargo-hack] )); then
+  echo "$fg[cyan]Installing cargo-hack...$reset_color"
+  cargo install cargo-hack
 fi
 if (( ! $+commands[go] )); then
   echo "$fg[cyan]Installing go...$reset_color"
@@ -50,25 +60,21 @@ if (( ! $+commands[deno] )); then
   curl -fsSL https://deno.land/install.sh | sh
 fi
 
-echo "$fg[cyan]Installing claude and git files for $(uname -s -p) in $(echo $0)...$reset_color"
-
-# files to symlink as $HOME/.<name>
-files=(
-  claude
-  gitallowedsignersfile
-  gitattributes
-  gitconfig
-  gitignore_global
-  gitmessage
+echo "$fg[cyan]Installing claude files...$reset_color"
+links=(
+  "$PWD/files/claude/CLAUDE.md:$HOME/.claude/CLAUDE.md"
 )
-
-for f in $files; do
-  src="$PWD/files/$f"
-  dest="$HOME/.$f"
+for src in "$PWD"/files/claude/skills/*(/); do
+  links+=("$src:$skills_dest/${src:t}")
+done
+skills_dest="$HOME/.claude/skills"
+mkdir -p "$skills_dest"
+for link in $links; do
+  src="${link%%:*}"
+  dest="${link#*:}"
   echo -n "Linking $src at $dest... "
-  # check if destination already exists
-  if [ -f "$dest" ] || [ -d "$dest" ]; then
-    # destination already exists
+  # check if destination already exists (including a broken symlink)
+  if [ -e "$dest" ] || [ -L "$dest" ]; then
     if [ -L "$dest" ]; then
       # existing destination is a symlink, safe to replace
       rm "$dest"
@@ -88,9 +94,32 @@ for f in $files; do
     fi
   else
     # destination doesn't exist, create symlink
-    ln -sf "$src" "$dest"
+    ln -s "$src" "$dest"
     echo "done."
   fi
 done
+
+# verify the active global git config matches the name/email in files/gitconfig
+echo "$fg[cyan]Checking global git config...$reset_color"
+expected_name=$(git config -f "$PWD/files/gitconfig" user.name)
+expected_email=$(git config -f "$PWD/files/gitconfig" user.email)
+actual_name=$(git config --global user.name || true)
+actual_email=$(git config --global user.email || true)
+if [ "$actual_name" = "$expected_name" ] && [ "$actual_email" = "$expected_email" ]; then
+  echo "$fg[green]Global git config active (user.name=$actual_name, user.email=$actual_email).$reset_color"
+else
+  echo "$fg[red]Global git config mismatch:$reset_color"
+  echo "  expected user.name  = $expected_name, got ${actual_name:-<unset>}"
+  echo "  expected user.email = $expected_email, got ${actual_email:-<unset>}"
+  if [ -z "$actual_name" ] || [ -z "$actual_email" ]; then
+    echo "Set these env vars to configure git:"
+    echo "  export GIT_CONFIG_COUNT=2"
+    echo "  export GIT_CONFIG_KEY_0=user.name"
+    echo "  export GIT_CONFIG_VALUE_0=$expected_name"
+    echo "  export GIT_CONFIG_KEY_1=user.email"
+    echo "  export GIT_CONFIG_VALUE_1=$expected_email"
+  fi
+  exit 1
+fi
 
 echo "$fg[green]Install complete.$reset_color"
