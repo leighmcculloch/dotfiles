@@ -94,12 +94,12 @@ done
 # appends to GIT_CONFIG_* (rather than assuming a fixed count) so it layers onto
 # any entries the environment already provides. guarded so re-runs don't duplicate it.
 zshenv="$HOME/.zshenv"
-marker="# dotfiles: git identity via GIT_CONFIG_*"
+marker="# dotfiles: auto added, do not remove"
 if ! grep -qF "$marker" "$zshenv" 2>/dev/null; then
-  echo "Adding git identity to $zshenv..."
+  echo "Adding envs to $zshenv..."
   cat >> "$zshenv" <<'EOF'
 
-# dotfiles: git identity via GIT_CONFIG_*
+# dotfiles: auto added, do not remove
 _git_config_env() {
   local i=${GIT_CONFIG_COUNT:-0}
   export GIT_CONFIG_KEY_$i="$1"
