@@ -25,35 +25,33 @@ fi
 
 # ----- everything below runs under zsh -----
 
-autoload -U colors && colors
-
 # install remaining apt packages needed by most scripts in this repo (non-interactive use)
-echo "$fg[cyan]Installing apt packages...$reset_color"
+echo "Installing apt packages..."
 DEBIAN_FRONTEND=noninteractive apt-get install -y \
   curl \
   xxd \
   build-essential \
   gh
 if (( ! $+commands[cargo-deny] )); then
-  echo "$fg[cyan]Installing cargo-deny...$reset_color"
+  echo "Installing cargo-deny..."
   cargo install --locked cargo-deny
 fi
 if (( ! $+commands[cargo-hack] )); then
-  echo "$fg[cyan]Installing cargo-hack...$reset_color"
+  echo "Installing cargo-hack..."
   cargo install --locked cargo-hack
 fi
 if (( ! $+commands[deno] )); then
-  echo "$fg[cyan]Installing deno...$reset_color"
+  echo "Installing deno..."
   curl -fsSL https://deno.land/install.sh | sh
   # make deno (and its globally installed bins) available to the rest of this script
   export PATH="$HOME/.deno/bin:$PATH"
 fi
 if (( ! $+commands[prettier] )); then
-  echo "$fg[cyan]Installing prettier...$reset_color"
+  echo "Installing prettier..."
   deno install -gA npm:prettier
 fi
 
-echo "$fg[cyan]Installing claude files...$reset_color"
+echo "Installing claude files..."
 mkdir -p "$HOME/.claude"
 mkdir -p "$HOME/.claude/skills"
 links=(
@@ -92,14 +90,14 @@ for link in $links; do
   fi
 done
 
-# inject git identity into ~/.zshrc so it is set in every shell on this instance.
+# inject git identity into ~/.zshenv so it is set in every shell on this instance.
 # appends to GIT_CONFIG_* (rather than assuming a fixed count) so it layers onto
 # any entries the environment already provides. guarded so re-runs don't duplicate it.
-zshrc="$HOME/.zshrc"
+zshenv="$HOME/.zshenv"
 marker="# dotfiles: git identity via GIT_CONFIG_*"
-if ! grep -qF "$marker" "$zshrc" 2>/dev/null; then
-  echo "$fg[cyan]Adding git identity to $zshrc...$reset_color"
-  cat >> "$zshrc" <<'EOF'
+if ! grep -qF "$marker" "$zshenv" 2>/dev/null; then
+  echo "Adding git identity to $zshenv..."
+  cat >> "$zshenv" <<'EOF'
 
 # dotfiles: git identity via GIT_CONFIG_*
 _count=${GIT_CONFIG_COUNT:-0}
@@ -113,4 +111,4 @@ export GIT_CONFIG_COUNT=$_count
 EOF
 fi
 
-echo "$fg[green]Install complete.$reset_color"
+echo "Install complete."
