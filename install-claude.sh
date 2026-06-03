@@ -105,16 +105,17 @@ for link in $links; do
   fi
 done
 
-# verify the active global git config matches the name/email in files/gitconfig
-echo "$fg[cyan]Checking global git config...$reset_color"
+# verify the effective git config matches the name/email in files/gitconfig.
+# uses `git config` (no --global) so GIT_CONFIG_* env overrides are honored.
+echo "$fg[cyan]Checking git config...$reset_color"
 expected_name=$(git config -f "$PWD/files/gitconfig" user.name)
 expected_email=$(git config -f "$PWD/files/gitconfig" user.email)
-actual_name=$(git config --global user.name || true)
-actual_email=$(git config --global user.email || true)
+actual_name=$(git config user.name || true)
+actual_email=$(git config user.email || true)
 if [ "$actual_name" = "$expected_name" ] && [ "$actual_email" = "$expected_email" ]; then
-  echo "$fg[green]Global git config active (user.name=$actual_name, user.email=$actual_email).$reset_color"
+  echo "$fg[green]Git config active (user.name=$actual_name, user.email=$actual_email).$reset_color"
 else
-  echo "$fg[red]Global git config mismatch:$reset_color"
+  echo "$fg[red]Git config mismatch:$reset_color"
   echo "  expected user.name  = $expected_name, got ${actual_name:-<unset>}"
   echo "  expected user.email = $expected_email, got ${actual_email:-<unset>}"
   if [ -z "$actual_name" ] || [ -z "$actual_email" ]; then
