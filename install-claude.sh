@@ -116,59 +116,48 @@ DEBIAN_FRONTEND=noninteractive apt-get install -y \
   wabt
 
 # toolchain installs, fanned out in parallel now that the apt deps are present
+# install prebuilt dev tool binaries from the stellar/binaries release instead of
+# compiling them with cargo. grabs the newest version of each Linux X64 asset.
 (
-  if (( ! $+commands[cargo-deny] )); then
-    echo "Installing cargo-deny..."
-    cargo install --locked cargo-deny
-  fi
-) &
-pids+=($!)
-(
-  if (( ! $+commands[cargo-hack] )); then
-    echo "Installing cargo-hack..."
-    cargo install --locked cargo-hack
-  fi
-) &
-pids+=($!)
-(
-  if (( ! $+commands[sccache] )); then
-    echo "Installing sccache..."
-    cargo install --locked sccache
-  fi
-) &
-pids+=($!)
-(
-  if (( ! $+commands[cargo-nextest] )); then
-    echo "Installing cargo-nextest..."
-    cargo install --locked cargo-nextest
-  fi
-) &
-pids+=($!)
-(
-  if (( ! $+commands[cargo-fuzz] )); then
-    echo "Installing cargo-fuzz..."
-    cargo install --locked cargo-fuzz
-  fi
-) &
-pids+=($!)
-(
-  if (( ! $+commands[cargo-expand] )); then
-    echo "Installing cargo-expand..."
-    cargo install --locked cargo-expand
-  fi
-) &
-pids+=($!)
-(
-  if (( ! $+commands[wasm-cs] )); then
-    echo "Installing wasm-cs..."
-    cargo install --locked wasm-cs
-  fi
+  binaries_tag=v65
+  echo "Installing dev tool binaries ($binaries_tag)..."
+  api="https://api.github.com/repos/stellar/binaries/releases/tags/$binaries_tag"
+  base_url="https://github.com/stellar/binaries/releases/download/$binaries_tag"
+  # list the Linux X64 asset filenames from the release
+  assets=$(curl -fsSL "$api" | grep -oE '[A-Za-z0-9._-]+-Linux-X64\.tar\.gz' | sort -u)
+  # keep only the newest version per tool (some tools ship multiple versions)
+  typeset -A latest
+  for f in ${(f)assets}; do
+    base=${f%-Linux-X64.tar.gz}   # e.g. cargo-deny-0.19.0
+    tool=${base%-*}               # e.g. cargo-deny
+    ver=${base##*-}               # e.g. 0.19.0
+    if [[ -z ${latest[$tool]:-} ]] || [[ $(print -rl -- ${latest[$tool]} $ver | sort -V | tail -1) == $ver ]]; then
+      latest[$tool]=$ver
+    fi
+  done
+  # download and extract each selected binary in parallel into /usr/local/bin
+  bpids=()
+  for tool ver in ${(kv)latest}; do
+    (
+      echo "  ${tool} ${ver}"
+      curl -fsSL "$base_url/${tool}-${ver}-Linux-X64.tar.gz" | tar -C /usr/local/bin -xz
+    ) &
+    bpids+=($!)
+  done
+  bfail=0
+  for p in $bpids; do
+    wait $p || bfail=1
+  done
+  (( bfail )) && exit 1
 ) &
 pids+=($!)
 (
   if (( ! $+commands[stellar] )); then
     echo "Installing stellar-cli..."
-    cargo install --locked stellar-cli
+    # resolve the latest version from the releases/latest redirect (avoids needing jq)
+    stellar_tag=$(curl -fsSL -o /dev/null -w '%{url_effective}' https://github.com/stellar/stellar-cli/releases/latest)
+    stellar_version=${${stellar_tag##*/}#v}
+    curl -fsSL "https://github.com/stellar/stellar-cli/releases/download/v${stellar_version}/stellar-cli-${stellar_version}-x86_64-unknown-linux-gnu.tar.gz" | tar -C /usr/local/bin -xz
   fi
 ) &
 pids+=($!)
