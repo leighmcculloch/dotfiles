@@ -90,25 +90,9 @@ for link in $links; do
   fi
 done
 
-# inject git identity into ~/.zshenv so it is set in every shell on this instance.
-# appends to GIT_CONFIG_* (rather than assuming a fixed count) so it layers onto
-# any entries the environment already provides. guarded so re-runs don't duplicate it.
-zshenv="$HOME/.zshenv"
-marker="# dotfiles: git identity via GIT_CONFIG_*"
-if ! grep -qF "$marker" "$zshenv" 2>/dev/null; then
-  echo "Adding git identity to $zshenv..."
-  cat >> "$zshenv" <<'EOF'
-
-# dotfiles: git identity via GIT_CONFIG_*
-_count=${GIT_CONFIG_COUNT:-0}
-export GIT_CONFIG_KEY_$_count=user.name
-export GIT_CONFIG_VALUE_$_count=Leigh
-_count=$((_count + 1))
-export GIT_CONFIG_KEY_$_count=user.email
-export GIT_CONFIG_VALUE_$_count=351529+leighmcculloch@users.noreply.github.com
-_count=$((_count + 1))
-export GIT_CONFIG_COUNT=$_count
-EOF
-fi
+# set the git identity in the global config so it persists across shells on this instance
+echo "Setting git identity..."
+git config --global user.name "Leigh"
+git config --global user.email "351529+leighmcculloch@users.noreply.github.com"
 
 echo "Install complete."

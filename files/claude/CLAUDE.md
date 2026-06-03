@@ -20,3 +20,5 @@ No exceptions:
 - PRs → [pr skill](skills/pr/SKILL.md)
 - Issues → [issue skill](skills/issue/SKILL.md)
 - Branch names → [branch skill](skills/branch/SKILL.md)
+
+Never, under any circumstance, add an attribution trailer such as "Generated with Claude Code", "Co-Authored-By: Claude", or anything similar to commits, comments, issues, or PRs.
