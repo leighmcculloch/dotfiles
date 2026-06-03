@@ -32,10 +32,13 @@ path: .github/ISSUE_TEMPLATE/
 ```
 
 **Step 1b: Check org's .github repository**
+Query GitHub's public HTTP endpoints, not the GitHub API. List the templates by fetching the public repo tree page with WebFetch:
 ```
-owner: {repo_owner}
-repo: .github
-path: .github/ISSUE_TEMPLATE/
+https://github.com/{repo_owner}/.github/tree/HEAD/.github/ISSUE_TEMPLATE
+```
+Read a template's contents from the raw endpoint with `curl -fsSL` (a 404 means it doesn't exist):
+```
+https://raw.githubusercontent.com/{repo_owner}/.github/HEAD/.github/ISSUE_TEMPLATE/{template_file}
 ```
 
 **Step 2: Make list of issue templates to choose from**

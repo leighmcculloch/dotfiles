@@ -58,7 +58,14 @@ Try each of these paths via `gh api repos/{owner}/{repo}/contents/{path}` until 
 - `pull_request_template.md`
 
 **Step 1b: Check org's .github repository**
-Try the same paths under the org's `.github` repo.
+Query GitHub's public HTTP endpoints, not the GitHub API. Try the same paths under the org's `.github` repo via the raw endpoint with `curl -fsSL`, treating an HTTP 200 as "exists" and a 404 as "missing":
+```
+https://raw.githubusercontent.com/{repo_owner}/.github/HEAD/{path}
+```
+For the `.github/PULL_REQUEST_TEMPLATE/` directory, list its contents by fetching the public repo tree page with WebFetch:
+```
+https://github.com/{repo_owner}/.github/tree/HEAD/.github/PULL_REQUEST_TEMPLATE
+```
 
 **Step 2: Select template**
 - If Step 1a returned a single template file, use it.
