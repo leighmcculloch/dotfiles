@@ -8,6 +8,8 @@ description: Create GitHub issues with context from linked issues/PRs
 **Formatting rules:**
 - Do not hard-wrap lines. Write paragraphs as a single continuous line; let the renderer wrap.
 - Minimal formatting. No diagrams. No bullet lists — write prose paragraphs, even when filling in template sections. If a template literally provides a checklist (e.g. `- [ ] Tested`), keep that as-is; do not invent prose bullets of your own.
+- When a template section poses several questions or prompts, answer each one in its own paragraph (in the order asked), separated by blank lines, rather than collapsing them into a single block. This keeps each section easy for a human to scan.
+- Describe the problem, not the solution. Never prescribe a fix or state what the solution is with certainty. If you mention a possible approach, weaken it with tentative language (e.g. "one option might be", "perhaps", "could") so it reads as a suggestion to consider, not a decision already made.
 
 ## Workflow
 
