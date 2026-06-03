@@ -100,14 +100,15 @@ if ! grep -qF "$marker" "$zshenv" 2>/dev/null; then
   cat >> "$zshenv" <<'EOF'
 
 # dotfiles: git identity via GIT_CONFIG_*
-_count=${GIT_CONFIG_COUNT:-0}
-export GIT_CONFIG_KEY_$_count=user.name
-export GIT_CONFIG_VALUE_$_count=Leigh
-_count=$((_count + 1))
-export GIT_CONFIG_KEY_$_count=user.email
-export GIT_CONFIG_VALUE_$_count=351529+leighmcculloch@users.noreply.github.com
-_count=$((_count + 1))
-export GIT_CONFIG_COUNT=$_count
+_git_config_env() {
+  local i=${GIT_CONFIG_COUNT:-0}
+  export GIT_CONFIG_KEY_$i="$1"
+  export GIT_CONFIG_VALUE_$i="$2"
+  export GIT_CONFIG_COUNT=$((i + 1))
+}
+_git_config_env user.name "Leigh"
+_git_config_env user.email "351529+leighmcculloch@users.noreply.github.com"
+unset -f _git_config_env
 EOF
 fi
 
