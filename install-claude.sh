@@ -44,11 +44,11 @@ if (( ! $+commands[rustc] )); then
 fi
 if (( ! $+commands[cargo-deny] )); then
   echo "$fg[cyan]Installing cargo-deny...$reset_color"
-  cargo install cargo-deny
+  cargo install --locked cargo-deny
 fi
 if (( ! $+commands[cargo-hack] )); then
   echo "$fg[cyan]Installing cargo-hack...$reset_color"
-  cargo install cargo-hack
+  cargo install --locked cargo-hack
 fi
 if (( ! $+commands[go] )); then
   echo "$fg[cyan]Installing go...$reset_color"
@@ -58,17 +58,23 @@ fi
 if (( ! $+commands[deno] )); then
   echo "$fg[cyan]Installing deno...$reset_color"
   curl -fsSL https://deno.land/install.sh | sh
+  # make deno (and its globally installed bins) available to the rest of this script
+  export PATH="$HOME/.deno/bin:$PATH"
+fi
+if (( ! $+commands[prettier] )); then
+  echo "$fg[cyan]Installing prettier...$reset_color"
+  deno install -gA npm:prettier
 fi
 
 echo "$fg[cyan]Installing claude files...$reset_color"
+mkdir -p "$HOME/.claude"
+mkdir -p "$HOME/.claude/skills"
 links=(
   "$PWD/files/claude/CLAUDE.md:$HOME/.claude/CLAUDE.md"
 )
 for src in "$PWD"/files/claude/skills/*(/); do
-  links+=("$src:$skills_dest/${src:t}")
+  links+=("$src:$HOME/.claude/skills/${src:t}")
 done
-skills_dest="$HOME/.claude/skills"
-mkdir -p "$skills_dest"
 for link in $links; do
   src="${link%%:*}"
   dest="${link#*:}"
