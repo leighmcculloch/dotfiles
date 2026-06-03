@@ -105,28 +105,25 @@ for link in $links; do
   fi
 done
 
-# verify the effective git config matches the name/email in files/gitconfig.
-# uses `git config` (no --global) so GIT_CONFIG_* env overrides are honored.
-echo "$fg[cyan]Checking git config...$reset_color"
-expected_name=$(git config -f "$PWD/files/gitconfig" user.name)
-expected_email=$(git config -f "$PWD/files/gitconfig" user.email)
-actual_name=$(git config user.name || true)
-actual_email=$(git config user.email || true)
-if [ "$actual_name" = "$expected_name" ] && [ "$actual_email" = "$expected_email" ]; then
-  echo "$fg[green]Git config active (user.name=$actual_name, user.email=$actual_email).$reset_color"
-else
-  echo "$fg[red]Git config mismatch:$reset_color"
-  echo "  expected user.name  = $expected_name, got ${actual_name:-<unset>}"
-  echo "  expected user.email = $expected_email, got ${actual_email:-<unset>}"
-  if [ -z "$actual_name" ] || [ -z "$actual_email" ]; then
-    echo "Set these env vars to configure git:"
-    echo "  export GIT_CONFIG_COUNT=2"
-    echo "  export GIT_CONFIG_KEY_0=user.name"
-    echo "  export GIT_CONFIG_VALUE_0=$expected_name"
-    echo "  export GIT_CONFIG_KEY_1=user.email"
-    echo "  export GIT_CONFIG_VALUE_1=$expected_email"
-  fi
-  exit 1
+# inject git identity into ~/.bashrc so it is set in every shell on this instance.
+# appends to GIT_CONFIG_* (rather than assuming a fixed count) so it layers onto
+# any entries the environment already provides. guarded so re-runs don't duplicate it.
+bashrc="$HOME/.bashrc"
+marker="# dotfiles: git identity via GIT_CONFIG_*"
+if ! grep -qF "$marker" "$bashrc" 2>/dev/null; then
+  echo "$fg[cyan]Adding git identity to $bashrc...$reset_color"
+  cat >> "$bashrc" <<'EOF'
+
+# dotfiles: git identity via GIT_CONFIG_*
+_count=${GIT_CONFIG_COUNT:-0}
+export GIT_CONFIG_KEY_$_count=user.name
+export GIT_CONFIG_VALUE_$_count=Leigh
+_count=$((_count + 1))
+export GIT_CONFIG_KEY_$_count=user.email
+export GIT_CONFIG_VALUE_$_count=351529+leighmcculloch@users.noreply.github.com
+_count=$((_count + 1))
+export GIT_CONFIG_COUNT=$_count
+EOF
 fi
 
 echo "$fg[green]Install complete.$reset_color"
