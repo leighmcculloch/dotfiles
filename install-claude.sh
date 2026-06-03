@@ -30,18 +30,10 @@ autoload -U colors && colors
 # install remaining apt packages needed by most scripts in this repo (non-interactive use)
 echo "$fg[cyan]Installing apt packages...$reset_color"
 DEBIAN_FRONTEND=noninteractive apt-get install -y \
-  git \
-  jq \
   curl \
   xxd \
   build-essential \
   gh
-if (( ! $+commands[rustc] )); then
-  echo "$fg[cyan]Installing rust...$reset_color"
-  curl --proto '=https' --tlsv1.2 -fsSL https://sh.rustup.rs | sh -s -- -y
-  # make cargo available to the rest of this script in the same session
-  source "$HOME/.cargo/env"
-fi
 if (( ! $+commands[cargo-deny] )); then
   echo "$fg[cyan]Installing cargo-deny...$reset_color"
   cargo install --locked cargo-deny
@@ -49,11 +41,6 @@ fi
 if (( ! $+commands[cargo-hack] )); then
   echo "$fg[cyan]Installing cargo-hack...$reset_color"
   cargo install --locked cargo-hack
-fi
-if (( ! $+commands[go] )); then
-  echo "$fg[cyan]Installing go...$reset_color"
-  go_version=$(curl -fsSL "https://go.dev/dl/?mode=json" | jq -r '.[0].version')
-  curl -fsSL "https://go.dev/dl/${go_version}.linux-amd64.tar.gz" | tar -C /usr/local -xz
 fi
 if (( ! $+commands[deno] )); then
   echo "$fg[cyan]Installing deno...$reset_color"
@@ -105,14 +92,14 @@ for link in $links; do
   fi
 done
 
-# inject git identity into ~/.bashrc so it is set in every shell on this instance.
+# inject git identity into ~/.zshrc so it is set in every shell on this instance.
 # appends to GIT_CONFIG_* (rather than assuming a fixed count) so it layers onto
 # any entries the environment already provides. guarded so re-runs don't duplicate it.
-bashrc="$HOME/.bashrc"
+zshrc="$HOME/.zshrc"
 marker="# dotfiles: git identity via GIT_CONFIG_*"
-if ! grep -qF "$marker" "$bashrc" 2>/dev/null; then
-  echo "$fg[cyan]Adding git identity to $bashrc...$reset_color"
-  cat >> "$bashrc" <<'EOF'
+if ! grep -qF "$marker" "$zshrc" 2>/dev/null; then
+  echo "$fg[cyan]Adding git identity to $zshrc...$reset_color"
+  cat >> "$zshrc" <<'EOF'
 
 # dotfiles: git identity via GIT_CONFIG_*
 _count=${GIT_CONFIG_COUNT:-0}
