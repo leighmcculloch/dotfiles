@@ -46,6 +46,7 @@ _git_config_env() {
   export GIT_CONFIG_VALUE_$i="$2"
   export GIT_CONFIG_COUNT=$((i + 1))
 }
+_git_config_env commit.gpgsign "false"
 _git_config_env user.name "Leigh"
 _git_config_env user.email "351529+leighmcculloch@users.noreply.github.com"
 unset -f _git_config_env
