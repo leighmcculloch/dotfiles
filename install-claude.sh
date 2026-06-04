@@ -37,9 +37,14 @@ zshenv="$HOME/.zshenv"
 marker="# dotfiles: auto added, do not remove"
 if ! grep -qF "$marker" "$zshenv" 2>/dev/null; then
   echo "Adding envs to $zshenv..."
-  cat >> "$zshenv" <<'EOF'
+  # first heredoc is unquoted only to bake in the dotfiles repo path
+  cat >> "$zshenv" <<EOF
 
-# dotfiles: auto added, do not remove
+$marker
+DOTFILES_DIR="$PWD"
+EOF
+  # rest is literal; \$DOTFILES_DIR etc. are evaluated at shell startup
+  cat >> "$zshenv" <<'EOF'
 _git_config_env() {
   local i=${GIT_CONFIG_COUNT:-0}
   export GIT_CONFIG_KEY_$i="$1"
@@ -57,48 +62,26 @@ export RUSTC_WRAPPER=sccache
 # remove the stop-hook git check (-f so a missing file doesn't error in every shell)
 rm -f ~/.claude/stop-hook-git-check.sh
 rm -f ~/.claude/session-start-git-identity.sh
-EOF
-fi
 
-# link claude files
-echo "Installing claude files..."
-mkdir -p "$HOME/.claude"
-mkdir -p "$HOME/.claude/skills"
-links=(
-  "$PWD/files/claude/CLAUDE.md:$HOME/.claude/CLAUDE.md"
-)
-for src in "$PWD"/files/claude/skills/*(/); do
-  links+=("$src:$HOME/.claude/skills/${src:t}")
-done
-for link in $links; do
+# symlink claude files; back up anything real in the way to .bak first
+mkdir -p ~/.claude
+for link in \
+  "$DOTFILES_DIR/files/claude/CLAUDE.md:$HOME/.claude/CLAUDE.md" \
+  "$DOTFILES_DIR/files/claude/skills:$HOME/.claude/skills"; do
   src="${link%%:*}"
   dest="${link#*:}"
-  echo -n "Linking $src at $dest... "
-  # check if destination already exists (including a broken symlink)
-  if [ -e "$dest" ] || [ -L "$dest" ]; then
-    if [ -L "$dest" ]; then
-      # existing destination is a symlink, safe to replace
-      rm "$dest"
-      ln -s "$src" "$dest"
-      echo "done (replacing symlink)."
-    else
-      # existing destination is a real file/dir, back it up first
-      # find next available backup name
-      i=0
-      while [ -e "$dest.bak$i" ]; do
-        ((i++))
-      done
-      backup="$dest.bak$i"
-      mv "$dest" "$backup"
-      ln -s "$src" "$dest"
-      echo "done (backed up to $backup)."
-    fi
-  else
-    # destination doesn't exist, create symlink
-    ln -s "$src" "$dest"
-    echo "done."
-  fi
+  [ "$(readlink "$dest" 2>/dev/null)" = "$src" ] && continue
+  { [ -e "$dest" ] || [ -L "$dest" ]; } && mv "$dest" "$dest.bak$RANDOM"
+  ln -s "$src" "$dest"
 done
+
+# strip a leading claude/ from the current branch name
+branch=$(git symbolic-ref --quiet --short HEAD 2>/dev/null)
+case $branch in
+  claude/*) git branch -m "${branch#claude/}" ;;
+esac
+EOF
+fi
 
 # apt packages: prerequisite for the curl downloads below, so install them first
 echo "Installing apt packages..."
