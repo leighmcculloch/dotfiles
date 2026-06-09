@@ -12,6 +12,10 @@ Creates a draft pull request with a title and description generated from the dif
 - Minimal formatting. No examples, no diagrams. No bullet lists — write prose paragraphs, even when filling in template sections. If a template literally provides a checklist (e.g. `- [ ] Tested`), keep that as-is; do not invent prose bullets of your own.
 - When no template exists, use only `### What` and `### Why` headings.
 
+**Confirmation mode:**
+- Default (no args, or args without the word "wait"): create the PR immediately after writing the draft.
+- If the args passed to the skill contain the word "wait" anywhere (case-insensitive): pause after writing the draft, present it for review, and wait for user confirmation before creating the PR.
+
 ## Workflow
 
 ### 1. Determine Base Branch
@@ -111,9 +115,7 @@ Avoid (machine-generated, lists the *how*):
 Prefer (hyperfocused, names the overarching change):
 > Expand the crate-level docs with sections covering builds without version info, shallow clone support, and the stripping of path-redirecting `GIT_*` env vars.
 
-### 6. Write Draft and Present for Review
-
-**Step 1: Write the draft to NOTES_PR.md**
+### 6. Write Draft
 
 Write the complete draft PR to `NOTES_PR.md` in the current working directory. Write all paragraphs as single unwrapped lines:
 
@@ -131,20 +133,19 @@ Write the complete draft PR to `NOTES_PR.md` in the current working directory. W
 
 `{body}` is either the populated template (if one was found) or the What/Why sections (if not).
 
-**Step 2: Present for review**
+**If the args do not contain "wait":** proceed directly to Step 7. Do not pause.
 
-After writing the file, inform the user:
+**If the args contain "wait":** present the draft for review:
 ```
 I've written the draft PR to NOTES_PR.md for your review.
 
 Would you like me to create the PR with this content, or would you like to make changes?
 ```
-
 Wait for user confirmation before proceeding. If the user requests modifications, update `NOTES_PR.md` with the changes before creating the PR.
 
 ### 7. Create the Pull Request
 
-After user confirmation. Assume the branch is already pushed — do not push:
+Assume the branch is already pushed — do not push:
 
 ```bash
 gh pr create \
