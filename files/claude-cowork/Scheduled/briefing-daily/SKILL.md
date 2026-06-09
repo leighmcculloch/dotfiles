@@ -94,7 +94,7 @@ The update is written to a persistent Slack Canvas:
 - For a multi-day window: `## March 17 – March 23, 2026` (the date range covered)
 DO NOT create a new canvas each time — update the existing one via `slack_update_canvas`.
  
-After writing, DM me the canvas link via `slack_send_message` so I can review.
+After writing, send a Slack message to channel C0B8UTQE221 with the canvas link so I can review.
  
 ## Process
  

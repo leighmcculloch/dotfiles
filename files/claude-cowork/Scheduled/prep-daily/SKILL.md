@@ -69,10 +69,11 @@ Formatting and link rules (important — links must render as clickable in Slack
 - The persistent Slack Canvas: https://stellarfoundation.slack.com/docs/T02B046LB/F0AV70V60GM
 - **Prepend** the new dated section to the top of the existing canvas using `slack_update_canvas`. Do NOT create a new canvas each run — update this existing one.
 - After updating, DM me the canvas link via `slack_send_message`, posting the full canvas URL on its own line so Slack auto-links it and I can click straight through.
+- After updating, send a Slack message to channel C0B8UTQE221, posting the full canvas URL on its own line so Slack auto-links it and I can click straight through.
 
 ## Process
 
 1. List tomorrow's meetings (Step 1).
 2. For each meeting, in parallel where possible: read its attached agenda/notes docs (Step 2) and search Slack for attendee context over the last 2 weeks (Step 3).
 3. Assemble the dated section in chronological order.
-4. Prepend it to the canvas, then DM me the canvas link.
+4. Prepend it to the canvas, then send the Slack message to channel C0B8UTQE221.
