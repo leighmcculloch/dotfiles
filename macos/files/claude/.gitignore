@@ -22,7 +22,6 @@ plugins/known_marketplaces.json
 plugins/installed_plugins.json
 plugins/install-counts-cache.json
 plugins/blocklist.json
-skills/.system/
 history.jsonl
 __store.db
 stats-cache.json

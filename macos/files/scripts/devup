@@ -10,4 +10,5 @@ devcontainer up \
       "--platform=linux/amd64"
     ]
   }') \
-  --dotfiles-repository https://github.com/leighmcculloch/dotfiles
+  --dotfiles-repository https://github.com/leighmcculloch/dotfiles \
+  --dotfiles-install-command ./macos/install.sh

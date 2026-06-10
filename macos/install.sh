@@ -6,6 +6,11 @@ set -o nounset
 
 autoload -U colors && colors
 
+# run from this script's own directory so the files/ and Brewfile paths below
+# resolve regardless of the caller's cwd (e.g. ./macos/install.sh, or the
+# devcontainer dotfiles feature running from the cloned repo root)
+cd "${0:A:h}"
+
 echo "$fg[cyan]Installing for $(uname -s -p) in $(echo $0)...$reset_color"
 
 # symlink files

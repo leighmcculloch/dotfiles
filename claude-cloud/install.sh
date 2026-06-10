@@ -66,8 +66,8 @@ rm -f ~/.claude/session-start-git-identity.sh
 # symlink claude files; back up anything real in the way to .bak first
 mkdir -p ~/.claude
 for link in \
-  "$DOTFILES_DIR/files/claude/CLAUDE.md:$HOME/.claude/CLAUDE.md" \
-  "$DOTFILES_DIR/files/claude/skills:$HOME/.claude/skills"; do
+  "$DOTFILES_DIR/shared/claude/CLAUDE.md:$HOME/.claude/CLAUDE.md" \
+  "$DOTFILES_DIR/shared/claude/skills:$HOME/.claude/skills"; do
   src="${link%%:*}"
   dest="${link#*:}"
   [ "$(readlink "$dest" 2>/dev/null)" = "$src" ] && continue

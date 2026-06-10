@@ -1,21 +1,25 @@
 # dotfiles
 
-Personal dotfiles managed with symlinks and Homebrew.
-
-## Install
-
-```
-./install.sh
-```
-
-The install script:
-
-1. Symlinks everything in `files/` to `~/` as dotfiles
-2. Installs Homebrew (if not present)
-3. Installs packages from `Brewfile`
+Personal dotfiles for two independent setups, with the small overlap kept in one place.
 
 ## Structure
 
-- `files/` - Dotfiles symlinked to `~/` (e.g. `files/gitconfig` becomes `~/.gitconfig`)
-- `Brewfile` - Homebrew packages, casks, and Mac App Store apps
-- `install.sh` - Setup script
+- `macos/` — local macOS (and devcontainer) setup
+  - `install.sh` — symlinks everything in `macos/files/` to `~/` (e.g. `files/gitconfig` becomes `~/.gitconfig`), installs Homebrew and packages
+  - `files/` — dotfiles symlinked to `~/`
+  - `Brewfile` — Homebrew packages, casks, and Mac App Store apps
+  - `extensions/` — browser extensions
+- `claude-cloud/` — Claude Code Cloud instance setup
+  - `install.sh` — symlinks the shared Claude config (`CLAUDE.md` and `skills/`) into `~/.claude`
+- `shared/` — files used by both setups
+  - `claude/CLAUDE.md`, `claude/skills/` — the Claude config common to both (macOS symlinks to these)
+
+## Install
+
+macOS:
+
+```
+./macos/install.sh
+```
+
+Claude Code Cloud: configure the environment's setup command to run `./claude-cloud/install.sh`.
