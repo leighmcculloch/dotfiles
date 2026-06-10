@@ -1,0 +1,7 @@
+{
+  "trustedformulae": [
+    "leighmcculloch/paste-markdown/paste-markdown",
+    "leighmcculloch/silo/silo",
+    "leighmcculloch/usage/usage"
+  ]
+}
