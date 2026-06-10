@@ -69,16 +69,17 @@ export RUSTC_WRAPPER=sccache
 rm -f ~/.claude/stop-hook-git-check.sh
 rm -f ~/.claude/session-start-git-identity.sh
 
-# symlink claude files; back up anything real in the way to .bak first
+# copy claude files into place, refreshing from the repo on every shell. unlike a
+# symlink there's no cheap "already correct" check, so just remove our own copy
+# and re-copy each time; the destinations are owned by this script, not the user.
 mkdir -p ~/.claude
 for link in \
   "$DOTFILES_DIR/shared/claude/CLAUDE.md:$HOME/.claude/CLAUDE.md" \
   "$DOTFILES_DIR/shared/claude/skills:$HOME/.claude/skills"; do
   src="${link%%:*}"
   dest="${link#*:}"
-  [ "$(readlink "$dest" 2>/dev/null)" = "$src" ] && continue
-  { [ -e "$dest" ] || [ -L "$dest" ]; } && mv "$dest" "$dest.bak$RANDOM"
-  ln -s "$src" "$dest"
+  rm -rf "$dest"
+  cp -R "$src" "$dest"
 done
 
 # strip a leading claude/ from the current branch name
