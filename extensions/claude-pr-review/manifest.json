@@ -1,0 +1,13 @@
+{
+  "manifest_version": 3,
+  "name": "Claude PR Review",
+  "version": "1.0",
+  "description": "Open the current GitHub pull request in Claude Code for review",
+  "permissions": ["activeTab"],
+  "action": {
+    "default_title": "Review PR with Claude Code"
+  },
+  "background": {
+    "service_worker": "background.js"
+  }
+}
