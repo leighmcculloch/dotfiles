@@ -85,7 +85,7 @@ fi
 # skills, so they load on the first session. ~/.zshenv refreshes it on every
 # shell, and the SessionStart hook in settings.json re-scans skills so a config
 # that lands after launch still takes effect in the already-running session.
-DOTFILES_DIR="$dotfiles_dir" "$dotfiles_dir/claude-cloud/sync.sh"
+"$dotfiles_dir/claude-cloud/sync.sh"
 
 # apt packages: prerequisite for the curl downloads below, so install them first
 echo "Installing apt packages..."
