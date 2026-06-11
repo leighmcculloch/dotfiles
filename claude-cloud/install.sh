@@ -69,15 +69,15 @@ export RUSTC_WRAPPER=sccache
 rm -f ~/.claude/stop-hook-git-check.sh
 rm -f ~/.claude/session-start-git-identity.sh
 
-# copy claude files into place, refreshing from the repo on every shell. unlike a
-# symlink there's no cheap "already correct" check, so just remove our own copy
-# and re-copy each time; the destinations are owned by this script, not the user.
-mkdir -p ~/.claude
-for link in \
-  "$DOTFILES_DIR/shared/claude/CLAUDE.md:$HOME/.claude/CLAUDE.md" \
-  "$DOTFILES_DIR/shared/claude/skills:$HOME/.claude/skills"; do
-  src="${link%%:*}"
-  dest="${link#*:}"
+# copy claude files into place, refreshing from the repo on every shell. there's
+# no cheap "already correct" check like a symlink's readlink, so just overwrite
+# our own copies each time. ~/.claude/skills may also hold skills from elsewhere,
+# so copy our skills in one at a time rather than replacing the whole directory,
+# which would clobber any skills this repo doesn't own.
+mkdir -p ~/.claude/skills
+cp "$DOTFILES_DIR/shared/claude/CLAUDE.md" "$HOME/.claude/CLAUDE.md"
+for src in "$DOTFILES_DIR"/shared/claude/skills/*; do
+  dest="$HOME/.claude/skills/${src:t}"
   rm -rf "$dest"
   cp -R "$src" "$dest"
 done
