@@ -30,11 +30,11 @@ fi
 # curl options to retry transient network failures on downloads
 curl_opts=(-fsSL --retry 3 --retry-delay 2 --retry-all-errors)
 
-# resolve the repo root from this script's own location (the parent of
-# claude-cloud/), not $PWD, so the baked DOTFILES_DIR is correct no matter which
-# cwd the setup command runs us from. ${0:A} is the absolute script path; :h:h
-# strips install.sh and the claude-cloud/ dir, leaving the repo root.
-dotfiles_dir="${0:A:h:h}"
+# resolve paths from this script's own location, not $PWD, so they are correct no
+# matter which cwd the setup command runs us from. ${0:A} is the absolute script
+# path; :h gives its dir (claude-cloud/), and :h again gives the repo root.
+script_dir="${0:A:h}"
+dotfiles_dir="${script_dir:h}"
 
 # inject git identity into ~/.zshenv so it is set in every shell on this instance.
 # appends to GIT_CONFIG_* (rather than assuming a fixed count) so it layers onto
@@ -85,7 +85,8 @@ fi
 # skills, so they load on the first session. ~/.zshenv refreshes it on every
 # shell, and the SessionStart hook in settings.json re-scans skills so a config
 # that lands after launch still takes effect in the already-running session.
-"$dotfiles_dir/claude-cloud/sync.sh"
+# sync.sh is a sibling of this script, so resolve it from this script's own dir.
+"$script_dir/sync.sh"
 
 # apt packages: prerequisite for the curl downloads below, so install them first
 echo "Installing apt packages..."
