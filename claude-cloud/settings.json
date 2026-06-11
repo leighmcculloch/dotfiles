@@ -5,7 +5,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "[ -n \"${DOTFILES_DIR:-}\" ] && \"$DOTFILES_DIR/claude-cloud/sync.sh\" || true; printf '{\"hookSpecificOutput\":{\"hookEventName\":\"SessionStart\",\"reloadSkills\":true}}'"
+            "command": "\"$DOTFILES_DIR/claude-cloud/hook-session-start.sh\""
           }
         ]
       }
