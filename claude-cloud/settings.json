@@ -1,0 +1,14 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[ -n \"${DOTFILES_DIR:-}\" ] && \"$DOTFILES_DIR/claude-cloud/sync-claude-config.sh\" || true; printf '{\"hookSpecificOutput\":{\"hookEventName\":\"SessionStart\",\"reloadSkills\":true}}'"
+          }
+        ]
+      }
+    ]
+  }
+}

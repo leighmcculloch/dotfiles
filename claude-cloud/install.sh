@@ -69,18 +69,9 @@ export RUSTC_WRAPPER=sccache
 rm -f ~/.claude/stop-hook-git-check.sh
 rm -f ~/.claude/session-start-git-identity.sh
 
-# copy claude files into place, refreshing from the repo on every shell. there's
-# no cheap "already correct" check like a symlink's readlink, so just overwrite
-# our own copies each time. ~/.claude/skills may also hold skills from elsewhere,
-# so copy our skills in one at a time rather than replacing the whole directory,
-# which would clobber any skills this repo doesn't own.
-mkdir -p ~/.claude/skills
-cp "$DOTFILES_DIR/shared/claude/CLAUDE.md" "$HOME/.claude/CLAUDE.md"
-for src in "$DOTFILES_DIR"/shared/claude/skills/*; do
-  dest="$HOME/.claude/skills/${src:t}"
-  rm -rf "$dest"
-  cp -R "$src" "$dest"
-done
+# refresh the claude config from the repo on every shell. delegated to the sync
+# script so the exact same copy runs at setup time from install.sh's body below.
+"$DOTFILES_DIR/claude-cloud/sync-claude-config.sh"
 
 # strip a leading claude/ from the current branch name
 branch=$(git symbolic-ref --quiet --short HEAD 2>/dev/null)
@@ -89,6 +80,12 @@ case $branch in
 esac
 EOF
 fi
+
+# install the claude config now, before the Claude runtime launches and scans
+# skills, so they load on the first session. ~/.zshenv refreshes it on every
+# shell, and the SessionStart hook in settings.json re-scans skills so a config
+# that lands after launch still takes effect in the already-running session.
+DOTFILES_DIR="$dotfiles_dir" "$dotfiles_dir/claude-cloud/sync-claude-config.sh"
 
 # apt packages: prerequisite for the curl downloads below, so install them first
 echo "Installing apt packages..."
