@@ -105,13 +105,17 @@ DEBIAN_FRONTEND=noninteractive apt-get install -y \
 # compiling them with cargo. only the tools listed below, newest version of each.
 # downloads run serially with anonymous curl (a parallel burst gets HTTP 403 rate limited).
 binaries_tag=v65
-api="https://api.github.com/repos/stellar/binaries/releases/tags/$binaries_tag"
+# list assets via the github.com expanded_assets HTML, not the api.github.com REST
+# endpoint: unauthenticated API calls share a 60/hour limit that is easily exhausted
+# (HTTP 403), whereas the web host is not rate limited. the asset filenames we grep
+# for appear verbatim in this HTML, so the same grep works on it.
+assets_url="https://github.com/stellar/binaries/releases/expanded_assets/$binaries_tag"
 base_url="https://github.com/stellar/binaries/releases/download/$binaries_tag"
 tools=(cargo-hack cargo-deny cargo-fuzz cargo-semver-checks cargo-expand cargo-nextest wasm-cs sccache)
 echo "Installing dev tool binaries ($binaries_tag)..."
 # find the newest version of each wanted tool among the Linux X64 assets
 typeset -A latest
-for name in ${(f)"$(curl $curl_opts "$api" | grep -oE '[A-Za-z0-9._-]+-Linux-X64\.tar\.gz' | sort -u)"}; do
+for name in ${(f)"$(curl $curl_opts "$assets_url" | grep -oE '[A-Za-z0-9._-]+-Linux-X64\.tar\.gz' | sort -u)"}; do
   base=${name%-Linux-X64.tar.gz}     # e.g. cargo-deny-0.19.0
   tool=${base%-*}                    # e.g. cargo-deny
   ver=${base##*-}                    # e.g. 0.19.0
