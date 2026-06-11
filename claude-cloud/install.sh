@@ -71,7 +71,7 @@ rm -f ~/.claude/session-start-git-identity.sh
 
 # refresh the claude config from the repo on every shell. delegated to the sync
 # script so the exact same copy runs at setup time from install.sh's body below.
-"$DOTFILES_DIR/claude-cloud/sync-claude-config.sh"
+"$DOTFILES_DIR/claude-cloud/sync.sh"
 
 # strip a leading claude/ from the current branch name
 branch=$(git symbolic-ref --quiet --short HEAD 2>/dev/null)
@@ -85,7 +85,7 @@ fi
 # skills, so they load on the first session. ~/.zshenv refreshes it on every
 # shell, and the SessionStart hook in settings.json re-scans skills so a config
 # that lands after launch still takes effect in the already-running session.
-DOTFILES_DIR="$dotfiles_dir" "$dotfiles_dir/claude-cloud/sync-claude-config.sh"
+DOTFILES_DIR="$dotfiles_dir" "$dotfiles_dir/claude-cloud/sync.sh"
 
 # apt packages: prerequisite for the curl downloads below, so install them first
 echo "Installing apt packages..."
