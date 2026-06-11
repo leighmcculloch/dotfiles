@@ -10,6 +10,7 @@ set -o pipefail
 # sync.sh is a sibling; resolve it from this script's own dir (${0:A:h}). If the
 # sync fails, errexit aborts before the JSON below, so the hook fails loudly
 # rather than reporting a successful reload over a stale or partial config.
-"${0:A:h}/sync.sh"
+# `zsh -f` skips ~/.zshenv so the sync subshell doesn't re-invoke sync.sh and recurse.
+zsh -f "${0:A:h}/sync.sh"
 
 printf '{"hookSpecificOutput":{"hookEventName":"SessionStart","reloadSkills":true}}'

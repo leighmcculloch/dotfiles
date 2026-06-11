@@ -71,7 +71,9 @@ rm -f ~/.claude/session-start-git-identity.sh
 
 # refresh the claude config from the repo on every shell. delegated to the sync
 # script so the exact same copy runs at setup time from install.sh's body below.
-"$DOTFILES_DIR/claude-cloud/sync.sh"
+# run with `zsh -f` so the sync script (itself a zsh script) does NOT re-source
+# this ~/.zshenv on startup, which would call sync.sh again and recurse forever.
+zsh -f "$DOTFILES_DIR/claude-cloud/sync.sh"
 
 # strip a leading claude/ from the current branch name
 branch=$(git symbolic-ref --quiet --short HEAD 2>/dev/null)
@@ -86,7 +88,9 @@ fi
 # shell, and the SessionStart hook in settings.json re-scans skills so a config
 # that lands after launch still takes effect in the already-running session.
 # sync.sh is a sibling of this script, so resolve it from this script's own dir.
-"$script_dir/sync.sh"
+# `zsh -f` skips ~/.zshenv (just written above), which would otherwise re-invoke
+# sync.sh on the subshell's startup and recurse forever.
+zsh -f "$script_dir/sync.sh"
 
 # apt packages: prerequisite for the curl downloads below, so install them first
 echo "Installing apt packages..."
