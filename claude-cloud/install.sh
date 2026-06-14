@@ -36,6 +36,28 @@ curl_opts=(-fsSL --retry 3 --retry-delay 2 --retry-all-errors)
 script_dir="${0:A:h}"
 dotfiles_dir="${script_dir:h}"
 
+# the per-home config (the ~/.zshenv envs and the ~/.claude config) is installed
+# into every known home on this instance, not just $HOME: the cloud env may later
+# run shells as a different user (root or claude), so seed every candidate home.
+# $HOME is logged for visibility and included in the list in case it is none of the
+# fixed paths. the list is deduped, stripping trailing slashes first so the same
+# home written two ways (e.g. /root vs /root/) isn't processed twice.
+echo "HOME is $HOME"
+orig_home="$HOME"
+homes=()
+for h in "$HOME" /root /home/claude; do
+  h=${h%/}
+  (( ${homes[(Ie)$h]} )) || homes+=("$h")
+done
+
+for home in $homes; do
+  # point HOME at this candidate so every $HOME/~ reference below (including inside
+  # sync.sh) targets it. restored to the real home after the loop for the
+  # system-wide installs further down.
+  export HOME="$home"
+  mkdir -p "$HOME"
+  echo "Installing config into $HOME..."
+
 # inject git identity into ~/.zshenv so it is set in every shell on this instance.
 # appends to GIT_CONFIG_* (rather than assuming a fixed count) so it layers onto
 # any entries the environment already provides. guarded so re-runs don't duplicate it.
@@ -83,14 +105,19 @@ esac
 EOF
 fi
 
-# install the claude config now, before the Claude runtime launches and scans
-# skills, so they load on the first session. ~/.zshenv refreshes it on every
-# shell, and the SessionStart hook in settings.json re-scans skills so a config
-# that lands after launch still takes effect in the already-running session.
-# sync.sh is a sibling of this script, so resolve it from this script's own dir.
-# `zsh -f` skips ~/.zshenv (just written above), which would otherwise re-invoke
-# sync.sh on the subshell's startup and recurse forever.
-zsh -f "$script_dir/sync.sh"
+  # install the claude config now, before the Claude runtime launches and scans
+  # skills, so they load on the first session. ~/.zshenv refreshes it on every
+  # shell, and the SessionStart hook in settings.json re-scans skills so a config
+  # that lands after launch still takes effect in the already-running session.
+  # sync.sh is a sibling of this script, so resolve it from this script's own dir.
+  # `zsh -f` skips ~/.zshenv (just written above), which would otherwise re-invoke
+  # sync.sh on the subshell's startup and recurse forever.
+  zsh -f "$script_dir/sync.sh"
+done
+
+# restore HOME for the system-wide installs below (apt packages, /usr/local/bin
+# binaries, deno) which only need to run once and should target the real home.
+export HOME="$orig_home"
 
 # apt packages: prerequisite for the curl downloads below, so install them first
 echo "Installing apt packages..."
