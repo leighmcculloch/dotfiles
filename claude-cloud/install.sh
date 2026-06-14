@@ -56,21 +56,21 @@ for home in $homes; do
   mkdir -p "$home"
   echo "Installing config into $home..."
 
-# inject git identity into ~/.zshenv so it is set in every shell on this instance.
-# appends to GIT_CONFIG_* (rather than assuming a fixed count) so it layers onto
-# any entries the environment already provides. guarded so re-runs don't duplicate it.
-zshenv="$home/.zshenv"
-marker="# dotfiles: auto added, do not remove"
-if ! grep -qF "$marker" "$zshenv" 2>/dev/null; then
-  echo "Adding envs to $zshenv..."
-  # first heredoc is unquoted only to bake in the dotfiles repo path
-  cat >> "$zshenv" <<EOF
+  # inject git identity into ~/.zshenv so it is set in every shell on this instance.
+  # appends to GIT_CONFIG_* (rather than assuming a fixed count) so it layers onto
+  # any entries the environment already provides. guarded so re-runs don't duplicate it.
+  zshenv="$home/.zshenv"
+  marker="# dotfiles: auto added, do not remove"
+  if ! grep -qF "$marker" "$zshenv" 2>/dev/null; then
+    echo "Adding envs to $zshenv..."
+    # first heredoc is unquoted only to bake in the dotfiles repo path
+    cat >> "$zshenv" <<EOF
 
 $marker
 DOTFILES_DIR="$dotfiles_dir"
 EOF
-  # rest is literal; \$DOTFILES_DIR etc. are evaluated at shell startup
-  cat >> "$zshenv" <<'EOF'
+    # rest is literal; \$DOTFILES_DIR etc. are evaluated at shell startup
+    cat >> "$zshenv" <<'EOF'
 _git_config_env() {
   local i=${GIT_CONFIG_COUNT:-0}
   export GIT_CONFIG_KEY_$i="$1"
@@ -101,7 +101,7 @@ case $branch in
   claude/*) git branch -m "${branch#claude/}" ;;
 esac
 EOF
-fi
+  fi
 
   # install the claude config now, before the Claude runtime launches and scans
   # skills, so they load on the first session. ~/.zshenv refreshes it on every
