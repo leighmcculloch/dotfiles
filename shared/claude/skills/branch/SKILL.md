@@ -26,4 +26,4 @@ When renaming, if the branch has an upstream:
 1. Capture upstream before renaming: `git rev-parse --abbrev-ref --symbolic-full-name @{upstream}` (e.g. `origin/old-name`).
 2. Rename locally: `git branch -m <new-name>`.
 3. Push the new branch: `git push -u <remote> <new-name>`.
-4. Delete the old upstream: `git push <remote> --delete <old-name>`. If this fails, ignore the failure and move on.
+4. Delete the old upstream: `git push <remote> --delete <old-name>`. If this fails for any reason, ignore the failure and continue.
