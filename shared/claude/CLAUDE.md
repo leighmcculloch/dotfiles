@@ -16,7 +16,7 @@ Turn tasks into verifiable goals and loop until met (e.g. "fix the bug" → writ
 
 ## 5. Commits, Pull Requests, Issues, and Branches
 No exceptions:
-- Commits → [commit skill](skills/commit/SKILL.md). Never add a `Co-Authored-By: Claude...` or a `Claude-Session: ` line to a commit.
+- Commits → [commit skill](skills/commit/SKILL.md)
 - PRs → [pr skill](skills/pr/SKILL.md)
 - Issues → [issue skill](skills/issue/SKILL.md)
 - Branch names → [branch skill](skills/branch/SKILL.md)

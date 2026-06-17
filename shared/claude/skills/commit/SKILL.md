@@ -12,6 +12,8 @@ Suggest a concise commit message in present tense, imperative mood, describing w
 
 Do not use conventional commit format. Start with a lower case letter and do not end with a full stop. Avoid generic phrases.
 
+Never add a `Co-Authored-By: Claude...` or a `Claude-Session: ` line to the commit.
+
 Use command:
 
 ```
