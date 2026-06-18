@@ -12,6 +12,16 @@
           }
         ]
       }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$DOTFILES_DIR/claude-cloud/hook-stop.sh\""
+          }
+        ]
+      }
     ]
   }
 }
