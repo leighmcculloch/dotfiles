@@ -17,9 +17,9 @@ input=$(cat)
 zsh -f "${0:A:h}/sync.sh"
 
 # once we block, the next Stop call arrives with stop_hook_active:true. honour it and
-# let the stop through so we re-inject the rules exactly once and never loop. matched
-# with a glob that tolerates whitespace around the JSON colon.
-if [[ $input == *'"stop_hook_active"'*:*true* ]]; then
+# let the stop through so we re-inject the rules exactly once and never loop. jq reads
+# the flag from the JSON (// false covers it being absent or null).
+if [[ $(jq -r '.stop_hook_active // false' <<<"$input") == true ]]; then
   exit 0
 fi
 
