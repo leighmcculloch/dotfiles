@@ -67,7 +67,7 @@ for home in $homes; do
     cat >> "$zshenv" <<EOF
 
 $marker
-DOTFILES_DIR="$dotfiles_dir"
+export DOTFILES_DIR="$dotfiles_dir"
 EOF
     # rest is literal; \$DOTFILES_DIR etc. are evaluated at shell startup
     cat >> "$zshenv" <<'EOF'
