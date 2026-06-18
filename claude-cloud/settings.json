@@ -8,7 +8,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"$DOTFILES_DIR/claude-cloud/hook-session-start.sh\""
+            "command": "\"__CLAUDE_CLOUD_DIR__/hook-session-start.sh\""
           }
         ]
       }
@@ -18,7 +18,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"$DOTFILES_DIR/claude-cloud/hook-stop.sh\""
+            "command": "\"__CLAUDE_CLOUD_DIR__/hook-stop.sh\""
           }
         ]
       }
