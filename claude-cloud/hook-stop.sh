@@ -23,7 +23,9 @@ if [[ $input == *'"stop_hook_active"'*:*true* ]]; then
   exit 0
 fi
 
-# hook-reminder.sh prints the rules already JSON-escaped. the \\n in the format is a
-# literal backslash-n (a JSON newline escape) separating the lead-in from the rules.
-reminder=$(zsh -f "${0:A:h}/hook-reminder.sh")
-printf '{"decision":"block","reason":"Before finishing, verify this session followed these rules; fix anything that does not comply, then stop again.\\n%s"}' "$reminder"
+# build the reason (a lead-in line plus the shared rules) and let jq escape it into
+# JSON, including the embedded newlines. jq is installed by install.sh.
+rules=$(cat "${0:A:h}/hook-reminder.txt")
+reason="Before finishing, verify this session followed these rules; fix anything that does not comply, then stop again.
+$rules"
+jq -nc --arg reason "$reason" '{decision:"block",reason:$reason}'
