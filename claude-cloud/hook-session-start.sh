@@ -15,7 +15,8 @@ zsh -f "${0:A:h}/sync.sh"
 
 # emit the commit/PR/branch workflow rules as additionalContext so they are present
 # from the first turn. reloadSkills stays so a config that lands after launch takes
-# effect. hook-reminder.sh prints the rules already JSON-escaped, so %s splices in
-# safely (printf interprets backslashes only in the format, not in the argument).
-reminder=$(zsh -f "${0:A:h}/hook-reminder.sh")
-printf '{"hookSpecificOutput":{"hookEventName":"SessionStart","reloadSkills":true,"additionalContext":"%s"}}' "$reminder"
+# effect. jq builds the JSON and escapes the rules text (--arg); jq is installed by
+# install.sh so it is on PATH by the time this hook runs.
+rules=$(cat "${0:A:h}/hook-reminder.txt")
+jq -nc --arg ctx "$rules" \
+  '{hookSpecificOutput:{hookEventName:"SessionStart",reloadSkills:true,additionalContext:$ctx}}'

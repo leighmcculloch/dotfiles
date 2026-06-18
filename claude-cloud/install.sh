@@ -121,6 +121,7 @@ DEBIAN_FRONTEND=noninteractive apt-get install -y \
   xxd \
   build-essential \
   gh \
+  jq \
   wabt
 
 # install prebuilt dev tool binaries from the stellar/binaries release instead of
