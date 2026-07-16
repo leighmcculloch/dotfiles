@@ -68,8 +68,7 @@ if OS.mac?
   brew "vhs"
 
   cask "obsidian"
-  cask "arc"
-  cask "comet"
+  #cask "arc"
   cask "font-fira-code"
   cask "font-fira-code-nerd-font"
   cask "orbstack"
@@ -77,7 +76,7 @@ if OS.mac?
   cask "discord"
   cask "ghostty"
   cask "sublime-text"
-  cask "gitbutler"
+  #cask "gitbutler"
 
   # Deployment Tools
   brew "flyctl"
@@ -88,15 +87,17 @@ if OS.mac?
   cask "lm-studio"
   cask "voiceink"
   cask "claude"
-  cask "chatgpt"
-  cask "codex-app"
+  #cask "chatgpt"
+  #cask "codex-app"
+  cask "opencode-desktop"
+  cask "github-copilot-app"
 
   # AI CLI tools
   brew "container"
   # brew "opencode" - updated too infrequently, must be installed with npm
   cask "claude-code@latest"
   # cask "copilot-cli" - unused at the moment
-  brew "mistral-vibe"
+  #brew "mistral-vibe"
 
   brew "mas"
   mas "Numbers", id: 409203825
