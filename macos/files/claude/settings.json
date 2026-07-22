@@ -298,8 +298,7 @@
   },
   "statusLine": {
     "type": "command",
-    "command": "/Users/leighmcculloch/.claude/statusline-command.sh",
-    "refreshInterval": 10
+    "command": "/Users/leighmcculloch/.claude/statusline-command.sh"
   },
   "enabledPlugins": {
     "rust-analyzer-lsp@claude-plugins-official": true,
@@ -321,14 +320,16 @@
     ]
   },
   "spinnerTipsEnabled": false,
+  "voiceEnabled": true,
   "prefersReducedMotion": true,
   "skipDangerousModePermissionPrompt": true,
+  "skipAutoPermissionPrompt": true,
   "teammateMode": "in-process",
-  "voiceEnabled": true,
   "preferences": {
     "loadingTips": false
   },
   "feedbackSurveyState": {
     "lastShownTime": 1753919494306
-  }
+  },
+  "effortLevel": "high"
 }
