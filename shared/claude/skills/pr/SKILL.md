@@ -1,20 +1,20 @@
 ---
 name: pr
-description: Create a GitHub pull request with AI-generated title and description based on the diff
+description: Create a GitHub pull request with AI-generated title and description based on the diff. Always shows the draft description for review and waits for approval before opening the PR.
 ---
 
 # GitHub Pull Request Skill
 
-Creates a draft pull request with a title and description generated from the diff between the current branch and the base branch.
+Creates a draft pull request with a title and description generated from the diff between the current branch and the base branch. It never opens the PR until the user has reviewed the description and approved it.
 
 **Formatting rules:**
+- Concise above all. Write for a reader with ADHD: lead with the point, short sentences, no throat-clearing or filler. Every word earns its place — if a sentence can go, cut it. Aim shorter than feels natural.
 - Do not hard-wrap lines. Write paragraphs as a single continuous line; let the renderer wrap.
 - Minimal formatting. No examples, no diagrams. No bullet lists — write prose paragraphs, even when filling in template sections. If a template literally provides a checklist (e.g. `- [ ] Tested`), keep that as-is; do not invent prose bullets of your own.
 - When no template exists, use only `### What` and `### Why` headings.
 
-**Confirmation mode:**
-- Default (no args, or args without the word "wait"): create the PR immediately after writing the draft.
-- If the args passed to the skill contain the word "wait" anywhere (case-insensitive): pause after writing the draft, present it for review, and wait for user confirmation before creating the PR.
+**Confirmation (always required):**
+- NEVER open the PR without first showing the draft description and getting explicit approval. After writing the draft, always present it and wait for the user to review and confirm — no args or mode ever skips this. If the user asks for changes, revise the draft and present it again before opening.
 
 ## Workflow
 
@@ -91,11 +91,11 @@ Populate the template's sections directly. Do not add `### What` or `### Why` he
 **Body — if no template was found, use What/Why:**
 
 **What section:**
-- A single focused paragraph naming the overarching change. Not a list.
+- A single focused paragraph naming the overarching change. Not a list. When the change is simple, one tight sentence beats a paragraph.
 - Write as one continuous line. Do not insert line breaks to wrap at any column width.
 - Describe the change as one cohesive thing, not an enumeration of file edits or steps.
 - Never list the *how* (e.g. "update X in lib.rs", "add test for Y", "rename Z"). The diff already shows that.
-- Use imperative mood. Be direct, eliminate filler words.
+- Use imperative mood. Be direct, eliminate filler words. Lead with the point; no throat-clearing.
 
 **Why section:**
 - A single focused paragraph. Not a list.
@@ -133,15 +133,13 @@ Write the complete draft PR to `NOTES_PR.md` in the current working directory. W
 
 `{body}` is either the populated template (if one was found) or the What/Why sections (if not).
 
-**If the args do not contain "wait":** proceed directly to Step 7. Do not pause.
-
-**If the args contain "wait":** present the draft for review:
+**Always present the draft for review before opening the PR — there is no skip.** Show it and ask:
 ```
-I've written the draft PR to NOTES_PR.md for your review.
+Draft PR is in NOTES_PR.md.
 
-Would you like me to create the PR with this content, or would you like to make changes?
+Open it with this, or change anything first?
 ```
-Wait for user confirmation before proceeding. If the user requests modifications, update `NOTES_PR.md` with the changes before creating the PR.
+Wait for explicit confirmation before proceeding to Step 7. If the user requests modifications, update `NOTES_PR.md` and present the revised draft again — do not open the PR until they approve.
 
 ### 7. Create the Pull Request
 
