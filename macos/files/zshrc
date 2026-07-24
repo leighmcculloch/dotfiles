@@ -99,7 +99,7 @@ zstyle ':vcs_info:git:*' unstagedstr '*'
 zstyle ':vcs_info:git:*' stagedstr '+'
 zstyle ':vcs_info:git:*' formats ' %F{green}%b%f%F{yellow}%u%c%f'
 setopt PROMPT_SUBST
-PROMPT='%F{cyan}%~%f${vcs_info_msg_0_} %# '
+PROMPT='%F{cyan}%~%f${vcs_info_msg_0_} $ '
 
 # Use a simplified prompt when recording in asciinema
 if [ $ASCIINEMA_REC ]; then
