@@ -8,7 +8,6 @@ Include ~/.orbstack/ssh/config
 
 Host *
   HashKnownHosts no
-  StrictHostKeyChecking yes
   CheckHostIP no
   UserKnownHostsFile ~/.ssh/known_hosts ~/.ssh/known_hosts_private
 
