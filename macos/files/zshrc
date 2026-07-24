@@ -38,80 +38,23 @@ stty stop undef
 
 source ~/.zenv
 
-# Stub compdef to queue registrations until compinit runs
-typeset -a __compdef_queue
-compdef() { __compdef_queue+=("$@") }
+# Completions
+autoload -Uz compinit
+# Regenerate dump if older than 24 hours
+if [[ -n ~/.zcompdump(#qN.mh+24) ]]; then
+  compinit
+else
+  compinit -C
+fi
 
-# Process queued compdef calls after compinit
-__process_compdef_queue() {
-  # compinit already overwrote the stub with the real compdef
-  for args in "${__compdef_queue[@]}"; do
-    compdef ${=args}  # Call real compdef with queued args
-  done
-  unset __compdef_queue
-}
-
-# Defer compinit until first completion
-function __deferred_compinit() {
-  unfunction __deferred_compinit
-  autoload -Uz compinit
-  # Regenerate dump if older than 24 hours
-  if [[ -n ~/.zcompdump(#qN.mh+24) ]]; then
-    compinit
-  else
-    compinit -C
-  fi
-  (( $+functions[__process_compdef_queue] )) && __process_compdef_queue
-  # Rebind Tab to real completion before sourcing fzf-tab so it captures
-  # the correct fallback widget (not the now-orphaned __deferred_compinit)
-  bindkey '^I' expand-or-complete
-  # Load fzf-tab (must be after compinit and compdef calls)
-  source "$DOTFILES/files/vendor/fzf-tab/fzf-tab.plugin.zsh"
-  # Replay Tab through fzf-tab (can't call zle fzf-tab-complete directly
-  # from inside another widget — fzf's terminal takeover glitches)
-  zle -U $'\t'
-}
-zle -N __deferred_compinit
-bindkey '^I' __deferred_compinit
-
-# Helper to ensure compinit is loaded before registering completions
-__ensure_compinit() {
-  if typeset -f compdef | grep -q __compdef_queue; then
-    autoload -Uz compinit
-    if [[ -n ~/.zcompdump(#qN.mh+24) ]]; then
-      compinit
-    else
-      compinit -C
-    fi
-    (( $+functions[__process_compdef_queue] )) && __process_compdef_queue
-    # Load fzf-tab if not already loaded
-    if ! (( $+functions[fzf-tab-complete] )); then
-      bindkey '^I' expand-or-complete
-      source "$DOTFILES/files/vendor/fzf-tab/fzf-tab.plugin.zsh"
-    fi
-  fi
-}
-
-# Lazy-load completions to speed up startup
-# These run only when you first invoke the command
+# Lazy-load command-specific completions on first use
 
 # GitHub CLI
 if (( $+commands[gh] )); then
   gh() {
     unfunction gh
-    (( $+functions[__ensure_compinit] )) && __ensure_compinit
     eval "$(command gh completion -s zsh)"
     command gh "$@"
-  }
-fi
-
-# Stellar CLI
-if (( $+commands[stellar] )); then
-  stellar() {
-    unfunction stellar
-    (( $+functions[__ensure_compinit] )) && __ensure_compinit
-    eval "$(command stellar completion --shell zsh)"
-    command stellar "$@"
   }
 fi
 
@@ -119,7 +62,6 @@ fi
 if (( $+commands[rustup] )); then
   rustup() {
     unfunction rustup
-    (( $+functions[__ensure_compinit] )) && __ensure_compinit
     eval "$(command rustup completions zsh)"
     command rustup "$@"
   }
@@ -301,12 +243,6 @@ zstyle ':completion:*' group-name ''
 zstyle ':completion:*:descriptions' format '%F{yellow}-- %d --%f'
 zstyle ':completion:*:warnings' format '%F{red}-- no matches --%f'
 
-# fzf-tab: preview files and directories when completing paths
-zstyle ':fzf-tab:complete:*' fzf-preview \
-  'if [ -d $realpath ]; then ls -1 --color=always $realpath 2>/dev/null; elif [ -f $realpath ]; then head -50 $realpath 2>/dev/null; fi'
-
-source ~/.config/zsh/ai-cmd.plugin.zsh
-
 # zsh opts
 unsetopt HIST_VERIFY
 setopt INTERACTIVE_COMMENTS    # Allow # comments in interactive shell
@@ -318,58 +254,6 @@ setopt LIST_PACKED         # Tighter completion list layout
 
 # Bell on every new prompt. (See tmux config, which silences it on the active window.)
 precmd() { print -n '\a' }
-
-# Async stellar prompt info
-# Updates STELLAR_PROMPT_INFO in the background so starship can display it without blocking
-if (( $+commands[stellar] )); then
-  export STELLAR_PROMPT_INFO=""
-  typeset -g _STELLAR_ASYNC_FD=""
-
-  _stellar_prompt_callback() {
-    local fd=$1
-    # Read result
-    STELLAR_PROMPT_INFO="$(<&$fd)"
-    # Clean up
-    exec {fd}<&-
-    zle -F $fd
-    # Refresh prompt
-    zle && zle reset-prompt
-  }
-
-  _stellar_prompt_precmd() {
-    # Close previous fd if still open
-    if [[ -n "$_STELLAR_ASYNC_FD" ]] && { : <&$_STELLAR_ASYNC_FD } 2>/dev/null; then
-      zle -F $_STELLAR_ASYNC_FD
-      exec {_STELLAR_ASYNC_FD}<&-
-    fi
-
-    # Start async job
-    exec {_STELLAR_ASYNC_FD}< <(
-      ver="v$(command stellar version --only-version-major 2>/dev/null)"
-      net="$(command stellar env STELLAR_NETWORK 2>/dev/null)"
-      acct="$(command stellar env STELLAR_ACCOUNT 2>/dev/null)"
-      info="$ver"
-      [[ -n "$net" ]] && info+=" $net"
-      [[ -n "$acct" ]] && info+=" $acct"
-      print -rn -- "$info"
-    )
-
-    # Register callback for when data is ready
-    zle -F $_STELLAR_ASYNC_FD _stellar_prompt_callback
-  }
-
-  zle -N _stellar_prompt_callback
-  autoload -Uz add-zsh-hook
-  add-zsh-hook precmd _stellar_prompt_precmd
-fi
-
-# Zsh autosuggestions: fish-like suggestions as you type
-# Accept suggestion: right arrow or end-of-line
-# Accept word: Alt-f (forward-word)
-ZSH_AUTOSUGGEST_STRATEGY=(history completion)
-source "$DOTFILES/files/vendor/zsh-autosuggestions.zsh"
-
-eval "$(starship init zsh)"
 
 if [ "$ZPROF" ]; then
   zprof

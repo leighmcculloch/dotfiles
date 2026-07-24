@@ -75,13 +75,8 @@ ln -sf \
 
 # install some commands ahead of everything else as they are a bare requirement for the dot files to work
 # - gh cli so it is available for git credential helper and scripts
-# - starship so it available to the prompt
 echo "$fg[cyan]Installing critical programs with brew...$reset_color"
-brew install --formula gh starship nvim delta
-
-# install nvim plugins
-echo "$fg[cyan]Installing nvim plugins...$reset_color"
-nvim +PlugInstall +qall
+brew install --formula gh nvim delta
 
 echo "$fg[green]Critical install complete.$reset_color"
 
@@ -92,8 +87,5 @@ if [ -z "${HOMEBREW_GITHUB_API_TOKEN:-}" ] && [ ! -t 0 ]; then
   export HOMEBREW_NO_VERIFY_ATTESTATIONS=1
 fi
 brew bundle install --no-upgrade || true
-
-# install additional packages
-npm install -g opencode-ai
 
 echo "$fg[green]Install complete.$reset_color"
