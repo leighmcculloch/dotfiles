@@ -1,0 +1,18 @@
+{
+  "manifest_version": 3,
+  "name": "Archive.is Redirect",
+  "version": "1.0",
+  "description": "Navigate the current page through archive.is",
+  "permissions": ["activeTab"],
+  "action": {
+    "default_title": "View on archive.is"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "icons": {
+    "16": "icon16.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  }
+}

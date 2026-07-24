@@ -8,6 +8,7 @@ Personal dotfiles for two independent setups, with the small overlap kept in one
   - `install.sh` — symlinks everything in `macos/files/` to `~/` (e.g. `files/gitconfig` becomes `~/.gitconfig`), installs Homebrew and packages
   - `files/` — dotfiles symlinked to `~/`
   - `Brewfile` — Homebrew packages, casks, and Mac App Store apps
+  - `extensions/` — browser extensions
 - `claude-cloud/` — Claude Code Cloud instance setup
   - `install.sh` — copies the shared Claude config (`CLAUDE.md` and `skills/`) into `~/.claude`
 - `shared/` — files used by both setups
