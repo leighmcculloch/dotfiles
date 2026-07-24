@@ -162,16 +162,4 @@ if (( ! $+commands[stellar] )); then
   curl $curl_opts "https://github.com/stellar/stellar-cli/releases/download/v${stellar_version}/stellar-cli-${stellar_version}-x86_64-unknown-linux-gnu.tar.gz" | tar -C /usr/local/bin -xz
 fi
 
-# install deno, then prettier (which needs deno on PATH)
-if (( ! $+commands[deno] )); then
-  echo "Installing deno..."
-  curl $curl_opts https://deno.land/install.sh | sh
-  # make deno (and its globally installed bins) available to the rest of this script
-  export PATH="$HOME/.deno/bin:$PATH"
-fi
-if (( ! $+commands[prettier] )); then
-  echo "Installing prettier..."
-  deno install -gA npm:prettier
-fi
-
 echo "Install complete."
