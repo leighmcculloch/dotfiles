@@ -19,10 +19,6 @@
           {
             "type": "command",
             "command": "\"__CLAUDE_CLOUD_DIR__/hook-stop.sh\""
-          },
-          {
-            "type": "command",
-            "command": "\"__CLAUDE_CLOUD_DIR__/hook-strip-pr-trailer.sh\""
           }
         ]
       }
