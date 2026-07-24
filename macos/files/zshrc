@@ -92,6 +92,15 @@ if (( $+commands[fzf] )); then
   source $BREW_PREFIX/opt/fzf/shell/key-bindings.zsh
 fi
 
+# Prompt: current directory + basic git branch/status
+autoload -Uz vcs_info
+zstyle ':vcs_info:git:*' check-for-changes true
+zstyle ':vcs_info:git:*' unstagedstr '*'
+zstyle ':vcs_info:git:*' stagedstr '+'
+zstyle ':vcs_info:git:*' formats ' %F{green}%b%f%F{yellow}%u%c%f'
+setopt PROMPT_SUBST
+PROMPT='%F{cyan}%~%f${vcs_info_msg_0_} %# '
+
 # Use a simplified prompt when recording in asciinema
 if [ $ASCIINEMA_REC ]; then
   PROMPT="$ "
@@ -253,7 +262,8 @@ setopt GLOB_DOTS           # Include dotfiles in glob completions
 setopt LIST_PACKED         # Tighter completion list layout
 
 # Bell on every new prompt. (See tmux config, which silences it on the active window.)
-precmd() { print -n '\a' }
+# Also refreshes git info for the prompt.
+precmd() { vcs_info; print -n '\a' }
 
 if [ "$ZPROF" ]; then
   zprof
