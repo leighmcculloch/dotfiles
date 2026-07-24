@@ -8,7 +8,7 @@ description: Create a GitHub pull request with AI-generated title and descriptio
 Creates a draft pull request with a title and description generated from the diff between the current branch and the base branch. It never opens the PR until the user has reviewed the description and approved it.
 
 **Formatting rules:**
-- Concise above all. Write for a reader with ADHD: lead with the point, short sentences, no throat-clearing or filler. Every word earns its place — if a sentence can go, cut it. Aim shorter than feels natural.
+- Concise above all. Write for a reader with a very very very short attention span: lead with the point, short sentences, no throat-clearing or filler. Every word earns its place — if a sentence can go, cut it. One sentence per section is the target; a second only if one genuinely can't carry it. Aim far shorter than feels natural.
 - Do not hard-wrap lines. Write paragraphs as a single continuous line; let the renderer wrap.
 - Minimal formatting. No examples, no diagrams. No bullet lists — write prose paragraphs, even when filling in template sections. If a template literally provides a checklist (e.g. `- [ ] Tested`), keep that as-is; do not invent prose bullets of your own.
 - When no template exists, use only `### What` and `### Why` headings.
@@ -91,14 +91,14 @@ Populate the template's sections directly. Do not add `### What` or `### Why` he
 **Body — if no template was found, use What/Why:**
 
 **What section:**
-- A single focused paragraph naming the overarching change. Not a list. When the change is simple, one tight sentence beats a paragraph.
+- One sentence naming the overarching change. Not a paragraph, not a list. Add a second sentence only if a single one genuinely can't carry the change.
 - Write as one continuous line. Do not insert line breaks to wrap at any column width.
 - Describe the change as one cohesive thing, not an enumeration of file edits or steps.
 - Never list the *how* (e.g. "update X in lib.rs", "add test for Y", "rename Z"). The diff already shows that.
 - Use imperative mood. Be direct, eliminate filler words. Lead with the point; no throat-clearing.
 
 **Why section:**
-- A single focused paragraph. Not a list.
+- One sentence naming the specific problem that motivated the change. Not a paragraph, not a list.
 - Write as one continuous line. Do not insert line breaks to wrap at any column width.
 - Name the specific problem, behavior, or constraint that motivated the change — not generic justifications ("improves clarity", "better UX", "for consistency").
 - If linked to an issue, echo the concrete reasoning from the issue.
