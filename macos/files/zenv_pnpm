@@ -1,2 +1,0 @@
-export PNPM_HOME="$HOME/.config/pnpm"
-export PATH="$PNPM_HOME:$PATH"

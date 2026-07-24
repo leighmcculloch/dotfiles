@@ -1,5 +1,0 @@
-#!/usr/bin/env zsh
-
-set -o nounset
-
-printf '\e[?1000l'
