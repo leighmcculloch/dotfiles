@@ -26,6 +26,6 @@ fi
 # build the reason (a lead-in line plus the shared rules) and let jq escape it into
 # JSON, including the embedded newlines. jq is installed by install.sh.
 rules=$(cat "${0:A:h}/hook-reminder.txt")
-reason="Before finishing, verify this session followed these rules; fix anything that does not comply, then stop again.
+reason="Before finishing, verify this session followed these rules; fix anything that does not comply, then stop again. Do the verification silently: say nothing about the checks, what you looked at, or that everything is fine. Only produce output if something did not comply, and then only about what you fixed.
 $rules"
 jq -nc --arg reason "$reason" '{decision:"block",reason:$reason}'
