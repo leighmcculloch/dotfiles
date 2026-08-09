@@ -1,0 +1,3 @@
+*.lock
+auth.json
+trust.json

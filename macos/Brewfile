@@ -44,8 +44,6 @@ go "github.com/leighmcculloch/gate"
 brew "stellar-cli"
 
 if OS.mac?
-  tap "homebrew/brew-vulns"
-  brew "homebrew/brew-vulns/brew-vulns"
   tap "leighmcculloch/paste-markdown"
   brew "leighmcculloch/paste-markdown/paste-markdown", args: ["HEAD"]
   tap "leighmcculloch/usage"
@@ -60,15 +58,13 @@ if OS.mac?
   brew "coreutils"
   brew "docker"
   brew "docker-buildx"
-  brew "duckdb"
   brew "ffmpeg"
   brew "imagemagick"
   brew "wabt"
-  brew "wasm-pack"
-  brew "vhs"
+
+  brew "container"
 
   cask "obsidian"
-  #cask "arc"
   cask "font-fira-code"
   cask "font-fira-code-nerd-font"
   cask "orbstack"
@@ -76,38 +72,18 @@ if OS.mac?
   cask "discord"
   cask "ghostty"
   cask "sublime-text"
-  #cask "gitbutler"
-
-  # Deployment Tools
-  brew "flyctl"
-  brew "kagent"
-  brew "helm"
 
   # AI desktop tools
   cask "lm-studio"
   cask "voiceink"
-  cask "claude"
-  #cask "chatgpt"
-  #cask "codex-app"
-  cask "opencode-desktop"
-  cask "github-copilot-app"
 
   # AI CLI tools
-  brew "container"
-  # brew "opencode" - updated too infrequently, must be installed with npm
-  cask "claude-code@latest"
-  # cask "copilot-cli" - unused at the moment
-  #brew "mistral-vibe"
 
   brew "mas"
   mas "Numbers", id: 409203825
   mas "Pages", id: 409201541
   mas "Day Progress", id: 6450280202
   mas "Termius", id: 1176074088
-
-  brew "stellar-core"
-
-  #cask "tailscale-app"
 
   mdm_enrolled = `profiles status -type enrollment`.include?("Yes")
 
@@ -120,11 +96,8 @@ if OS.mac?
     cask "nordvpn"
     cask "doxie"
     brew "cloudflare-wrangler"
-    mas "1Blocker", id: 1365531024
     mas "1Password for Safari", id: 1569813296
-    mas "House Designer", id: 779363176
     mas "Prime Video", id: 545519333
     mas "WhatsApp", id: 310633997
-    mas "NetSpot", id: 514951692
   end
 end
