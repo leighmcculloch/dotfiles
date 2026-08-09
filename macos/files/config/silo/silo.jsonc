@@ -23,7 +23,7 @@
     "~/.zenv_apikey_github_ro_plus_w_issues_prs",
     "~/.dotfiles/files/scripts/gbb",
     "~/.dotfiles/files/scripts/claude-transcript",
-    "~/.dotfiles/files/scripts/gemma"
+    "~/.dotfiles/files/scripts/ai"
   ],
   "mounts_rw": [],
   "env": [

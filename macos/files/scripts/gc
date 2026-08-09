@@ -71,7 +71,7 @@ Branch: ${branch}
 Staged diff:
 ${diff}"
 
-  local ai="gemma"
+  local ai="ai"
 
   printf "○ %s\n" "$ai"
   local start_time=$(gdate +%s%6N)

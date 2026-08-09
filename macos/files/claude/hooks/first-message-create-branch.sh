@@ -15,7 +15,7 @@
 #   /tmp/claude-first-msg-<session_id> — per-session marker
 #
 # Fails open: every precondition (missing session/prompt, not a worktree,
-# gemma unavailable, empty model response, checkout failure) exits 0 silently
+# ai unavailable, empty model response, checkout failure) exits 0 silently
 # so a broken hook never blocks the user's prompt.
 
 input=$(cat)
@@ -52,9 +52,9 @@ case "$upstream" in refs/remotes/*) exit 0 ;; esac
 prompt=$(printf '%s' "$input" | jq -r '.prompt // ""')
 [ -z "$prompt" ] && exit 0
 
-# Local LM Studio model via the `gemma` wrapper script. No fallback — if it's
+# Local LM Studio model via the `ai` wrapper script. No fallback — if it's
 # not installed the hook just skips naming.
-command -v gemma >/dev/null 2>&1 || exit 0
+command -v ai >/dev/null 2>&1 || exit 0
 
 # Unquoted newline-separated branch list passed verbatim to the model so it
 # can avoid proposing an existing name. Using --all includes remote-tracking
@@ -75,7 +75,7 @@ ${prompt}"
 # Sanitize the model's reply: lowercase, spaces → hyphens, drop blank lines,
 # take the first remaining line. Guards against chatty responses that spill
 # onto multiple lines despite the "reply only with the branch name" instruction.
-name=$(gemma "$ai_prompt" 2>/dev/null | tr '[:upper:] ' '[:lower:]-' | awk 'NF' | head -1)
+name=$(ai "$ai_prompt" 2>/dev/null | tr '[:upper:] ' '[:lower:]-' | awk 'NF' | head -1)
 [ -z "$name" ] && exit 0
 
 # Collision fallback. The model is told to avoid existing names, but obeys
