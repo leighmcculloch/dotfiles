@@ -1,33 +1,54 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# CLI Approach:
-# To import the model first:
-#   litert-lm import --from-huggingface-repo=litert-community/gemma-4-E2B-it-litert-lm gemma-4-E2B-it.litertlm
-# litert-lm run gemma-4-E2B-it.litertlm --prompt="$*"
+# Previous implementations:
+# set -euo pipefail
+#
+# # CLI Approach:
+# # To import the model first:
+# #   litert-lm import --from-huggingface-repo=litert-community/gemma-4-E2B-it-litert-lm gemma-4-E2B-it.litertlm
+# # litert-lm run gemma-4-E2B-it.litertlm --prompt="$*"
+#
+# # LM-Studio Approach:
+# curl -sS http://${GEMMA_HOST:-localhost}:1234/api/v1/chat \
+#   -H "Content-Type: application/json" \
+#   -d "$(jq -n --arg input "$*" '{
+#     model: "gemma-4-e2b-it-mlx@4bit",
+#     system_prompt: "You are a senior software engineer. Be very concise.",
+#     input: $input,
+#     integrations: [
+#     ]
+#   }')" \
+#   | jq -r '.output[] | select(.type=="message") | .content'
+#
+# # Integrations:
+# #     {
+# #       type: "ephemeral_mcp",
+# #       server_label: "exa",
+# #       server_url: "https://mcp.exa.ai/mcp"
+# #     },
+# #     {
+# #       type: "ephemeral_mcp",
+# #       server_label: "grep",
+# #       server_url: "https://mcp.grep.app"
+# #     }
+#
+# local ai="codex exec --ephemeral --sandbox read-only --model gpt-5.6-luna --config 'model_reasoning_effort=\"low\"'"
 
-# LM-Studio Approach:
-curl -sS http://${GEMMA_HOST:-localhost}:1234/api/v1/chat \
+auth_file="${CODEX_HOME:-$HOME/.codex}/auth.json"
+access_token=$(jq -r '.tokens.access_token // empty' "$auth_file")
+account_id=$(jq -r '.tokens.account_id // empty' "$auth_file")
+
+curl -sS https://chatgpt.com/backend-api/codex/responses \
+  -H "Authorization: Bearer $access_token" \
+  -H "chatgpt-account-id: $account_id" \
+  -H "originator: codex_cli_rs" \
   -H "Content-Type: application/json" \
   -d "$(jq -n --arg input "$*" '{
-    model: "gemma-4-e2b-it-mlx@4bit",
-    system_prompt: "You are a senior software engineer. Be very concise.",
+    model: "gpt-5.6-luna",
+    instructions: "You are a senior software engineer. Be very concise.",
     input: $input,
-    integrations: [
-    ]
+    reasoning: {effort: "low"},
+    stream: false
   }')" \
-  | jq -r '.output[] | select(.type=="message") | .content'
-
-# Integrations:
-#     {
-#       type: "ephemeral_mcp",
-#       server_label: "exa",
-#       server_url: "https://mcp.exa.ai/mcp"
-#     },
-#     {
-#       type: "ephemeral_mcp",
-#       server_label: "grep",
-#       server_url: "https://mcp.grep.app"
-#     }
-
-# local ai="codex exec --ephemeral --sandbox read-only --model gpt-5.6-luna --config 'model_reasoning_effort=\"low\"'"
+  | jq -r '.output[] | select(.type=="message") | .content[] | select(.type=="output_text") | .text'
