@@ -51,4 +51,16 @@ curl -sS https://chatgpt.com/backend-api/codex/responses \
     reasoning: {effort: "low"},
     stream: false
   }')" \
-  | jq -r '.output[] | select(.type=="message") | .content[] | select(.type=="output_text") | .text'
+  | jq -r '
+      if .error then
+        (.error.message // .error // "Codex API request failed") | error
+      elif .output_text then
+        .output_text
+      else
+        (.output // [])[]
+        | select(.type == "message")
+        | (.content // [])[]
+        | select(.type == "output_text")
+        | .text
+      end
+    '
