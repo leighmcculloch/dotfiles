@@ -1,0 +1,11 @@
+#!/usr/bin/env zsh
+
+set -o nounset
+
+id="$(git rev-parse HEAD)"
+if [ -t 1 ] ; then
+  if (( $+commands[pbcopy] )); then
+    echo -n $id | pbcopy
+  fi
+fi
+echo -n $id
