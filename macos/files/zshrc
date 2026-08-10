@@ -97,7 +97,13 @@ autoload -Uz vcs_info
 zstyle ':vcs_info:git:*' check-for-changes true
 zstyle ':vcs_info:git:*' unstagedstr '*'
 zstyle ':vcs_info:git:*' stagedstr '+'
-zstyle ':vcs_info:git:*' formats ' %F{green}%b%f%F{yellow}%u%c%f'
+zstyle ':vcs_info:git+post-backend:*' hooks untracked
+zstyle ':vcs_info:git:*' formats ' %F{green}%b%f%F{yellow}%u%c%m%f'
+
+# vcs_info does not include untracked files in its change checks.
++vi-untracked() {
+  [[ -n "$(command git ls-files --others --exclude-standard)" ]] && hook_com[misc]+='?'
+}
 setopt PROMPT_SUBST
 PROMPT='%F{cyan}%~%f${vcs_info_msg_0_} $ '
 
