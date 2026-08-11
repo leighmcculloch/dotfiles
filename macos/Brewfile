@@ -64,12 +64,8 @@ if OS.mac?
   cask "discord"
   cask "ghostty"
   cask "sublime-text"
-
-  # AI desktop tools
   cask "lm-studio"
   cask "voiceink"
-
-  # AI CLI tools
 
   brew "mas"
   mas "Numbers", id: 409203825
