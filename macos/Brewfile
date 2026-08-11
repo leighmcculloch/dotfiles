@@ -30,9 +30,7 @@ brew "node"
 brew "uv"
 
 brew "neovim"
-brew "lua-language-server"
 brew "gopls"
-brew "zls"
 brew "vscode-langservers-extracted"
 
 go "github.com/leighmcculloch/gas/v3"
