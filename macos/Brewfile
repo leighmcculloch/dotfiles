@@ -40,6 +40,7 @@ brew "stellar-cli"
 
 if OS.mac?
   brew "leighmcculloch/paste-markdown/paste-markdown", args: ["HEAD"], trusted: true
+  brew "leighmcculloch/paste-pr/paste-pr", args: ["HEAD"], trusted: true
   brew "leighmcculloch/menu-bar-usage-codex/codex-usage", args: ["HEAD"], trusted: true
   brew "leighmcculloch/usage/usage", args: ["HEAD"], trusted: true
   brew "leighmcculloch/silo/silo", args: ["HEAD"], trusted: true
