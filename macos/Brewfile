@@ -29,7 +29,6 @@ brew "go"
 brew "deno"
 brew "node"
 brew "uv"
-brew "zig"
 
 brew "neovim"
 brew "lua-language-server"
