@@ -1,8 +1,8 @@
 {
   "trustedformulae": [
-    "https://github.com/leighmcculloch/paste-markdown.git/paste-markdown",
-    "https://github.com/leighmcculloch/silo.git/silo",
-    "https://github.com/leighmcculloch/usage.git/usage",
+    "leighmcculloch/paste-markdown/paste-markdown",
+    "leighmcculloch/silo/silo",
+    "leighmcculloch/usage/usage",
     "leighmcculloch/menu-bar-usage-codex/codex-usage"
   ]
 }
