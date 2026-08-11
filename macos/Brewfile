@@ -61,7 +61,6 @@ if OS.mac?
   cask "font-fira-code"
   cask "font-fira-code-nerd-font"
   cask "orbstack"
-  cask "descript"
   cask "discord"
   cask "ghostty"
   cask "sublime-text"
