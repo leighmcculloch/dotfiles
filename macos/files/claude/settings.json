@@ -10,8 +10,7 @@
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
     "GIT_CONFIG_COUNT": "1",
     "GIT_CONFIG_KEY_0": "commit.gpgsign",
-    "GIT_CONFIG_VALUE_0": "false",
-    "RUSTC_WRAPPER": ""
+    "GIT_CONFIG_VALUE_0": "false"
   },
   "includeCoAuthoredBy": false,
   "permissions": {
@@ -32,7 +31,6 @@
       "Read(/tmp/claude/**)",
       "Write(/tmp/claude/**)",
       "Write(~/Library/Caches/go-build/**)",
-      "Write(~/Library/Caches/Mozilla.sccache/**)",
       "Bash(git fetch:*)",
       "Bash(git grep:*)",
       "Bash(git diff:*)",

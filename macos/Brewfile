@@ -24,7 +24,6 @@ brew "presenterm"
 brew "eza"
 
 brew "rustup"
-brew "sccache"
 brew "go"
 brew "deno"
 brew "node"
