@@ -52,10 +52,12 @@ Set the environment's setup command to:
 ./claude-cloud/install.sh
 ```
 
-The cloud installer targets Debian-based environments and must be able to run
-`apt-get` and write to `/usr/local/bin`. It installs `zsh` and other development
-packages, copies the shared Claude configuration into each known home directory,
-and installs the repository's selected Stellar development tools.
+This installer is specifically for the cloud environments provided by Claude
+Code; it is not intended as a general-purpose Debian setup script. Within those
+instances it uses `apt-get`, writes to `/usr/local/bin`, installs `zsh` and other
+development packages, copies the shared Claude configuration into each known
+home directory, and installs the repository's selected Stellar development
+tools.
 
 The installed shell configuration runs `claude-cloud/sync.sh` whenever a shell
 starts. Claude's session hooks run the same sync, keeping `CLAUDE.md`, settings,
