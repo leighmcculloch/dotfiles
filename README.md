@@ -23,3 +23,17 @@ macOS:
 ```
 
 Claude Code Cloud: configure the environment's setup command to run `./claude-cloud/install.sh`.
+
+## Poem
+
+> A leading dot is how they hide,
+> these quiet files I keep beside
+> the work itself — the aliases,
+> the keys, the little promises
+> a shell repeats each time I start.
+>
+> One repo holds the smaller part
+> that both machines agree upon;
+> the rest is symlinked, and then gone
+> from mind, until a fresh install
+> remembers me, and that is all.
