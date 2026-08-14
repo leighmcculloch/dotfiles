@@ -1,9 +1,10 @@
 #!/usr/bin/env zsh
 
-# Copies this repo's Claude config into ~/.claude. Run from claude-cloud/install.sh
-# at environment setup (so the config is on disk before the Claude runtime
-# launches and scans skills), from ~/.zshenv on every shell (to refresh it from
-# the repo), and from the SessionStart hook.
+# Copies this repo's shared config into ~/.claude (CLAUDE.md) and ~/.agents
+# (AGENTS.md), the two conventions Claude Code and other agent tools read. Run
+# from claude-cloud/install.sh at environment setup (so the config is on disk
+# before the Claude runtime launches and scans skills), from ~/.zshenv on every
+# shell (to refresh it from the repo), and from the SessionStart hook.
 
 set -o errexit
 set -o pipefail
@@ -16,8 +17,9 @@ dotfiles_dir="${0:A:h:h}"
 
 # there's no cheap "already correct" check like a symlink's readlink, so just
 # overwrite our own copies each time.
-mkdir -p ~/.claude/skills
-cp "$dotfiles_dir/shared/claude/CLAUDE.md" "$HOME/.claude/CLAUDE.md"
+mkdir -p ~/.claude/skills ~/.agents/skills
+cp "$dotfiles_dir/shared/AGENTS.md" "$HOME/.claude/CLAUDE.md"
+cp "$dotfiles_dir/shared/AGENTS.md" "$HOME/.agents/AGENTS.md"
 
 # settings.json's hook commands reference the hook scripts by absolute path via the
 # __CLAUDE_CLOUD_DIR__ placeholder. Substitute the real claude-cloud dir as we copy
@@ -27,11 +29,13 @@ cp "$dotfiles_dir/shared/claude/CLAUDE.md" "$HOME/.claude/CLAUDE.md"
 sed "s|__CLAUDE_CLOUD_DIR__|$dotfiles_dir/claude-cloud|g" \
   "$dotfiles_dir/claude-cloud/settings.json" > "$HOME/.claude/settings.json"
 
-# ~/.claude/skills may also hold skills from elsewhere, so copy our skills in one
-# at a time rather than replacing the whole directory, which would clobber any
-# skills this repo doesn't own.
-for src in "$dotfiles_dir"/shared/claude/skills/*; do
-  dest="$HOME/.claude/skills/${src:t}"
-  rm -rf "$dest"
-  cp -R "$src" "$dest"
+# ~/.claude/skills and ~/.agents/skills may also hold skills from elsewhere, so
+# copy our skills in one at a time rather than replacing the whole directory,
+# which would clobber any skills this repo doesn't own.
+for src in "$dotfiles_dir"/shared/skills/*; do
+  for skills_dir in ~/.claude/skills ~/.agents/skills; do
+    dest="$skills_dir/${src:t}"
+    rm -rf "$dest"
+    cp -R "$src" "$dest"
+  done
 done

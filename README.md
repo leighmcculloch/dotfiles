@@ -10,9 +10,9 @@ Personal dotfiles for two independent setups, with the small overlap kept in one
   - `Brewfile` — Homebrew packages, casks, and Mac App Store apps
   - `extensions/` — browser extensions
 - `claude-cloud/` — Claude Code Cloud instance setup
-  - `install.sh` — copies the shared Claude config (`CLAUDE.md` and `skills/`) into `~/.claude`
+  - `install.sh` — copies the shared config (`AGENTS.md` and `skills/`) into `~/.claude` and `~/.agents`
 - `shared/` — files used by both setups
-  - `claude/CLAUDE.md`, `claude/skills/` — the Claude config common to both (macOS symlinks to these)
+  - `AGENTS.md`, `skills/` — the agent config common to both (macOS symlinks these into `macos/files/claude/` and `macos/files/agents/`, as `CLAUDE.md`/`AGENTS.md` respectively)
 
 ## Install
 
