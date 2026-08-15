@@ -11,8 +11,6 @@ brew "ripgrep"
 brew "tig"
 brew "tmux"
 brew "tree"
-brew "watchexec"
-brew "zstd"
 brew "prettier"
 brew "eza"
 
@@ -20,16 +18,12 @@ brew "rustup"
 brew "go"
 brew "deno"
 brew "node"
-brew "uv"
 
 brew "neovim"
 brew "gopls"
 brew "vscode-langservers-extracted"
 
 go "github.com/leighmcculloch/gas/v3"
-go "github.com/leighmcculloch/gate"
-
-brew "stellar-cli"
 
 if OS.mac?
   brew "leighmcculloch/paste-markdown/paste-markdown", args: ["HEAD"], trusted: true
@@ -38,6 +32,7 @@ if OS.mac?
   brew "leighmcculloch/usage/usage", args: ["HEAD"], trusted: true
   brew "leighmcculloch/silo/silo", args: ["HEAD"], trusted: true
 
+  brew "stellar-cli"
   brew "autoconf"
   brew "automake"
   brew "clang-format"
@@ -49,7 +44,9 @@ if OS.mac?
   brew "imagemagick"
   brew "wabt"
   brew "container"
+  brew "rtk"
 
+  cask "chatgpt"
   cask "obsidian"
   cask "font-fira-code"
   cask "font-fira-code-nerd-font"
@@ -59,10 +56,10 @@ if OS.mac?
   cask "sublime-text"
   cask "lm-studio"
   cask "voiceink"
+  cask "thebrowsercompany-dia"
+  cask "screen-studio"
 
   brew "mas"
-  mas "Numbers", id: 409203825
-  mas "Pages", id: 409201541
   mas "Day Progress", id: 6450280202
 
   mdm_enrolled = `profiles status -type enrollment`.include?("Yes")
@@ -70,13 +67,10 @@ if OS.mac?
   if mdm_enrolled
     cask "nordlayer"
     cask "gcloud-cli"
-    mas "Slack", id: 803453959
-    mas "Telegram", id: 747648890
   else
     cask "nordvpn"
     cask "doxie"
     brew "cloudflare-wrangler"
-    mas "1Password for Safari", id: 1569813296
     mas "Prime Video", id: 545519333
     mas "WhatsApp", id: 310633997
   end
