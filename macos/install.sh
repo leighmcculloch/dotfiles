@@ -80,6 +80,14 @@ brew install --formula gh nvim delta
 
 echo "$fg[green]Critical install complete.$reset_color"
 
+# install apps in this repo
+echo "$fg[cyan]Installing local mac programs...$reset_color"
+make -C apps/menu-bar-usage-codex install
+make -C apps/paste-markdown install
+make -C apps/paste-pr install
+
+echo "$fg[green]Critical install complete.$reset_color"
+
 # install additional packages via brew
 echo "$fg[cyan]Installing additional programs with brew (ignoring failures)...$reset_color"
 if [ -z "${HOMEBREW_GITHUB_API_TOKEN:-}" ] && [ ! -t 0 ]; then
