@@ -1,6 +1,6 @@
 # Paste PR
 
-A macOS menu bar app that converts a GitHub pull request link on the clipboard into a rich text entry. Copy a PR link, press **⇧⌘P**, and the clipboard contents are replaced with a formatted, rich text summary of the PR ready to paste anywhere (Slack, email, docs, etc.).
+A macOS menu bar app that converts a GitHub pull request, issue, or discussion link on the clipboard into a rich text entry. Copy a GitHub link, press **⇧⌘P**, and the clipboard contents are replaced with a formatted, rich text summary ready to paste anywhere (Slack, email, docs, etc.).
 
 The pasted result looks like:
 
@@ -32,11 +32,11 @@ brew upgrade --fetch-head paste-pr
 
 ## Use
 
-1. Copy a GitHub pull request link (e.g. `https://github.com/owner/repo/pull/123`).
-2. Press **⇧⌘P**, or click the pull request icon in the menu bar and select **Convert PR Link to Rich Text**.
-3. Paste. The clipboard now contains a rich text summary of the PR, with a Markdown plain-text fallback.
+1. Copy a GitHub pull request, issue, or discussion link (for example, `github.com/owner/repo/pull/123/changes`). The `https://` prefix is optional.
+2. Press **⇧⌘P**, or click the menu bar icon and select **Convert GitHub Link to Rich Text**.
+3. Paste. The rich-text clipboard contains the formatted summary, while the plain-text clipboard keeps the original link.
 
-The menu bar icon briefly changes to a checkmark on success or an X if the clipboard has no PR link or the PR could not be fetched.
+The menu bar icon briefly changes to a checkmark on success or an X if the clipboard has no supported GitHub link or the resource could not be fetched.
 
 ## Options
 

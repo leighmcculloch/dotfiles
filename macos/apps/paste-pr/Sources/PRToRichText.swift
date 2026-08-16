@@ -1,16 +1,17 @@
 import Foundation
 
-/// Converts a GitHub pull request link into a rich-text clipboard entry.
+/// Converts a GitHub pull request, issue, or discussion link into a rich-text
+/// clipboard entry.
 ///
 /// This mirrors the behaviour of the reference shell script: it asks the
-/// GitHub CLI (`gh pr view`) for the PR's title, number, additions, deletions
-/// and repository, then formats a single line of Markdown:
+/// GitHub CLI for the resource's title, number, and repository, adding
+/// additions and deletions for pull requests, then formats a single line of
+/// Markdown:
 ///
 ///     :github-rainbow: <title> [<repo>#<number>](<url>) `+<additions> -<deletions>`
 ///
-/// The Markdown is used as the plain-text representation, and an equivalent
-/// HTML fragment (what `pandoc -f markdown -t html` would produce) is used as
-/// the rich-text representation.
+/// The result includes the Markdown representation and an equivalent HTML
+/// fragment (what `pandoc -f markdown -t html` would produce) for rich text.
 enum PRToRichText {
     struct Result {
         let markdown: String
@@ -26,8 +27,19 @@ enum PRToRichText {
     // MARK: - Conversion
 
     static func convert(prLink: String) throws -> Result {
+        let link = try parseGitHubLink(prLink)
+
+        switch link.kind {
+        case .pullRequest:
+            return try convertPullRequest(link)
+        case .issue, .discussion:
+            return try convertIssueOrDiscussion(link)
+        }
+    }
+
+    private static func convertPullRequest(_ link: GitHubLink) throws -> Result {
         let json = try runGH([
-            "pr", "view", prLink,
+            "pr", "view", link.url,
             "--json", "title,number,additions,deletions,headRepository,headRepositoryOwner",
         ])
 
@@ -48,6 +60,29 @@ enum PRToRichText {
             "<p>:github-rainbow: \(escapeHTML(pr.title)) " +
             "<a href=\"\(escapeHTML(url))\">\(escapeHTML(repo))#\(pr.number)</a> " +
             "<code>+\(pr.additions) -\(pr.deletions)</code></p>"
+
+        return Result(markdown: markdown, html: html)
+    }
+
+    private static func convertIssueOrDiscussion(_ link: GitHubLink) throws -> Result {
+        let command = link.kind == .issue ? "issue" : "discussion"
+        let json = try runGH([
+            command, "view", link.url,
+            "--json", "title,number",
+        ])
+
+        guard let item = try? JSONDecoder().decode(IssueOrDiscussion.self, from: json) else {
+            throw ConversionError.parseFailed
+        }
+
+        let markdown =
+            ":github-rainbow: \(item.title) " +
+            "[\(link.repository)#\(item.number)](\(link.url))"
+
+        let html =
+            "<p>:github-rainbow: \(escapeHTML(item.title)) " +
+            "<a href=\"\(escapeHTML(link.url))\">" +
+            "\(escapeHTML(link.repository))#\(item.number)</a></p>"
 
         return Result(markdown: markdown, html: html)
     }
@@ -110,6 +145,56 @@ enum PRToRichText {
 
     // MARK: - Helpers
 
+    private static func parseGitHubLink(_ input: String) throws -> GitHubLink {
+        let trimmedInput = input.trimmingCharacters(in: .whitespacesAndNewlines)
+        let urlString = trimmedInput.contains("://")
+            ? trimmedInput
+            : "https://\(trimmedInput)"
+
+        guard let components = URLComponents(string: urlString),
+              let scheme = components.scheme?.lowercased(),
+              scheme == "http" || scheme == "https",
+              let host = components.host?.lowercased(),
+              host == "github.com" || host == "www.github.com"
+        else {
+            throw ConversionError.parseFailed
+        }
+
+        let pathParts = components.path
+            .split(separator: "/", omittingEmptySubsequences: true)
+            .map(String.init)
+
+        guard pathParts.count >= 4,
+              let number = Int(pathParts[3]),
+              number > 0
+        else {
+            throw ConversionError.parseFailed
+        }
+
+        let kind: GitHubLink.Kind
+        switch pathParts[2].lowercased() {
+        case "pull":
+            kind = .pullRequest
+        case "issues":
+            kind = .issue
+        case "discussions":
+            kind = .discussion
+        default:
+            throw ConversionError.parseFailed
+        }
+
+        let owner = pathParts[0]
+        let repository = pathParts[1]
+        let resourcePath = kind == .pullRequest ? "pull" : kind == .issue ? "issues" : "discussions"
+        let canonicalURL = "https://github.com/\(owner)/\(repository)/\(resourcePath)/\(number)"
+
+        return GitHubLink(
+            kind: kind,
+            repository: repository,
+            url: canonicalURL
+        )
+    }
+
     private static func escapeHTML(_ text: String) -> String {
         var result = text
         result = result.replacingOccurrences(of: "&", with: "&amp;")
@@ -118,6 +203,18 @@ enum PRToRichText {
         result = result.replacingOccurrences(of: "\"", with: "&quot;")
         return result
     }
+}
+
+private struct GitHubLink {
+    enum Kind: Equatable {
+        case pullRequest
+        case issue
+        case discussion
+    }
+
+    let kind: Kind
+    let repository: String
+    let url: String
 }
 
 // MARK: - JSON Model
@@ -137,4 +234,9 @@ private struct PullRequest: Decodable {
     struct Owner: Decodable {
         let login: String
     }
+}
+
+private struct IssueOrDiscussion: Decodable {
+    let title: String
+    let number: Int
 }

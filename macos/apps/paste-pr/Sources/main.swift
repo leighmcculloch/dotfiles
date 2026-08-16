@@ -53,7 +53,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         let menu = NSMenu()
 
         let convertItem = NSMenuItem(
-            title: "Convert PR Link to Rich Text  ⇧⌘P",
+            title: "Convert GitHub Link to Rich Text  ⇧⌘P",
             action: #selector(convertClipboard),
             keyEquivalent: ""
         )
@@ -113,15 +113,16 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     @objc func convertClipboard() {
         let pb = NSPasteboard.general
 
-        guard let link = pb.string(forType: .string)?
-            .trimmingCharacters(in: .whitespacesAndNewlines),
-            !link.isEmpty
+        guard let originalInput = pb.string(forType: .string),
+              !originalInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
         else {
             showFeedback(success: false)
             return
         }
 
-        // Fetching the PR from GitHub may block on the network, so do it off
+        let link = originalInput.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        // Fetching the GitHub resource may block on the network, so do it off
         // the main thread and update the clipboard back on the main thread.
         DispatchQueue.global(qos: .userInitiated).async {
             let result = try? PRToRichText.convert(prLink: link)
@@ -132,7 +133,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 }
                 pb.clearContents()
                 pb.setString(result.html, forType: .html)
-                pb.setString(result.markdown, forType: .string)
+                pb.setString(originalInput, forType: .string)
                 self.showFeedback(success: true)
             }
         }
