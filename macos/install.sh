@@ -76,7 +76,7 @@ ln -sf \
 # install some commands ahead of everything else as they are a bare requirement for the dot files to work
 # - gh cli so it is available for git credential helper and scripts
 echo "$fg[cyan]Installing critical programs with brew...$reset_color"
-brew install --formula gh nvim delta
+HOMEBREW_NO_VERIFY_ATTESTATIONS=1 brew install --formula gh nvim delta
 
 echo "$fg[green]Critical install complete.$reset_color"
 
