@@ -147,4 +147,41 @@ final class PRToRichTextTests: XCTestCase {
             return XCTFail("expected a failed restore")
         }
     }
+
+    func testFailedWriteFallsBackToOriginalPlainText() {
+        let pasteboard = NSPasteboard.withUniqueName()
+        XCTAssertTrue(pasteboard.setString("original", forType: .string))
+        let result = PRToRichText.Result(markdown: "formatted", html: "<p>formatted</p>")
+
+        let writeResult = writeConversionResult(
+            result,
+            originalInput: "original",
+            to: pasteboard,
+            writeObjects: { _ in false },
+            restoreWriteObjects: { _ in false }
+        )
+
+        XCTAssertEqual(writeResult, .failed)
+        XCTAssertEqual(pasteboard.string(forType: .string), "original")
+    }
+
+    func testRecoveryMutationReturnsStaleWithoutFallback() {
+        let pasteboard = NSPasteboard.withUniqueName()
+        XCTAssertTrue(pasteboard.setString("original", forType: .string))
+        let result = PRToRichText.Result(markdown: "formatted", html: "<p>formatted</p>")
+
+        let writeResult = writeConversionResult(
+            result,
+            originalInput: "original",
+            to: pasteboard,
+            writeObjects: { _ in false },
+            restoreWriteObjects: { _ in
+                XCTAssertTrue(pasteboard.setString("new", forType: .string))
+                return false
+            }
+        )
+
+        XCTAssertEqual(writeResult, .stale)
+        XCTAssertEqual(pasteboard.string(forType: .string), "new")
+    }
 }

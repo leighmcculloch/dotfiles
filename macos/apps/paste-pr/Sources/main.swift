@@ -200,7 +200,9 @@ func writeConversionResult(
     _ result: PRToRichText.Result,
     originalInput: String,
     expectedChangeCount: Int? = nil,
-    to pasteboard: NSPasteboard
+    to pasteboard: NSPasteboard,
+    writeObjects: (([NSPasteboardItem]) -> Bool)? = nil,
+    restoreWriteObjects: (([NSPasteboardItem]) -> Bool)? = nil
 ) -> PasteboardWriteResult {
     if let expectedChangeCount,
        pasteboard.changeCount != expectedChangeCount {
@@ -221,13 +223,15 @@ func writeConversionResult(
     }
 
     let clearedChangeCount = pasteboard.clearContents()
-    guard pasteboard.writeObjects([item]) else {
+    let write = writeObjects ?? { pasteboard.writeObjects($0) }
+    guard write([item]) else {
         guard pasteboard.changeCount == clearedChangeCount else {
             return .stale
         }
         switch originalContents.restore(
             to: pasteboard,
-            expectedChangeCount: clearedChangeCount
+            expectedChangeCount: clearedChangeCount,
+            writeObjects: restoreWriteObjects
         ) {
         case .restored:
             return .failed
