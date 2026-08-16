@@ -207,7 +207,12 @@ func writeConversionResult(
     }
 
     pasteboard.clearContents()
-    return pasteboard.writeObjects([item])
+    guard pasteboard.writeObjects([item]) else {
+        pasteboard.declareTypes([.string], owner: nil)
+        _ = pasteboard.setString(originalInput, forType: .string)
+        return false
+    }
+    return true
 }
 
 // MARK: - Entry Point
