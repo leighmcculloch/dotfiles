@@ -189,6 +189,12 @@ enum PasteboardWriteResult: Equatable {
     case failed
 }
 
+enum PasteboardRestoreResult: Equatable {
+    case restored
+    case stale
+    case failed
+}
+
 @discardableResult
 func writeConversionResult(
     _ result: PRToRichText.Result,
@@ -219,10 +225,15 @@ func writeConversionResult(
         guard pasteboard.changeCount == clearedChangeCount else {
             return .stale
         }
-        guard originalContents.restore(
+        switch originalContents.restore(
             to: pasteboard,
             expectedChangeCount: clearedChangeCount
-        ) else {
+        ) {
+        case .restored:
+            return .failed
+        case .stale:
+            return .stale
+        case .failed:
             guard pasteboard.changeCount == clearedChangeCount else {
                 return .stale
             }
@@ -232,7 +243,6 @@ func writeConversionResult(
             }
             return .failed
         }
-        return .failed
     }
     return .written
 }
@@ -257,25 +267,28 @@ struct PasteboardSnapshot {
     func restore(
         to pasteboard: NSPasteboard,
         expectedChangeCount: Int? = nil
-    ) -> Bool {
+    ) -> PasteboardRestoreResult {
         var restoredItems: [NSPasteboardItem] = []
         for representations in items where !representations.isEmpty {
             let item = NSPasteboardItem()
             for representation in representations {
                 guard item.setData(representation.data, forType: representation.type) else {
-                    return false
+                    return .failed
                 }
             }
             restoredItems.append(item)
         }
 
-        guard !restoredItems.isEmpty else { return false }
+        guard !restoredItems.isEmpty else { return .failed }
         if let expectedChangeCount,
            pasteboard.changeCount != expectedChangeCount {
-            return false
+            return .stale
         }
-        pasteboard.clearContents()
-        return pasteboard.writeObjects(restoredItems)
+        let clearedChangeCount = pasteboard.clearContents()
+        guard pasteboard.writeObjects(restoredItems) else {
+            return pasteboard.changeCount == clearedChangeCount ? .failed : .stale
+        }
+        return .restored
     }
 }
 

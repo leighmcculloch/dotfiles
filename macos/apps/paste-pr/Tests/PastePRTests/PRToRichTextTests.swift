@@ -114,8 +114,15 @@ final class PRToRichTextTests: XCTestCase {
         let snapshot = PasteboardSnapshot(from: pasteboard)
         pasteboard.clearContents()
 
-        XCTAssertTrue(snapshot.restore(to: pasteboard))
+        XCTAssertEqual(snapshot.restore(to: pasteboard), .restored)
         XCTAssertEqual(pasteboard.string(forType: .html), "<p>original</p>")
         XCTAssertEqual(pasteboard.string(forType: .string), "original")
+    }
+
+    func testEmptyClipboardSnapshotReportsFailedRestore() {
+        let pasteboard = NSPasteboard.withUniqueName()
+        let snapshot = PasteboardSnapshot(from: pasteboard)
+
+        XCTAssertEqual(snapshot.restore(to: pasteboard), .failed)
     }
 }
