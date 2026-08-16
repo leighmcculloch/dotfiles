@@ -40,16 +40,15 @@ enum PRToRichText {
     private static func convertPullRequest(_ link: GitHubLink) throws -> Result {
         let json = try runGH([
             "pr", "view", link.url,
-            "--json", "title,number,additions,deletions,headRepository,headRepositoryOwner",
+            "--json", "title,number,additions,deletions",
         ])
 
         guard let pr = try? JSONDecoder().decode(PullRequest.self, from: json) else {
             throw ConversionError.parseFailed
         }
 
-        let repo = pr.headRepository.name
-        let owner = pr.headRepositoryOwner.login
-        let url = "https://github.com/\(owner)/\(repo)/pull/\(pr.number)"
+        let repo = link.repository
+        let url = link.url
 
         let markdown =
             ":github-rainbow: \(pr.title) " +
@@ -147,9 +146,13 @@ enum PRToRichText {
 
     private static func parseGitHubLink(_ input: String) throws -> GitHubLink {
         let trimmedInput = input.trimmingCharacters(in: .whitespacesAndNewlines)
-        let urlString = trimmedInput.contains("://")
-            ? trimmedInput
-            : "https://\(trimmedInput)"
+        let urlString: String
+        if let components = URLComponents(string: trimmedInput),
+           components.scheme != nil {
+            urlString = trimmedInput
+        } else {
+            urlString = "https://\(trimmedInput)"
+        }
 
         guard let components = URLComponents(string: urlString),
               let scheme = components.scheme?.lowercased(),
@@ -224,16 +227,6 @@ private struct PullRequest: Decodable {
     let number: Int
     let additions: Int
     let deletions: Int
-    let headRepository: Repository
-    let headRepositoryOwner: Owner
-
-    struct Repository: Decodable {
-        let name: String
-    }
-
-    struct Owner: Decodable {
-        let login: String
-    }
 }
 
 private struct IssueOrDiscussion: Decodable {

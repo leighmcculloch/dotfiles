@@ -15,6 +15,8 @@ brew install gh
 gh auth login
 ```
 
+Discussion links require a GitHub CLI version that provides `gh discussion view`.
+
 ## Install
 
 ### Homebrew
