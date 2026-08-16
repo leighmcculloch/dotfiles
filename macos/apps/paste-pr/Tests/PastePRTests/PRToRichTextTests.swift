@@ -123,6 +123,28 @@ final class PRToRichTextTests: XCTestCase {
         let pasteboard = NSPasteboard.withUniqueName()
         let snapshot = PasteboardSnapshot(from: pasteboard)
 
-        XCTAssertEqual(snapshot.restore(to: pasteboard), .failed)
+        XCTAssertEqual(
+            snapshot.restore(to: pasteboard),
+            .failed(expectedChangeCount: pasteboard.changeCount)
+        )
+    }
+
+    func testClipboardSnapshotReportsFailedWrite() {
+        let pasteboard = NSPasteboard.withUniqueName()
+        let item = NSPasteboardItem()
+        XCTAssertTrue(item.setString("original", forType: .string))
+        XCTAssertTrue(pasteboard.writeObjects([item]))
+        let snapshot = PasteboardSnapshot(from: pasteboard)
+        let expectedChangeCount = pasteboard.changeCount
+
+        let result = snapshot.restore(
+            to: pasteboard,
+            expectedChangeCount: expectedChangeCount,
+            writeObjects: { _ in false }
+        )
+
+        guard case .failed = result else {
+            return XCTFail("expected a failed restore")
+        }
     }
 }
