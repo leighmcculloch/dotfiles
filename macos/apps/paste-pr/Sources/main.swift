@@ -234,9 +234,6 @@ func writeConversionResult(
         case .stale:
             return .stale
         case .failed:
-            guard pasteboard.changeCount == clearedChangeCount else {
-                return .stale
-            }
             pasteboard.declareTypes([.string], owner: nil)
             guard pasteboard.setString(originalInput, forType: .string) else {
                 return .failed
