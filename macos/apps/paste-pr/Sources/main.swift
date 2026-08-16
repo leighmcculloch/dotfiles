@@ -112,6 +112,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     @objc func convertClipboard() {
         let pb = NSPasteboard.general
+        let originalChangeCount = pb.changeCount
 
         guard let originalInput = pb.string(forType: .string),
               !originalInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
@@ -121,7 +122,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
 
         let link = originalInput.trimmingCharacters(in: .whitespacesAndNewlines)
-        let originalChangeCount = pb.changeCount
 
         // Fetching the GitHub resource may block on the network, so do it off
         // the main thread and update the clipboard back on the main thread.
@@ -132,15 +132,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                     self.showFeedback(success: false)
                     return
                 }
-                guard pb.changeCount == originalChangeCount else {
-                    return
-                }
                 guard writeConversionResult(
                     result,
                     originalInput: originalInput,
+                    expectedChangeCount: originalChangeCount,
                     to: pb
                 ) else {
-                    self.showFeedback(success: false)
+                    if pb.changeCount == originalChangeCount {
+                        self.showFeedback(success: false)
+                    }
                     return
                 }
                 self.showFeedback(success: true)
@@ -186,12 +186,28 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 func writeConversionResult(
     _ result: PRToRichText.Result,
     originalInput: String,
+    expectedChangeCount: Int? = nil,
     to pasteboard: NSPasteboard
 ) -> Bool {
-    guard pasteboard.clearContents() != 0 else { return false }
-    pasteboard.declareTypes([.html, .string], owner: nil)
-    return pasteboard.setString(result.html, forType: .html)
-        && pasteboard.setString(originalInput, forType: .string)
+    if let expectedChangeCount,
+       pasteboard.changeCount != expectedChangeCount {
+        return false
+    }
+
+    let item = NSPasteboardItem()
+    guard item.setString(result.html, forType: .html),
+          item.setString(originalInput, forType: .string)
+    else {
+        return false
+    }
+
+    if let expectedChangeCount,
+       pasteboard.changeCount != expectedChangeCount {
+        return false
+    }
+
+    pasteboard.clearContents()
+    return pasteboard.writeObjects([item])
 }
 
 // MARK: - Entry Point

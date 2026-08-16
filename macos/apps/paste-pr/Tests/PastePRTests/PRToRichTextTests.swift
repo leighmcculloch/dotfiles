@@ -1,4 +1,5 @@
 import Foundation
+import AppKit
 import XCTest
 @testable import PastePR
 
@@ -67,7 +68,7 @@ final class PRToRichTextTests: XCTestCase {
     }
 
     func testClipboardKeepsOriginalPlainTextAndWritesRichHTML() throws {
-        let pasteboard = try XCTUnwrap(NSPasteboard(name: .init("PastePRTests")))
+        let pasteboard = NSPasteboard.withUniqueName()
         let result = PRToRichText.Result(
             markdown: "formatted markdown",
             html: "<p>formatted HTML</p>"
@@ -83,5 +84,23 @@ final class PRToRichTextTests: XCTestCase {
             "github.com/owner/repo/issues/42"
         )
         XCTAssertEqual(pasteboard.string(forType: .html), "<p>formatted HTML</p>")
+    }
+
+    func testClipboardDoesNotOverwriteChangedContents() throws {
+        let pasteboard = NSPasteboard.withUniqueName()
+        let result = PRToRichText.Result(
+            markdown: "formatted markdown",
+            html: "<p>formatted HTML</p>"
+        )
+        let originalChangeCount = pasteboard.changeCount
+        XCTAssertTrue(pasteboard.setString("new clipboard input", forType: .string))
+
+        XCTAssertFalse(writeConversionResult(
+            result,
+            originalInput: "old clipboard input",
+            expectedChangeCount: originalChangeCount,
+            to: pasteboard
+        ))
+        XCTAssertEqual(pasteboard.string(forType: .string), "new clipboard input")
     }
 }
