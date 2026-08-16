@@ -74,11 +74,11 @@ final class PRToRichTextTests: XCTestCase {
             html: "<p>formatted HTML</p>"
         )
 
-        XCTAssertTrue(writeConversionResult(
+        XCTAssertEqual(writeConversionResult(
             result,
             originalInput: "github.com/owner/repo/issues/42",
             to: pasteboard
-        ))
+        ), .written)
         XCTAssertEqual(
             pasteboard.string(forType: .string),
             "github.com/owner/repo/issues/42"
@@ -95,12 +95,27 @@ final class PRToRichTextTests: XCTestCase {
         let originalChangeCount = pasteboard.changeCount
         XCTAssertTrue(pasteboard.setString("new clipboard input", forType: .string))
 
-        XCTAssertFalse(writeConversionResult(
+        XCTAssertEqual(writeConversionResult(
             result,
             originalInput: "old clipboard input",
             expectedChangeCount: originalChangeCount,
             to: pasteboard
-        ))
+        ), .stale)
         XCTAssertEqual(pasteboard.string(forType: .string), "new clipboard input")
+    }
+
+    func testClipboardSnapshotRestoresMultipleRepresentations() {
+        let pasteboard = NSPasteboard.withUniqueName()
+        let item = NSPasteboardItem()
+        XCTAssertTrue(item.setString("<p>original</p>", forType: .html))
+        XCTAssertTrue(item.setString("original", forType: .string))
+        XCTAssertTrue(pasteboard.writeObjects([item]))
+
+        let snapshot = PasteboardSnapshot(from: pasteboard)
+        pasteboard.clearContents()
+
+        XCTAssertTrue(snapshot.restore(to: pasteboard))
+        XCTAssertEqual(pasteboard.string(forType: .html), "<p>original</p>")
+        XCTAssertEqual(pasteboard.string(forType: .string), "original")
     }
 }

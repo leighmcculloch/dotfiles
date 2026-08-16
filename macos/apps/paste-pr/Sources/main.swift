@@ -132,18 +132,19 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                     self.showFeedback(success: false)
                     return
                 }
-                guard writeConversionResult(
+                switch writeConversionResult(
                     result,
                     originalInput: originalInput,
                     expectedChangeCount: originalChangeCount,
                     to: pb
-                ) else {
-                    if pb.changeCount == originalChangeCount {
-                        self.showFeedback(success: false)
-                    }
+                ) {
+                case .written:
+                    self.showFeedback(success: true)
+                case .stale:
                     return
+                case .failed:
+                    self.showFeedback(success: false)
                 }
-                self.showFeedback(success: true)
             }
         }
     }
@@ -182,16 +183,22 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 }
 
+enum PasteboardWriteResult: Equatable {
+    case written
+    case stale
+    case failed
+}
+
 @discardableResult
 func writeConversionResult(
     _ result: PRToRichText.Result,
     originalInput: String,
     expectedChangeCount: Int? = nil,
     to pasteboard: NSPasteboard
-) -> Bool {
+) -> PasteboardWriteResult {
     if let expectedChangeCount,
        pasteboard.changeCount != expectedChangeCount {
-        return false
+        return .stale
     }
 
     let originalContents = PasteboardSnapshot(from: pasteboard)
@@ -199,29 +206,38 @@ func writeConversionResult(
     guard item.setString(result.html, forType: .html),
           item.setString(originalInput, forType: .string)
     else {
-        return false
+        return .failed
     }
 
     if let expectedChangeCount,
        pasteboard.changeCount != expectedChangeCount {
-        return false
+        return .stale
     }
 
-    pasteboard.clearContents()
+    let clearedChangeCount = pasteboard.clearContents()
     guard pasteboard.writeObjects([item]) else {
-        guard originalContents.restore(to: pasteboard) else {
+        guard pasteboard.changeCount == clearedChangeCount else {
+            return .stale
+        }
+        guard originalContents.restore(
+            to: pasteboard,
+            expectedChangeCount: clearedChangeCount
+        ) else {
+            guard pasteboard.changeCount == clearedChangeCount else {
+                return .stale
+            }
             pasteboard.declareTypes([.string], owner: nil)
             guard pasteboard.setString(originalInput, forType: .string) else {
-                return false
+                return .failed
             }
-            return false
+            return .failed
         }
-        return false
+        return .failed
     }
-    return true
+    return .written
 }
 
-private struct PasteboardSnapshot {
+struct PasteboardSnapshot {
     private struct Representation {
         let type: NSPasteboard.PasteboardType
         let data: Data
@@ -238,7 +254,10 @@ private struct PasteboardSnapshot {
         }
     }
 
-    func restore(to pasteboard: NSPasteboard) -> Bool {
+    func restore(
+        to pasteboard: NSPasteboard,
+        expectedChangeCount: Int? = nil
+    ) -> Bool {
         var restoredItems: [NSPasteboardItem] = []
         for representations in items where !representations.isEmpty {
             let item = NSPasteboardItem()
@@ -251,6 +270,10 @@ private struct PasteboardSnapshot {
         }
 
         guard !restoredItems.isEmpty else { return false }
+        if let expectedChangeCount,
+           pasteboard.changeCount != expectedChangeCount {
+            return false
+        }
         pasteboard.clearContents()
         return pasteboard.writeObjects(restoredItems)
     }
