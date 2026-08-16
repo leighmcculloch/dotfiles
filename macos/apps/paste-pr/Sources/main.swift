@@ -121,6 +121,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
 
         let link = originalInput.trimmingCharacters(in: .whitespacesAndNewlines)
+        let originalChangeCount = pb.changeCount
 
         // Fetching the GitHub resource may block on the network, so do it off
         // the main thread and update the clipboard back on the main thread.
@@ -131,9 +132,18 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                     self.showFeedback(success: false)
                     return
                 }
-                pb.clearContents()
-                pb.setString(result.html, forType: .html)
-                pb.setString(originalInput, forType: .string)
+                guard pb.changeCount == originalChangeCount,
+                      pb.clearContents()
+                else {
+                    return
+                }
+                pb.declareTypes([.html, .string], owner: nil)
+                guard pb.setString(result.html, forType: .html),
+                      pb.setString(originalInput, forType: .string)
+                else {
+                    self.showFeedback(success: false)
+                    return
+                }
                 self.showFeedback(success: true)
             }
         }
