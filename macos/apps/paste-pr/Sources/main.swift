@@ -194,6 +194,7 @@ func writeConversionResult(
         return false
     }
 
+    let originalContents = PasteboardSnapshot(from: pasteboard)
     let item = NSPasteboardItem()
     guard item.setString(result.html, forType: .html),
           item.setString(originalInput, forType: .string)
@@ -208,11 +209,51 @@ func writeConversionResult(
 
     pasteboard.clearContents()
     guard pasteboard.writeObjects([item]) else {
-        pasteboard.declareTypes([.string], owner: nil)
-        _ = pasteboard.setString(originalInput, forType: .string)
+        guard originalContents.restore(to: pasteboard) else {
+            pasteboard.declareTypes([.string], owner: nil)
+            guard pasteboard.setString(originalInput, forType: .string) else {
+                return false
+            }
+            return false
+        }
         return false
     }
     return true
+}
+
+private struct PasteboardSnapshot {
+    private struct Representation {
+        let type: NSPasteboard.PasteboardType
+        let data: Data
+    }
+
+    private let items: [[Representation]]
+
+    init(from pasteboard: NSPasteboard) {
+        items = (pasteboard.pasteboardItems ?? []).map { item in
+            item.types.compactMap { type in
+                guard let data = item.data(forType: type) else { return nil }
+                return Representation(type: type, data: data)
+            }
+        }
+    }
+
+    func restore(to pasteboard: NSPasteboard) -> Bool {
+        var restoredItems: [NSPasteboardItem] = []
+        for representations in items where !representations.isEmpty {
+            let item = NSPasteboardItem()
+            for representation in representations {
+                guard item.setData(representation.data, forType: representation.type) else {
+                    return false
+                }
+            }
+            restoredItems.append(item)
+        }
+
+        guard !restoredItems.isEmpty else { return false }
+        pasteboard.clearContents()
+        return pasteboard.writeObjects(restoredItems)
+    }
 }
 
 // MARK: - Entry Point
