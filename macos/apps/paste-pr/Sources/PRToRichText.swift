@@ -13,6 +13,8 @@ import Foundation
 /// The result includes the Markdown representation and an equivalent HTML
 /// fragment (what `pandoc -f markdown -t html` would produce) for rich text.
 enum PRToRichText {
+    typealias GHRunner = ([String]) throws -> Data
+
     struct Result {
         let markdown: String
         let html: String
@@ -26,22 +28,22 @@ enum PRToRichText {
 
     // MARK: - Conversion
 
-    static func convert(prLink: String) throws -> Result {
+    static func convert(prLink: String, ghRunner: GHRunner? = nil) throws -> Result {
         let link = try parseGitHubLink(prLink)
 
         switch link.kind {
         case .pullRequest:
-            return try convertPullRequest(link)
+            return try convertPullRequest(link, ghRunner: ghRunner)
         case .issue, .discussion:
-            return try convertIssueOrDiscussion(link)
+            return try convertIssueOrDiscussion(link, ghRunner: ghRunner)
         }
     }
 
-    private static func convertPullRequest(_ link: GitHubLink) throws -> Result {
-        let json = try runGH([
+    private static func convertPullRequest(_ link: GitHubLink, ghRunner: GHRunner?) throws -> Result {
+        let json = try fetch([
             "pr", "view", link.url,
             "--json", "title,number,additions,deletions",
-        ])
+        ], with: ghRunner)
 
         guard let pr = try? JSONDecoder().decode(PullRequest.self, from: json) else {
             throw ConversionError.parseFailed
@@ -63,12 +65,12 @@ enum PRToRichText {
         return Result(markdown: markdown, html: html)
     }
 
-    private static func convertIssueOrDiscussion(_ link: GitHubLink) throws -> Result {
+    private static func convertIssueOrDiscussion(_ link: GitHubLink, ghRunner: GHRunner?) throws -> Result {
         let command = link.kind == .issue ? "issue" : "discussion"
-        let json = try runGH([
+        let json = try fetch([
             command, "view", link.url,
             "--json", "title,number",
-        ])
+        ], with: ghRunner)
 
         guard let item = try? JSONDecoder().decode(IssueOrDiscussion.self, from: json) else {
             throw ConversionError.parseFailed
@@ -87,6 +89,13 @@ enum PRToRichText {
     }
 
     // MARK: - GitHub CLI
+
+    private static func fetch(_ arguments: [String], with ghRunner: GHRunner?) throws -> Data {
+        if let ghRunner {
+            return try ghRunner(arguments)
+        }
+        return try runGH(arguments)
+    }
 
     private static func runGH(_ arguments: [String]) throws -> Data {
         guard let ghPath = locateGH() else {

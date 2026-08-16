@@ -132,15 +132,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                     self.showFeedback(success: false)
                     return
                 }
-                guard pb.changeCount == originalChangeCount,
-                      pb.clearContents()
-                else {
+                guard pb.changeCount == originalChangeCount else {
                     return
                 }
-                pb.declareTypes([.html, .string], owner: nil)
-                guard pb.setString(result.html, forType: .html),
-                      pb.setString(originalInput, forType: .string)
-                else {
+                guard writeConversionResult(
+                    result,
+                    originalInput: originalInput,
+                    to: pb
+                ) else {
                     self.showFeedback(success: false)
                     return
                 }
@@ -181,6 +180,18 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private func updateLaunchAtLoginState() {
         launchAtLoginItem.state = SMAppService.mainApp.status == .enabled ? .on : .off
     }
+}
+
+@discardableResult
+func writeConversionResult(
+    _ result: PRToRichText.Result,
+    originalInput: String,
+    to pasteboard: NSPasteboard
+) -> Bool {
+    guard pasteboard.clearContents() != 0 else { return false }
+    pasteboard.declareTypes([.html, .string], owner: nil)
+    return pasteboard.setString(result.html, forType: .html)
+        && pasteboard.setString(originalInput, forType: .string)
 }
 
 // MARK: - Entry Point
