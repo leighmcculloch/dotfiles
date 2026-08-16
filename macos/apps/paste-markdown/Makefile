@@ -14,6 +14,7 @@ build:
 	codesign --force --sign - "$(APP_BUNDLE)"
 
 install: build
+	rm -rf "/Applications/$(APP_NAME).app"
 	cp -r "$(APP_BUNDLE)" /Applications/
 	@echo 'Installed "$(APP_NAME)" to /Applications/'
 

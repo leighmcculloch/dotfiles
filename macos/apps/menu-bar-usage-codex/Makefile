@@ -14,6 +14,7 @@ build:
 bundle: build
 
 install: build
+	rm -rf "/Applications/$(APP_NAME).app"
 	cp -R "$(APP_BUNDLE)" /Applications/
 	@echo 'Installed "$(APP_NAME)" to /Applications/'
 
