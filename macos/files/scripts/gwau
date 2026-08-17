@@ -316,7 +316,7 @@ function {
 
     while (( offset < city_count )); do
       candidate="${cities[$((((start + offset - 1) % city_count) + 1))]}"
-      if ! git show-ref --verify --quiet "refs/heads/$candidate" && [[ ! -e "../${repo_name}-${candidate}" ]]; then
+      if ! git show-ref --verify --quiet "refs/heads/$candidate" && [[ ! -e ".worktrees/${repo_name}-${candidate}" ]]; then
         branch="$candidate"
         break
       fi
@@ -329,7 +329,7 @@ function {
     fi
   fi
 
-  local dir="../${repo_name}-${branch}"
+  local dir=".worktrees/${repo_name}-${branch}"
 
   git worktree prune
   if git show-ref --verify --quiet "refs/heads/$branch"; then
