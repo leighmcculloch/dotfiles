@@ -5,20 +5,62 @@ import XCTest
 
 final class PRToRichTextTests: XCTestCase {
     func testPullRequestNormalizesURLAndUsesBaseRepository() throws {
-        var arguments: [String]?
+        var arguments = [[String]]()
         let result = try PRToRichText.convert(
             prLink: "github.com/owner/base/pull/123/changes?next=https://example.com#files",
             ghRunner: { receivedArguments in
-                arguments = receivedArguments
-                return Data(#"{"title":"Fix the thing","number":123,"additions":4,"deletions":2}"#.utf8)
+                arguments.append(receivedArguments)
+                if receivedArguments[1] == "view" {
+                    return Data(#"{"title":"Fix the thing","number":123}"#.utf8)
+                }
+                return Data("""
+                diff --git a/file.swift b/file.swift
+                index 123..456 100644
+                --- a/file.swift
+                +++ b/file.swift
+                @@ -1 +1 @@
+                -old
+                +new
+                """.utf8)
             }
         )
 
         XCTAssertEqual(arguments, [
-            "pr", "view", "https://github.com/owner/base/pull/123",
-            "--json", "title,number,additions,deletions",
+            [
+                "pr", "view", "https://github.com/owner/base/pull/123",
+                "--json", "title,number",
+            ],
+            [
+                "pr", "diff", "https://github.com/owner/base/pull/123",
+                "--exclude", "*.json",
+                "--exclude", "*.lock",
+            ],
         ])
-        XCTAssertEqual(result.markdown, ":github-rainbow: Fix the thing [base#123](https://github.com/owner/base/pull/123) `+4 -2`")
+        XCTAssertEqual(result.markdown, ":github-rainbow: Fix the thing [base#123](https://github.com/owner/base/pull/123) `+1 -1`")
+    }
+
+    func testPullRequestCountsChangedLinesThatBeginWithDiffCharacters() throws {
+        var callCount = 0
+        let result = try PRToRichText.convert(
+            prLink: "github.com/owner/repo/pull/123",
+            ghRunner: { _ in
+                callCount += 1
+                if callCount == 1 {
+                    return Data(#"{"title":"Count the diff","number":123}"#.utf8)
+                }
+                return Data("""
+                --- a/file.txt
+                +++ b/file.txt
+                @@ -1,2 +1,2 @@
+                --removed line
+                ++added line
+                -removed line
+                +added line
+                """.utf8)
+            }
+        )
+
+        XCTAssertEqual(result.markdown, ":github-rainbow: Count the diff [repo#123](https://github.com/owner/repo/pull/123) `+2 -2`")
     }
 
     func testIssueUsesCanonicalURL() throws {

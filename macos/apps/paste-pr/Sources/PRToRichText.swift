@@ -4,9 +4,9 @@ import Foundation
 /// clipboard entry.
 ///
 /// This mirrors the behaviour of the reference shell script: it asks the
-/// GitHub CLI for the resource's title, number, and repository, adding
-/// additions and deletions for pull requests, then formats a single line of
-/// Markdown:
+/// GitHub CLI for the resource's title, number, and repository, then counts
+/// additions and deletions in filtered pull request diffs before formatting a
+/// single line of Markdown:
 ///
 ///     :github-rainbow: <title> [<repo>#<number>](<url>) `+<additions> -<deletions>`
 ///
@@ -42,12 +42,22 @@ enum PRToRichText {
     private static func convertPullRequest(_ link: GitHubLink, ghRunner: GHRunner?) throws -> Result {
         let json = try fetch([
             "pr", "view", link.url,
-            "--json", "title,number,additions,deletions",
+            "--json", "title,number",
         ], with: ghRunner)
 
         guard let pr = try? JSONDecoder().decode(PullRequest.self, from: json) else {
             throw ConversionError.parseFailed
         }
+
+        let diff = try fetch([
+            "pr", "diff", link.url,
+            "--exclude", "*.json",
+            "--exclude", "*.lock",
+        ], with: ghRunner)
+        guard let diff = String(data: diff, encoding: .utf8) else {
+            throw ConversionError.parseFailed
+        }
+        let counts = countDiffLines(in: diff)
 
         let repo = link.repository
         let url = link.url
@@ -55,12 +65,12 @@ enum PRToRichText {
         let markdown =
             ":github-rainbow: \(pr.title) " +
             "[\(repo)#\(pr.number)](\(url)) " +
-            "`+\(pr.additions) -\(pr.deletions)`"
+            "`+\(counts.additions) -\(counts.deletions)`"
 
         let html =
             "<p>:github-rainbow: \(escapeHTML(pr.title)) " +
             "<a href=\"\(escapeHTML(url))\">\(escapeHTML(repo))#\(pr.number)</a> " +
-            "<code>+\(pr.additions) -\(pr.deletions)</code></p>"
+            "<code>+\(counts.additions) -\(counts.deletions)</code></p>"
 
         return Result(markdown: markdown, html: html)
     }
@@ -153,6 +163,28 @@ enum PRToRichText {
 
     // MARK: - Helpers
 
+    private static func countDiffLines(in diff: String) -> (additions: Int, deletions: Int) {
+        var additions = 0
+        var deletions = 0
+
+        for line in diff.split(whereSeparator: { $0.isNewline }) {
+            if line.hasPrefix("+++ ") || line.hasPrefix("--- ") {
+                continue
+            }
+
+            switch line.first {
+            case "+":
+                additions += 1
+            case "-":
+                deletions += 1
+            default:
+                continue
+            }
+        }
+
+        return (additions, deletions)
+    }
+
     private static func parseGitHubLink(_ input: String) throws -> GitHubLink {
         let trimmedInput = input.trimmingCharacters(in: .whitespacesAndNewlines)
         let urlString: String
@@ -234,8 +266,6 @@ private struct GitHubLink {
 private struct PullRequest: Decodable {
     let title: String
     let number: Int
-    let additions: Int
-    let deletions: Int
 }
 
 private struct IssueOrDiscussion: Decodable {
