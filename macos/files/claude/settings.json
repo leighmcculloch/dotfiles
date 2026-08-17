@@ -94,16 +94,17 @@
     ]
   },
   "spinnerTipsEnabled": false,
-  "voiceEnabled": true,
+  "effortLevel": "high",
   "prefersReducedMotion": true,
   "skipDangerousModePermissionPrompt": true,
-  "skipAutoPermissionPrompt": true,
+  "theme": "dark",
   "teammateMode": "in-process",
+  "skipAutoPermissionPrompt": true,
+  "voiceEnabled": true,
   "preferences": {
     "loadingTips": false
   },
   "feedbackSurveyState": {
     "lastShownTime": 1753919494306
-  },
-  "effortLevel": "high"
+  }
 }
