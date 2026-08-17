@@ -43,7 +43,8 @@ if OS.mac?
   brew "rtk"
 
   cask "chatgpt"
-  cask "codex"
+  cask "claude"
+  cask "github-copilot-app"
   cask "obsidian"
   cask "font-fira-code"
   cask "font-fira-code-nerd-font"
