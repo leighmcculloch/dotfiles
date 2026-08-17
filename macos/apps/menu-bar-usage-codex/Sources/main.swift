@@ -344,11 +344,11 @@ private final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func setupMenuBar() {
-        statusItem = NSStatusBar.system.statusItem(withLength: 40)
+        statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         statusItem.isVisible = true
         lastSnapshot = loadCachedSnapshot()
         if let button = statusItem.button {
-            button.title = lastSnapshot.map { "\($0.remainingPercent)%" } ?? "—"
+            button.title = lastSnapshot.map { statusTitle(for: $0) } ?? "—"
             button.font = NSFont.monospacedDigitSystemFont(ofSize: 12, weight: .medium)
             button.alignment = .center
             button.cell?.wraps = false
@@ -390,7 +390,7 @@ private final class AppDelegate: NSObject, NSApplicationDelegate {
         case let .success(snapshot):
             lastSnapshot = snapshot
             UserDefaults.standard.set(snapshot.remainingPercent, forKey: cachedRemainingPercentKey)
-            statusItem.button?.title = "\(snapshot.remainingPercent)%"
+            statusItem.button?.title = statusTitle(for: snapshot)
             statusItem.button?.toolTip = tooltip(for: snapshot)
         case let .failure(error):
             if let lastSnapshot {
@@ -438,16 +438,38 @@ private final class AppDelegate: NSObject, NSApplicationDelegate {
     private func tooltip(for snapshot: UsageSnapshot) -> String {
         var text = "Codex usage remaining: \(snapshot.remainingPercent)%"
         if let primaryResetDate = snapshot.primaryResetDate {
-            text += "\nPrimary window resets \(relativeDate(primaryResetDate))"
+            text += "\nPrimary window resets \(resetDetails(for: primaryResetDate))"
         }
         if let secondaryResetDate = snapshot.secondaryResetDate {
-            text += "\nSecondary window resets \(relativeDate(secondaryResetDate))"
+            text += "\nSecondary window resets \(resetDetails(for: secondaryResetDate))"
         }
         return text
     }
 
-    private func relativeDate(_ date: Date) -> String {
-        RelativeDateTimeFormatter().localizedString(for: date, relativeTo: Date())
+    private func statusTitle(for snapshot: UsageSnapshot) -> String {
+        let resetDates = [snapshot.primaryResetDate, snapshot.secondaryResetDate].compactMap { $0 }
+        guard let nextResetDate = resetDates.min() else {
+            return "\(snapshot.remainingPercent)%"
+        }
+        return "\(snapshot.remainingPercent)% \(compactCountdown(to: nextResetDate))"
+    }
+
+    private func resetDetails(for date: Date) -> String {
+        let dateText = DateFormatter.localizedString(from: date, dateStyle: .medium, timeStyle: .short)
+        return "\(dateText) (in \(compactCountdown(to: date)))"
+    }
+
+    private func compactCountdown(to date: Date) -> String {
+        let secondsUntilReset = date.timeIntervalSinceNow
+        guard secondsUntilReset > 0 else { return "now" }
+
+        let totalHours = Int(ceil(secondsUntilReset / 3600))
+        let days = totalHours / 24
+        let hours = totalHours % 24
+        if days > 0 {
+            return "\(days)d \(hours)h"
+        }
+        return "\(hours)h"
     }
 }
 

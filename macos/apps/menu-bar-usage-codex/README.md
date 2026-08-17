@@ -2,13 +2,13 @@
 
 Show remaining usage of a Codex subscription in the macOS menu bar.
 
-Codex Usage is a small, native menu bar app. It shows the lowest remaining percentage across the active Codex rate-limit windows as a single number such as `83%`.
+Codex Usage is a small, native menu bar app. It shows the lowest remaining percentage across the active Codex rate-limit windows with a compact countdown to the next reset, such as `83% 2d 4h`.
 
 ## How it works
 
 The app does not implement another login flow and never asks for an API key. It launches the `codex app-server` shipped with the installed ChatGPT/Codex client and calls its `account/rateLimits/read` method. The app-server reuses the existing Codex authentication in `~/.codex`, so the app only works when Codex is already installed and signed in.
 
-The displayed number is `100 - usedPercent`, using the lowest value from the primary and secondary rate-limit windows. A `—` means the installed client is unavailable, not signed in, offline, or returned no usable window. Click the number for refresh, usage settings, launch-at-login, and quit.
+The displayed percentage is `100 - usedPercent`, using the lowest value from the primary and secondary rate-limit windows. Hover over it to see each window's reset date and time remaining. A `—` means the installed client is unavailable, not signed in, offline, or returned no usable window. Click the status item for refresh, usage settings, launch-at-login, and quit.
 
 ## Homebrew
 
