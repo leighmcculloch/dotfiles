@@ -303,8 +303,12 @@ final class PRToRichTextTests: XCTestCase {
 
         let snapshot = PasteboardSnapshot(from: pasteboard)
         pasteboard.clearContents()
+        let expectedRestoredChangeCount = pasteboard.changeCount + 1
 
-        XCTAssertEqual(snapshot.restore(to: pasteboard), .restored)
+        XCTAssertEqual(
+            snapshot.restore(to: pasteboard),
+            .restored(changeCount: expectedRestoredChangeCount)
+        )
         XCTAssertEqual(pasteboard.string(forType: .html), "<p>original</p>")
         XCTAssertEqual(pasteboard.string(forType: .string), "original")
     }
@@ -342,16 +346,38 @@ final class PRToRichTextTests: XCTestCase {
         let pasteboard = NSPasteboard.withUniqueName()
         XCTAssertTrue(pasteboard.setString("original", forType: .string))
         let result = PRToRichText.Result(markdown: "formatted", html: "<p>formatted</p>")
+        var observedChangeCount: Int?
 
         let writeResult = writeConversionResult(
             result,
             originalInput: "original",
             to: pasteboard,
             writeObjects: { _ in false },
-            restoreWriteObjects: { _ in false }
+            restoreWriteObjects: { _ in false },
+            onAppOwnedChangeCount: { observedChangeCount = $0 }
         )
 
         XCTAssertEqual(writeResult, .failed)
+        XCTAssertEqual(observedChangeCount, pasteboard.changeCount)
+        XCTAssertEqual(pasteboard.string(forType: .string), "original")
+    }
+
+    func testFailedWriteRestoresSnapshotAndReportsOwnership() {
+        let pasteboard = NSPasteboard.withUniqueName()
+        XCTAssertTrue(pasteboard.setString("original", forType: .string))
+        let result = PRToRichText.Result(markdown: "formatted", html: "<p>formatted</p>")
+        var observedChangeCount: Int?
+
+        let writeResult = writeConversionResult(
+            result,
+            originalInput: "original",
+            to: pasteboard,
+            writeObjects: { _ in false },
+            onAppOwnedChangeCount: { observedChangeCount = $0 }
+        )
+
+        XCTAssertEqual(writeResult, .failed)
+        XCTAssertEqual(observedChangeCount, pasteboard.changeCount)
         XCTAssertEqual(pasteboard.string(forType: .string), "original")
     }
 
@@ -359,6 +385,7 @@ final class PRToRichTextTests: XCTestCase {
         let pasteboard = NSPasteboard.withUniqueName()
         XCTAssertTrue(pasteboard.setString("original", forType: .string))
         let result = PRToRichText.Result(markdown: "formatted", html: "<p>formatted</p>")
+        var observedChangeCount: Int?
 
         let writeResult = writeConversionResult(
             result,
@@ -366,12 +393,15 @@ final class PRToRichTextTests: XCTestCase {
             to: pasteboard,
             writeObjects: { _ in false },
             restoreWriteObjects: { _ in
+                _ = pasteboard.declareTypes([.string], owner: nil)
                 XCTAssertTrue(pasteboard.setString("new", forType: .string))
                 return false
-            }
+            },
+            onAppOwnedChangeCount: { observedChangeCount = $0 }
         )
 
         XCTAssertEqual(writeResult, .stale)
+        XCTAssertNil(observedChangeCount)
         XCTAssertEqual(pasteboard.string(forType: .string), "new")
     }
 }

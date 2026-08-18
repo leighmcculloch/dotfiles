@@ -400,7 +400,7 @@ enum PasteboardWriteResult: Equatable {
 }
 
 enum PasteboardRestoreResult: Equatable {
-    case restored
+    case restored(changeCount: Int)
     case stale
     case failed(expectedChangeCount: Int)
 }
@@ -463,8 +463,8 @@ func writeConversionResult(
             expectedChangeCount: clearedChangeCount,
             writeObjects: restoreWriteObjects
         ) {
-        case .restored:
-            onAppOwnedChangeCount?(pasteboard.changeCount)
+        case let .restored(changeCount):
+            onAppOwnedChangeCount?(changeCount)
             return .failed
         case .stale:
             return .stale
@@ -472,14 +472,21 @@ func writeConversionResult(
             guard pasteboard.changeCount == expectedChangeCount else {
                 return .stale
             }
-            pasteboard.declareTypes([.string], owner: nil)
+            let declaredChangeCount = pasteboard.declareTypes([.string], owner: nil)
+            guard declaredChangeCount == expectedChangeCount + 1,
+                  pasteboard.changeCount == declaredChangeCount
+            else {
+                return .stale
+            }
             guard pasteboard.setString(originalInput, forType: .string) else {
                 return .failed
             }
-            guard pasteboard.string(forType: .string) == originalInput else {
+            guard pasteboard.changeCount == declaredChangeCount,
+                  pasteboard.string(forType: .string) == originalInput
+            else {
                 return .stale
             }
-            onAppOwnedChangeCount?(pasteboard.changeCount)
+            onAppOwnedChangeCount?(declaredChangeCount)
             return .failed
         }
     }
@@ -568,7 +575,7 @@ struct PasteboardSnapshot {
         guard pasteboard.changeCount == clearedChangeCount else {
             return .stale
         }
-        return .restored
+        return .restored(changeCount: clearedChangeCount)
     }
 }
 
