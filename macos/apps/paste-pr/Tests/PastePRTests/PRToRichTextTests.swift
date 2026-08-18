@@ -218,12 +218,15 @@ final class PRToRichTextTests: XCTestCase {
             markdown: "formatted markdown",
             html: "<p>formatted HTML</p>"
         )
+        var observedChangeCount: Int?
 
         XCTAssertEqual(writeConversionResult(
             result,
             originalInput: "github.com/owner/repo/issues/42",
-            to: pasteboard
+            to: pasteboard,
+            onAppOwnedChangeCount: { observedChangeCount = $0 }
         ), .written)
+        XCTAssertEqual(observedChangeCount, pasteboard.changeCount)
         XCTAssertEqual(
             pasteboard.string(forType: .string),
             "github.com/owner/repo/issues/42"
@@ -267,6 +270,28 @@ final class PRToRichTextTests: XCTestCase {
 
         XCTAssertEqual(writeResult, .stale)
         XCTAssertEqual(pasteboard.string(forType: .string), "mutated")
+    }
+
+    func testMutationBeforePasteboardWriteReturnsStaleWithoutClaimingOwnership() {
+        let pasteboard = NSPasteboard.withUniqueName()
+        XCTAssertTrue(pasteboard.setString("original", forType: .string))
+        let result = PRToRichText.Result(markdown: "formatted", html: "<p>formatted</p>")
+        var observedChangeCount: Int?
+
+        let writeResult = writeConversionResult(
+            result,
+            originalInput: "original",
+            to: pasteboard,
+            writeObjects: { items in
+                _ = pasteboard.declareTypes([.string], owner: nil)
+                XCTAssertTrue(pasteboard.setString("mutated before write", forType: .string))
+                return pasteboard.writeObjects(items)
+            },
+            onAppOwnedChangeCount: { observedChangeCount = $0 }
+        )
+
+        XCTAssertEqual(writeResult, .stale)
+        XCTAssertNil(observedChangeCount)
     }
 
     func testClipboardSnapshotRestoresMultipleRepresentations() {

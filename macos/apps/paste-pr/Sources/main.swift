@@ -197,10 +197,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                     result,
                     originalInput: originalInput,
                     expectedChangeCount: originalChangeCount,
-                    to: pb
+                    to: pb,
+                    onAppOwnedChangeCount: { changeCount in
+                        self.markClipboardWriteAsObserved(at: changeCount)
+                    }
                 ) {
                 case .written:
-                    self.markClipboardWriteAsObserved(pasteboard: pb)
                     self.showFeedback(success: true)
                 case .stale:
                     return
@@ -213,10 +215,21 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func enqueueAutomaticConversion() {
         let pasteboard = NSPasteboard.general
-        guard autoConvertEnabled,
-              let originalInput = pasteboard.string(forType: .string),
-              !originalInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-        else {
+        guard autoConvertEnabled else {
+            pendingAutomaticConversion = nil
+            return
+        }
+
+        let originalChangeCount = pasteboard.changeCount
+        guard let originalInput = pasteboard.string(forType: .string) else {
+            pendingAutomaticConversion = nil
+            return
+        }
+        guard pasteboard.changeCount == originalChangeCount else {
+            pendingAutomaticConversion = nil
+            return
+        }
+        guard !originalInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             pendingAutomaticConversion = nil
             return
         }
@@ -229,7 +242,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         let request = AutomaticConversionRequest(
             originalInput: originalInput,
-            expectedChangeCount: pasteboard.changeCount,
+            expectedChangeCount: originalChangeCount,
             generation: automaticConversionGeneration
         )
         if automaticConversionInFlight {
@@ -268,10 +281,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 result,
                 originalInput: request.originalInput,
                 expectedChangeCount: request.expectedChangeCount,
-                to: pasteboard
+                to: pasteboard,
+                onAppOwnedChangeCount: { changeCount in
+                    self.markClipboardWriteAsObserved(at: changeCount)
+                }
             ) {
             case .written, .failed:
-                clipboardChangeTracker.observeAppOwnedWrite(at: pasteboard.changeCount)
+                break
             case .stale:
                 break
             }
@@ -323,9 +339,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         beginClipboardConversion(automatically: true)
     }
 
-    private func markClipboardWriteAsObserved(pasteboard: NSPasteboard) {
+    private func markClipboardWriteAsObserved(at changeCount: Int) {
         guard autoConvertEnabled else { return }
-        clipboardChangeTracker.observeAppOwnedWrite(at: pasteboard.changeCount)
+        clipboardChangeTracker.observeAppOwnedWrite(at: changeCount)
     }
 
     // MARK: Auto Conversion
@@ -396,7 +412,8 @@ func writeConversionResult(
     expectedChangeCount: Int? = nil,
     to pasteboard: NSPasteboard,
     writeObjects: (([NSPasteboardItem]) -> Bool)? = nil,
-    restoreWriteObjects: (([NSPasteboardItem]) -> Bool)? = nil
+    restoreWriteObjects: (([NSPasteboardItem]) -> Bool)? = nil,
+    onAppOwnedChangeCount: ((Int) -> Void)? = nil
 ) -> PasteboardWriteResult {
     if let expectedChangeCount,
        pasteboard.changeCount != expectedChangeCount {
@@ -416,8 +433,21 @@ func writeConversionResult(
         return .stale
     }
 
+    let changeCountBeforeClear = pasteboard.changeCount
+    if let expectedChangeCount,
+       changeCountBeforeClear != expectedChangeCount {
+        return .stale
+    }
+
     let clearedChangeCount = pasteboard.clearContents()
+    guard pasteboard.changeCount == clearedChangeCount else {
+        return .stale
+    }
+
     let write = writeObjects ?? { pasteboard.writeObjects($0) }
+    guard pasteboard.changeCount == clearedChangeCount else {
+        return .stale
+    }
     guard write([item]) else {
         guard pasteboard.changeCount == clearedChangeCount else {
             return .stale
@@ -428,6 +458,7 @@ func writeConversionResult(
             writeObjects: restoreWriteObjects
         ) {
         case .restored:
+            onAppOwnedChangeCount?(pasteboard.changeCount)
             return .failed
         case .stale:
             return .stale
@@ -439,15 +470,27 @@ func writeConversionResult(
             guard pasteboard.setString(originalInput, forType: .string) else {
                 return .failed
             }
+            guard pasteboard.string(forType: .string) == originalInput else {
+                return .stale
+            }
+            onAppOwnedChangeCount?(pasteboard.changeCount)
             return .failed
         }
     }
 
+    let writtenChangeCount = pasteboard.changeCount
+    guard writtenChangeCount == clearedChangeCount else {
+        return .stale
+    }
     guard pasteboard.string(forType: .html) == result.html,
           pasteboard.string(forType: .string) == originalInput
     else {
         return .stale
     }
+    guard pasteboard.changeCount == writtenChangeCount else {
+        return .stale
+    }
+    onAppOwnedChangeCount?(writtenChangeCount)
     return .written
 }
 
@@ -495,12 +538,27 @@ struct PasteboardSnapshot {
         guard pasteboard.changeCount == expectedChangeCount else {
             return .stale
         }
+        let changeCountBeforeClear = pasteboard.changeCount
+        guard changeCountBeforeClear == expectedChangeCount else {
+            return .stale
+        }
+
         let clearedChangeCount = pasteboard.clearContents()
+        guard pasteboard.changeCount == clearedChangeCount else {
+            return .stale
+        }
+
         let write = writeObjects ?? { pasteboard.writeObjects($0) }
+        guard pasteboard.changeCount == clearedChangeCount else {
+            return .stale
+        }
         guard write(restoredItems) else {
             return pasteboard.changeCount == clearedChangeCount
                 ? .failed(expectedChangeCount: clearedChangeCount)
                 : .stale
+        }
+        guard pasteboard.changeCount == clearedChangeCount else {
+            return .stale
         }
         return .restored
     }
