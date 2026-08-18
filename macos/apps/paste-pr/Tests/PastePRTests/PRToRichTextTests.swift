@@ -4,6 +4,33 @@ import XCTest
 @testable import PastePR
 
 final class PRToRichTextTests: XCTestCase {
+    func testClipboardChangeTrackerUsesEnableBaseline() {
+        var tracker = ClipboardChangeTracker()
+
+        tracker.beginObserving(at: 10)
+
+        XCTAssertFalse(tracker.consumeChange(at: 10))
+    }
+
+    func testClipboardChangeTrackerConsumesEachChangeOnce() {
+        var tracker = ClipboardChangeTracker()
+        tracker.beginObserving(at: 10)
+
+        XCTAssertTrue(tracker.consumeChange(at: 11))
+        XCTAssertFalse(tracker.consumeChange(at: 11))
+        XCTAssertTrue(tracker.consumeChange(at: 12))
+    }
+
+    func testClipboardChangeTrackerObservesAppOwnedWrites() {
+        var tracker = ClipboardChangeTracker()
+        tracker.beginObserving(at: 10)
+
+        tracker.observeAppOwnedWrite(at: 11)
+
+        XCTAssertFalse(tracker.consumeChange(at: 11))
+        XCTAssertTrue(tracker.consumeChange(at: 12))
+    }
+
     func testPullRequestNormalizesURLAndUsesBaseRepository() throws {
         var arguments = [[String]]()
         let result = try PRToRichText.convert(
@@ -220,6 +247,26 @@ final class PRToRichTextTests: XCTestCase {
             to: pasteboard
         ), .stale)
         XCTAssertEqual(pasteboard.string(forType: .string), "new clipboard input")
+    }
+
+    func testSuccessfulWriteThatMutatesPasteboardReturnsStale() {
+        let pasteboard = NSPasteboard.withUniqueName()
+        XCTAssertTrue(pasteboard.setString("original", forType: .string))
+        let result = PRToRichText.Result(markdown: "formatted", html: "<p>formatted</p>")
+
+        let writeResult = writeConversionResult(
+            result,
+            originalInput: "original",
+            to: pasteboard,
+            writeObjects: { items in
+                guard pasteboard.writeObjects(items) else { return false }
+                XCTAssertTrue(pasteboard.setString("mutated", forType: .string))
+                return true
+            }
+        )
+
+        XCTAssertEqual(writeResult, .stale)
+        XCTAssertEqual(pasteboard.string(forType: .string), "mutated")
     }
 
     func testClipboardSnapshotRestoresMultipleRepresentations() {

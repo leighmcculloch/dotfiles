@@ -2,6 +2,32 @@ import AppKit
 import Carbon.HIToolbox
 import ServiceManagement
 
+struct ClipboardChangeTracker {
+    private(set) var observedChangeCount: Int? = nil
+
+    mutating func beginObserving(at changeCount: Int) {
+        observedChangeCount = changeCount
+    }
+
+    mutating func consumeChange(at changeCount: Int) -> Bool {
+        guard let observedChangeCount else {
+            beginObserving(at: changeCount)
+            return false
+        }
+        guard observedChangeCount != changeCount else { return false }
+        self.observedChangeCount = changeCount
+        return true
+    }
+
+    mutating func observeAppOwnedWrite(at changeCount: Int) {
+        observedChangeCount = changeCount
+    }
+
+    mutating func reset() {
+        observedChangeCount = nil
+    }
+}
+
 // MARK: - Global hotkey callback (C-compatible function for Carbon interop)
 
 func hotkeyHandler(
@@ -21,6 +47,12 @@ func hotkeyHandler(
 // MARK: - App Delegate
 
 class AppDelegate: NSObject, NSApplicationDelegate {
+    private struct AutomaticConversionRequest {
+        let originalInput: String
+        let expectedChangeCount: Int
+        let generation: Int
+    }
+
     private static let autoConvertDefaultsKey = "AutoConvertGitHubLinks"
 
     private var statusItem: NSStatusItem!
@@ -28,8 +60,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private var autoConvertItem: NSMenuItem!
     private var hotKeyRef: EventHotKeyRef?
     private var clipboardMonitorTimer: Timer?
-    private var lastObservedClipboardChangeCount: Int?
+    private var clipboardChangeTracker = ClipboardChangeTracker()
     private var autoConvertEnabled = false
+    private var automaticConversionGeneration = 0
+    private var automaticConversionInFlight = false
+    private var pendingAutomaticConversion: AutomaticConversionRequest?
 
     func applicationDidFinishLaunching(_: Notification) {
         NSApp.setActivationPolicy(.accessory)
@@ -132,22 +167,22 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func beginClipboardConversion(automatically: Bool) {
+        if automatically {
+            enqueueAutomaticConversion()
+            return
+        }
+
         let pb = NSPasteboard.general
         let originalChangeCount = pb.changeCount
 
         guard let originalInput = pb.string(forType: .string),
               !originalInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
         else {
-            if !automatically {
-                showFeedback(success: false)
-            }
+            showFeedback(success: false)
             return
         }
 
         let link = originalInput.trimmingCharacters(in: .whitespacesAndNewlines)
-        if automatically && !PRToRichText.isSupportedGitHubLink(link) {
-            return
-        }
 
         // Fetching the GitHub resource may block on the network, so do it off
         // the main thread and update the clipboard back on the main thread.
@@ -155,12 +190,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             let result = try? PRToRichText.convert(prLink: link)
             DispatchQueue.main.async {
                 guard let result else {
-                    if !automatically {
-                        self.showFeedback(success: false)
-                    }
-                    return
-                }
-                if automatically && !self.autoConvertEnabled {
+                    self.showFeedback(success: false)
                     return
                 }
                 switch writeConversionResult(
@@ -171,29 +201,108 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 ) {
                 case .written:
                     self.markClipboardWriteAsObserved(pasteboard: pb)
-                    if !automatically {
-                        self.showFeedback(success: true)
-                    }
+                    self.showFeedback(success: true)
                 case .stale:
                     return
                 case .failed:
-                    if !automatically {
-                        self.showFeedback(success: false)
-                    }
+                    self.showFeedback(success: false)
                 }
             }
         }
     }
 
+    private func enqueueAutomaticConversion() {
+        let pasteboard = NSPasteboard.general
+        guard autoConvertEnabled,
+              let originalInput = pasteboard.string(forType: .string),
+              !originalInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        else {
+            pendingAutomaticConversion = nil
+            return
+        }
+
+        let link = originalInput.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard PRToRichText.isSupportedGitHubLink(link) else {
+            pendingAutomaticConversion = nil
+            return
+        }
+
+        let request = AutomaticConversionRequest(
+            originalInput: originalInput,
+            expectedChangeCount: pasteboard.changeCount,
+            generation: automaticConversionGeneration
+        )
+        if automaticConversionInFlight {
+            pendingAutomaticConversion = request
+        } else {
+            startAutomaticConversion(request)
+        }
+    }
+
+    private func startAutomaticConversion(_ request: AutomaticConversionRequest) {
+        automaticConversionInFlight = true
+
+        DispatchQueue.global(qos: .userInitiated).async {
+            let result = try? PRToRichText.convert(prLink: request.originalInput)
+            DispatchQueue.main.async { [weak self] in
+                self?.completeAutomaticConversion(request, result: result)
+            }
+        }
+    }
+
+    private func completeAutomaticConversion(
+        _ request: AutomaticConversionRequest,
+        result: PRToRichText.Result?
+    ) {
+        guard autoConvertEnabled,
+              request.generation == automaticConversionGeneration
+        else {
+            automaticConversionInFlight = false
+            startPendingAutomaticConversionIfNeeded()
+            return
+        }
+
+        if let result {
+            let pasteboard = NSPasteboard.general
+            switch writeConversionResult(
+                result,
+                originalInput: request.originalInput,
+                expectedChangeCount: request.expectedChangeCount,
+                to: pasteboard
+            ) {
+            case .written, .failed:
+                clipboardChangeTracker.observeAppOwnedWrite(at: pasteboard.changeCount)
+            case .stale:
+                break
+            }
+        }
+
+        automaticConversionInFlight = false
+        startPendingAutomaticConversionIfNeeded()
+    }
+
+    private func startPendingAutomaticConversionIfNeeded() {
+        guard autoConvertEnabled,
+              let pendingAutomaticConversion,
+              pendingAutomaticConversion.generation == automaticConversionGeneration
+        else {
+            self.pendingAutomaticConversion = nil
+            return
+        }
+
+        self.pendingAutomaticConversion = nil
+        startAutomaticConversion(pendingAutomaticConversion)
+    }
+
     private func updateClipboardMonitoring() {
         clipboardMonitorTimer?.invalidate()
         clipboardMonitorTimer = nil
-        lastObservedClipboardChangeCount = nil
+        clipboardChangeTracker.reset()
 
         guard autoConvertEnabled else { return }
 
         let pasteboard = NSPasteboard.general
-        lastObservedClipboardChangeCount = pasteboard.changeCount
+        clipboardChangeTracker.beginObserving(at: pasteboard.changeCount)
 
         let timer = Timer(timeInterval: 0.5, repeats: true) { [weak self] _ in
             self?.pollClipboard()
@@ -210,25 +319,21 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         let pasteboard = NSPasteboard.general
         let changeCount = pasteboard.changeCount
-        guard let lastObservedClipboardChangeCount else {
-            lastObservedClipboardChangeCount = changeCount
-            return
-        }
-        guard changeCount != lastObservedClipboardChangeCount else { return }
-
-        self.lastObservedClipboardChangeCount = changeCount
+        guard clipboardChangeTracker.consumeChange(at: changeCount) else { return }
         beginClipboardConversion(automatically: true)
     }
 
     private func markClipboardWriteAsObserved(pasteboard: NSPasteboard) {
         guard autoConvertEnabled else { return }
-        lastObservedClipboardChangeCount = pasteboard.changeCount
+        clipboardChangeTracker.observeAppOwnedWrite(at: pasteboard.changeCount)
     }
 
     // MARK: Auto Conversion
 
     @objc private func toggleAutoConvert() {
         autoConvertEnabled.toggle()
+        automaticConversionGeneration += 1
+        pendingAutomaticConversion = nil
         UserDefaults.standard.set(autoConvertEnabled, forKey: Self.autoConvertDefaultsKey)
         updateAutoConvertState()
         updateClipboardMonitoring()
@@ -336,6 +441,12 @@ func writeConversionResult(
             }
             return .failed
         }
+    }
+
+    guard pasteboard.string(forType: .html) == result.html,
+          pasteboard.string(forType: .string) == originalInput
+    else {
+        return .stale
     }
     return .written
 }
