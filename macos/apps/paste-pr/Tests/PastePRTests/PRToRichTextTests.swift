@@ -55,8 +55,8 @@ final class PRToRichTextTests: XCTestCase {
                 --- a/file.txt
                 +++ b/file.txt
                 @@ -1,2 +1,2 @@
-                -- removed line
-                ++ added line
+                --- removed line
+                +++ added line
                 -removed line
                 +added line
                 """.utf8)
@@ -83,10 +83,19 @@ final class PRToRichTextTests: XCTestCase {
                 @@ -1 +1 @@
                 -old
                 +new
-                diff --git a/config.json b/config.json
-                index 123..456 100644
+                diff --git a/config.json b/config.swift
+                similarity index 90%
+                rename from config.json
+                rename to config.swift
                 --- a/config.json
-                +++ b/config.json
+                +++ b/config.swift
+                @@ -1 +1 @@
+                -old renamed
+                +new renamed
+                diff --git a/settings.json b/settings.json
+                index 123..456 100644
+                --- a/settings.json
+                +++ b/settings.json
                 @@ -1 +1 @@
                 -old json
                 +new json
@@ -115,7 +124,7 @@ final class PRToRichTextTests: XCTestCase {
             }
         )
 
-        XCTAssertEqual(result.markdown, ":github-rainbow: Filter the diff [repo#123](https://github.com/owner/repo/pull/123) `+1 -1`")
+        XCTAssertEqual(result.markdown, ":github-rainbow: Filter the diff [repo#123](https://github.com/owner/repo/pull/123) `+2 -2`")
     }
 
     func testIssueUsesCanonicalURL() throws {

@@ -169,17 +169,23 @@ enum PRToRichText {
         var deletions = 0
         var inHunk = false
         var excludedFile = false
+        var oldPath: String?
 
         for line in diff.split(whereSeparator: { $0.isNewline }) {
             if line.hasPrefix("diff --git ") {
                 inHunk = false
                 excludedFile = false
+                oldPath = nil
                 continue
             }
 
             if !inHunk {
-                if line.hasPrefix("+++ ") || line.hasPrefix("--- ") {
-                    excludedFile = excludedFile || isExcludedDiffPath(String(line.dropFirst(4)))
+                if line.hasPrefix("--- ") {
+                    oldPath = String(line.dropFirst(4))
+                } else if line.hasPrefix("+++ ") {
+                    let newPath = String(line.dropFirst(4))
+                    let path = newPath == "/dev/null" ? oldPath : newPath
+                    excludedFile = path.map(isExcludedDiffPath) ?? false
                 }
                 if line.hasPrefix("@@") {
                     inHunk = true
