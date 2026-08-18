@@ -173,6 +173,18 @@ final class PRToRichTextTests: XCTestCase {
         XCTAssertFalse(invoked)
     }
 
+    func testSupportedGitHubLinkDetection() {
+        XCTAssertTrue(PRToRichText.isSupportedGitHubLink("github.com/owner/repo/pull/42"))
+        XCTAssertTrue(PRToRichText.isSupportedGitHubLink("https://github.com/owner/repo/issues/42/comments"))
+        XCTAssertTrue(PRToRichText.isSupportedGitHubLink("https://www.github.com/owner/repo/discussions/42?answer=1"))
+    }
+
+    func testUnsupportedGitHubLinkDetection() {
+        XCTAssertFalse(PRToRichText.isSupportedGitHubLink("https://gitlab.com/owner/repo/issues/42"))
+        XCTAssertFalse(PRToRichText.isSupportedGitHubLink("https://github.com/owner/repo"))
+        XCTAssertFalse(PRToRichText.isSupportedGitHubLink("https://github.com/owner/repo/pull/42 extra text"))
+    }
+
     func testClipboardKeepsOriginalPlainTextAndWritesRichHTML() throws {
         let pasteboard = NSPasteboard.withUniqueName()
         let result = PRToRichText.Result(

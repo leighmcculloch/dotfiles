@@ -43,3 +43,4 @@ The menu bar icon briefly changes to a checkmark on success or an X if the clipb
 ## Options
 
 - **Launch at Login** — available in the menu bar dropdown.
+- **Automatically Convert GitHub Links** — off by default. When enabled, newly copied supported GitHub pull request, issue, and discussion links are converted automatically. Enabling it does not convert the clipboard value already present.

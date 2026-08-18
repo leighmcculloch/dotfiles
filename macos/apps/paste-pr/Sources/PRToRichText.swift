@@ -39,6 +39,10 @@ enum PRToRichText {
         }
     }
 
+    static func isSupportedGitHubLink(_ input: String) -> Bool {
+        (try? parseGitHubLink(input)) != nil
+    }
+
     private static func convertPullRequest(_ link: GitHubLink, ghRunner: GHRunner?) throws -> Result {
         let json = try fetch([
             "pr", "view", link.url,

@@ -21,12 +21,19 @@ func hotkeyHandler(
 // MARK: - App Delegate
 
 class AppDelegate: NSObject, NSApplicationDelegate {
+    private static let autoConvertDefaultsKey = "AutoConvertGitHubLinks"
+
     private var statusItem: NSStatusItem!
     private var launchAtLoginItem: NSMenuItem!
+    private var autoConvertItem: NSMenuItem!
     private var hotKeyRef: EventHotKeyRef?
+    private var clipboardMonitorTimer: Timer?
+    private var lastObservedClipboardChangeCount: Int?
+    private var autoConvertEnabled = false
 
     func applicationDidFinishLaunching(_: Notification) {
         NSApp.setActivationPolicy(.accessory)
+        autoConvertEnabled = UserDefaults.standard.bool(forKey: Self.autoConvertDefaultsKey)
         setupMenuBar()
         registerGlobalHotkey()
 
@@ -36,6 +43,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             name: NSNotification.Name("ConvertClipboard"),
             object: nil
         )
+
+        updateClipboardMonitoring()
     }
 
     // MARK: Menu Bar
@@ -58,6 +67,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             keyEquivalent: ""
         )
         menu.addItem(convertItem)
+
+        autoConvertItem = NSMenuItem(
+            title: "Automatically Convert GitHub Links",
+            action: #selector(toggleAutoConvert),
+            keyEquivalent: ""
+        )
+        updateAutoConvertState()
+        menu.addItem(autoConvertItem)
 
         menu.addItem(.separator())
 
@@ -111,17 +128,26 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     // MARK: Clipboard Conversion
 
     @objc func convertClipboard() {
+        beginClipboardConversion(automatically: false)
+    }
+
+    private func beginClipboardConversion(automatically: Bool) {
         let pb = NSPasteboard.general
         let originalChangeCount = pb.changeCount
 
         guard let originalInput = pb.string(forType: .string),
               !originalInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
         else {
-            showFeedback(success: false)
+            if !automatically {
+                showFeedback(success: false)
+            }
             return
         }
 
         let link = originalInput.trimmingCharacters(in: .whitespacesAndNewlines)
+        if automatically && !PRToRichText.isSupportedGitHubLink(link) {
+            return
+        }
 
         // Fetching the GitHub resource may block on the network, so do it off
         // the main thread and update the clipboard back on the main thread.
@@ -129,7 +155,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             let result = try? PRToRichText.convert(prLink: link)
             DispatchQueue.main.async {
                 guard let result else {
-                    self.showFeedback(success: false)
+                    if !automatically {
+                        self.showFeedback(success: false)
+                    }
+                    return
+                }
+                if automatically && !self.autoConvertEnabled {
                     return
                 }
                 switch writeConversionResult(
@@ -139,14 +170,72 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                     to: pb
                 ) {
                 case .written:
-                    self.showFeedback(success: true)
+                    self.markClipboardWriteAsObserved(pasteboard: pb)
+                    if !automatically {
+                        self.showFeedback(success: true)
+                    }
                 case .stale:
                     return
                 case .failed:
-                    self.showFeedback(success: false)
+                    if !automatically {
+                        self.showFeedback(success: false)
+                    }
                 }
             }
         }
+    }
+
+    private func updateClipboardMonitoring() {
+        clipboardMonitorTimer?.invalidate()
+        clipboardMonitorTimer = nil
+        lastObservedClipboardChangeCount = nil
+
+        guard autoConvertEnabled else { return }
+
+        let pasteboard = NSPasteboard.general
+        lastObservedClipboardChangeCount = pasteboard.changeCount
+
+        let timer = Timer(timeInterval: 0.5, repeats: true) { [weak self] _ in
+            self?.pollClipboard()
+        }
+        clipboardMonitorTimer = timer
+        RunLoop.main.add(timer, forMode: .common)
+    }
+
+    private func pollClipboard() {
+        guard autoConvertEnabled else {
+            updateClipboardMonitoring()
+            return
+        }
+
+        let pasteboard = NSPasteboard.general
+        let changeCount = pasteboard.changeCount
+        guard let lastObservedClipboardChangeCount else {
+            lastObservedClipboardChangeCount = changeCount
+            return
+        }
+        guard changeCount != lastObservedClipboardChangeCount else { return }
+
+        self.lastObservedClipboardChangeCount = changeCount
+        beginClipboardConversion(automatically: true)
+    }
+
+    private func markClipboardWriteAsObserved(pasteboard: NSPasteboard) {
+        guard autoConvertEnabled else { return }
+        lastObservedClipboardChangeCount = pasteboard.changeCount
+    }
+
+    // MARK: Auto Conversion
+
+    @objc private func toggleAutoConvert() {
+        autoConvertEnabled.toggle()
+        UserDefaults.standard.set(autoConvertEnabled, forKey: Self.autoConvertDefaultsKey)
+        updateAutoConvertState()
+        updateClipboardMonitoring()
+    }
+
+    private func updateAutoConvertState() {
+        autoConvertItem?.state = autoConvertEnabled ? .on : .off
     }
 
     private func showFeedback(success: Bool) {
