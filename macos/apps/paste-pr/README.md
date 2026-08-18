@@ -44,3 +44,5 @@ The menu bar icon briefly changes to a checkmark on success or an X if the clipb
 
 - **Launch at Login** — available in the menu bar dropdown.
 - **Automatically Convert GitHub Links** — off by default. When enabled, newly copied supported GitHub pull request, issue, and discussion links are converted automatically. Enabling it does not convert the clipboard value already present.
+
+Automatic conversion rechecks clipboard ownership before and after replacement. macOS does not provide an atomic compare-and-write operation for the pasteboard, so a simultaneous external clipboard change can only be detected after the write.

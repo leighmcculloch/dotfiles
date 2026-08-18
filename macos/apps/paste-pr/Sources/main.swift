@@ -415,6 +415,9 @@ func writeConversionResult(
     restoreWriteObjects: (([NSPasteboardItem]) -> Bool)? = nil,
     onAppOwnedChangeCount: ((Int) -> Void)? = nil
 ) -> PasteboardWriteResult {
+    // NSPasteboard exposes ownership observation, but not an atomic
+    // compare-and-write operation. Recheck around each write step so stale
+    // conversions are rejected whenever the pasteboard reports a change.
     if let expectedChangeCount,
        pasteboard.changeCount != expectedChangeCount {
         return .stale
