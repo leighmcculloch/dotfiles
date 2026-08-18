@@ -167,9 +167,27 @@ enum PRToRichText {
     private static func countDiffLines(in diff: String) -> (additions: Int, deletions: Int) {
         var additions = 0
         var deletions = 0
+        var inHunk = false
+        var excludedFile = false
 
         for line in diff.split(whereSeparator: { $0.isNewline }) {
-            if line.hasPrefix("+++ ") || line.hasPrefix("--- ") {
+            if line.hasPrefix("diff --git ") {
+                inHunk = false
+                excludedFile = false
+                continue
+            }
+
+            if !inHunk {
+                if line.hasPrefix("+++ ") || line.hasPrefix("--- ") {
+                    excludedFile = excludedFile || isExcludedDiffPath(String(line.dropFirst(4)))
+                }
+                if line.hasPrefix("@@") {
+                    inHunk = true
+                }
+                continue
+            }
+
+            if excludedFile {
                 continue
             }
 
@@ -184,6 +202,22 @@ enum PRToRichText {
         }
 
         return (additions, deletions)
+    }
+
+    private static func isExcludedDiffPath(_ headerPath: String) -> Bool {
+        let path = headerPath
+            .split(separator: "\t", maxSplits: 1, omittingEmptySubsequences: false)
+            .first
+            .map(String.init) ?? headerPath
+        let unprefixedPath = path
+            .trimmingCharacters(in: CharacterSet(charactersIn: "\""))
+            .dropFirst(path.hasPrefix("a/") || path.hasPrefix("b/") ? 2 : 0)
+
+        return unprefixedPath.hasSuffix(".json") ||
+            unprefixedPath.hasSuffix(".lock") ||
+            unprefixedPath == "tests-expanded" ||
+            unprefixedPath.hasPrefix("tests-expanded/") ||
+            unprefixedPath.contains("/tests-expanded/")
     }
 
     private static func parseGitHubLink(_ input: String) throws -> GitHubLink {

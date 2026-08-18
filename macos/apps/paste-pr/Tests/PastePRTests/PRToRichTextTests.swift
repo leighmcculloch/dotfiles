@@ -50,11 +50,13 @@ final class PRToRichTextTests: XCTestCase {
                     return Data(#"{"title":"Count the diff","number":123}"#.utf8)
                 }
                 return Data("""
+                diff --git a/file.txt b/file.txt
+                index 123..456 100644
                 --- a/file.txt
                 +++ b/file.txt
                 @@ -1,2 +1,2 @@
-                --removed line
-                ++added line
+                -- removed line
+                ++ added line
                 -removed line
                 +added line
                 """.utf8)
@@ -62,6 +64,58 @@ final class PRToRichTextTests: XCTestCase {
         )
 
         XCTAssertEqual(result.markdown, ":github-rainbow: Count the diff [repo#123](https://github.com/owner/repo/pull/123) `+2 -2`")
+    }
+
+    func testPullRequestExcludesJSONLockAndNestedTestsExpandedFiles() throws {
+        var callCount = 0
+        let result = try PRToRichText.convert(
+            prLink: "github.com/owner/repo/pull/123",
+            ghRunner: { _ in
+                callCount += 1
+                if callCount == 1 {
+                    return Data(#"{"title":"Filter the diff","number":123}"#.utf8)
+                }
+                return Data("""
+                diff --git a/keep.swift b/keep.swift
+                index 123..456 100644
+                --- a/keep.swift
+                +++ b/keep.swift
+                @@ -1 +1 @@
+                -old
+                +new
+                diff --git a/config.json b/config.json
+                index 123..456 100644
+                --- a/config.json
+                +++ b/config.json
+                @@ -1 +1 @@
+                -old json
+                +new json
+                diff --git a/package.lock b/package.lock
+                index 123..456 100644
+                --- a/package.lock
+                +++ b/package.lock
+                @@ -1 +1 @@
+                -old lock
+                +new lock
+                diff --git a/tests-expanded/unit/generated.swift b/tests-expanded/unit/generated.swift
+                index 123..456 100644
+                --- a/tests-expanded/unit/generated.swift
+                +++ b/tests-expanded/unit/generated.swift
+                @@ -1 +1 @@
+                -old generated
+                +new generated
+                diff --git a/src/tests-expanded/generated.swift b/src/tests-expanded/generated.swift
+                index 123..456 100644
+                --- a/src/tests-expanded/generated.swift
+                +++ b/src/tests-expanded/generated.swift
+                @@ -1 +1 @@
+                -old nested generated
+                +new nested generated
+                """.utf8)
+            }
+        )
+
+        XCTAssertEqual(result.markdown, ":github-rainbow: Filter the diff [repo#123](https://github.com/owner/repo/pull/123) `+1 -1`")
     }
 
     func testIssueUsesCanonicalURL() throws {
