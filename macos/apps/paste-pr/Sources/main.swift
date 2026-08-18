@@ -440,7 +440,10 @@ func writeConversionResult(
     }
 
     let clearedChangeCount = pasteboard.clearContents()
-    guard pasteboard.changeCount == clearedChangeCount else {
+    let clearBaseline = expectedChangeCount ?? changeCountBeforeClear
+    guard clearedChangeCount == clearBaseline + 1,
+          pasteboard.changeCount == clearedChangeCount
+    else {
         return .stale
     }
 
@@ -544,7 +547,9 @@ struct PasteboardSnapshot {
         }
 
         let clearedChangeCount = pasteboard.clearContents()
-        guard pasteboard.changeCount == clearedChangeCount else {
+        guard clearedChangeCount == expectedChangeCount + 1,
+              pasteboard.changeCount == clearedChangeCount
+        else {
             return .stale
         }
 
