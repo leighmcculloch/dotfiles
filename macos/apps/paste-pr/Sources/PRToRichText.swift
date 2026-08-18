@@ -53,6 +53,7 @@ enum PRToRichText {
             "pr", "diff", link.url,
             "--exclude", "*.json",
             "--exclude", "*.lock",
+            "--exclude", "tests-expanded/*",
         ], with: ghRunner)
         guard let diff = String(data: diff, encoding: .utf8) else {
             throw ConversionError.parseFailed

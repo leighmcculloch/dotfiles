@@ -34,6 +34,7 @@ final class PRToRichTextTests: XCTestCase {
                 "pr", "diff", "https://github.com/owner/base/pull/123",
                 "--exclude", "*.json",
                 "--exclude", "*.lock",
+                "--exclude", "tests-expanded/*",
             ],
         ])
         XCTAssertEqual(result.markdown, ":github-rainbow: Fix the thing [base#123](https://github.com/owner/base/pull/123) `+1 -1`")
