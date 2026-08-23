@@ -525,6 +525,7 @@ struct CachedUserEvents: Codable, Equatable {
     var fetchedPages: Set<Int> = []
     var pageETags: [Int: String] = [:]
     var pageLastModified: [Int: String] = [:]
+    var pageCounts: [Int: Int] = [:]
     var seenEventIDs: Set<String> = []
     var exhausted = false
     var pollInterval: TimeInterval = 300
@@ -532,6 +533,50 @@ struct CachedUserEvents: Codable, Equatable {
 
     init(username: String) {
         self.username = username
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case username
+        case events
+        case nextPage
+        case fetchedPages
+        case pageETags
+        case pageLastModified
+        case pageCounts
+        case seenEventIDs
+        case exhausted
+        case pollInterval
+        case lastFetchedAt
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        username = try container.decode(String.self, forKey: .username)
+        events = try container.decodeIfPresent([GitHubEvent].self, forKey: .events) ?? []
+        nextPage = try container.decodeIfPresent(Int.self, forKey: .nextPage) ?? 1
+        fetchedPages = try container.decodeIfPresent(Set<Int>.self, forKey: .fetchedPages) ?? []
+        pageETags = try container.decodeIfPresent([Int: String].self, forKey: .pageETags) ?? [:]
+        pageLastModified = try container.decodeIfPresent([Int: String].self, forKey: .pageLastModified) ?? [:]
+        pageCounts = try container.decodeIfPresent([Int: Int].self, forKey: .pageCounts) ?? [:]
+        seenEventIDs = try container.decodeIfPresent(Set<String>.self, forKey: .seenEventIDs) ?? []
+        exhausted = try container.decodeIfPresent(Bool.self, forKey: .exhausted) ?? false
+        pollInterval = try container.decodeIfPresent(TimeInterval.self, forKey: .pollInterval) ?? 300
+        lastFetchedAt = try container.decodeIfPresent(Date.self, forKey: .lastFetchedAt)
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(username, forKey: .username)
+        try container.encode(events, forKey: .events)
+        try container.encode(nextPage, forKey: .nextPage)
+        try container.encode(fetchedPages, forKey: .fetchedPages)
+        try container.encode(pageETags, forKey: .pageETags)
+        try container.encode(pageLastModified, forKey: .pageLastModified)
+        try container.encode(pageCounts, forKey: .pageCounts)
+        try container.encode(seenEventIDs, forKey: .seenEventIDs)
+        try container.encode(exhausted, forKey: .exhausted)
+        try container.encode(pollInterval, forKey: .pollInterval)
+        try container.encodeIfPresent(lastFetchedAt, forKey: .lastFetchedAt)
     }
 
     mutating func merge(
@@ -571,6 +616,7 @@ struct CachedUserEvents: Codable, Equatable {
         } else if newEvents.count < perPage {
             exhausted = true
         }
+        pageCounts[page] = newEvents.count
         if let etag { pageETags[page] = etag }
         if let lastModified { pageLastModified[page] = lastModified }
         if let pollInterval {
@@ -582,9 +628,12 @@ struct CachedUserEvents: Codable, Equatable {
         lastFetchedAt = Date()
     }
 
-    mutating func recordNotModified(page: Int, pollInterval: TimeInterval?) {
+    mutating func recordNotModified(page: Int, pollInterval: TimeInterval?, perPage: Int) {
         fetchedPages.insert(page)
         nextPage = max(nextPage, page + 1)
+        if pageCounts[page].map({ $0 < perPage }) == true {
+            exhausted = true
+        }
         if let pollInterval {
             self.pollInterval = min(
                 GitHubEventsLimits.maximumPollInterval,
@@ -941,7 +990,11 @@ final class GitHubEventsStore: ObservableObject {
         guard var cache = caches[username] else { return }
 
         if page.notModified {
-            cache.recordNotModified(page: page.page, pollInterval: page.pollInterval)
+            cache.recordNotModified(
+                page: page.page,
+                pollInterval: page.pollInterval,
+                perPage: client.perPage
+            )
         } else {
             cache.merge(
                 page.events,

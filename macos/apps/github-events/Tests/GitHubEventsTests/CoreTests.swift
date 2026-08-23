@@ -127,6 +127,9 @@ final class CoreTests: XCTestCase {
         XCTAssertEqual(cache.pageETags[2], "etag-2")
         XCTAssertEqual(cache.pageLastModified[2], "yesterday")
         XCTAssertFalse(cache.exhausted)
+
+        cache.recordNotModified(page: 2, pollInterval: nil, perPage: 2)
+        XCTAssertTrue(cache.exhausted)
     }
 
     func testDiskCacheRoundTripsPaginationAndSeenState() throws {
