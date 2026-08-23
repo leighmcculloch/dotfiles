@@ -592,11 +592,10 @@ private struct UserEventsColumn: View {
 
     var body: some View {
         let indexedEvents = Array(user.events.enumerated())
-        let unreadEvents = indexedEvents.filter {
-            !store.isSeen($0.element.id, for: user.username)
-        }
-        let earlierEvents = indexedEvents.filter {
-            store.isSeen($0.element.id, for: user.username)
+        let unreadCount = indexedEvents.reduce(into: 0) {
+            if !store.isSeen($1.element.id, for: user.username) {
+                $0 += 1
+            }
         }
 
         VStack(alignment: .leading, spacing: 8) {
@@ -652,45 +651,36 @@ private struct UserEventsColumn: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 ScrollView(.vertical) {
-                    LazyVStack(alignment: .leading, spacing: 10, pinnedViews: [.sectionHeaders]) {
-                        if !unreadEvents.isEmpty {
-                            Section {
-                                ForEach(unreadEvents, id: \.element.id) { indexedEvent in
-                                    EventCardView(event: indexedEvent.element, isUnread: true)
-                                        .onAppear {
-                                            handleEventAppearance(
-                                                indexedEvent.element,
-                                                at: indexedEvent.offset
-                                            )
-                                        }
-                                }
-                            } header: {
-                                EventSectionHeader(
-                                    title: "Unread",
-                                    count: unreadEvents.count,
-                                    isUnread: true
+                    LazyVStack(alignment: .leading, spacing: 10) {
+                        ForEach(indexedEvents, id: \.element.id) { indexedEvent in
+                            let isUnread = !store.isSeen(
+                                indexedEvent.element.id,
+                                for: user.username
+                            )
+                            let startsSection = indexedEvent.offset == 0
+                                || isUnread != !store.isSeen(
+                                    indexedEvents[indexedEvent.offset - 1].element.id,
+                                    for: user.username
                                 )
-                            }
-                        }
 
-                        if !earlierEvents.isEmpty {
-                            Section {
-                                ForEach(earlierEvents, id: \.element.id) { indexedEvent in
-                                    EventCardView(event: indexedEvent.element, isUnread: false)
-                                        .onAppear {
-                                            handleEventAppearance(
-                                                indexedEvent.element,
-                                                at: indexedEvent.offset
-                                            )
-                                        }
-                                }
-                            } header: {
+                            if startsSection {
                                 EventSectionHeader(
-                                    title: "Earlier",
-                                    count: nil,
-                                    isUnread: false
+                                    title: isUnread ? "Unread" : "Earlier",
+                                    count: isUnread ? unreadCount : nil,
+                                    isUnread: isUnread
                                 )
                             }
+
+                            EventCardView(event: indexedEvent.element, isUnread: isUnread)
+                                .onAppear {
+                                    handleEventAppearance(at: indexedEvent.offset)
+                                }
+                                .onDisappear {
+                                    store.markAsSeen(
+                                        indexedEvent.element.id,
+                                        for: user.username
+                                    )
+                                }
                         }
 
                         if user.isLoadingMore {
@@ -713,8 +703,7 @@ private struct UserEventsColumn: View {
         .frame(width: 360, height: 510, alignment: .top)
     }
 
-    private func handleEventAppearance(_ event: GitHubEvent, at index: Int) {
-        store.markAsSeen(event.id, for: user.username)
+    private func handleEventAppearance(at index: Int) {
         if index >= max(0, user.events.count - 4) {
             store.loadMore(for: user.username)
         }
@@ -778,7 +767,7 @@ private struct EventCardView: View {
 
             Text(presentation.summary)
                 .font(.subheadline)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.primary)
                 .fixedSize(horizontal: false, vertical: true)
 
             if let markdownBody = presentation.markdownBody,
@@ -790,8 +779,8 @@ private struct EventCardView: View {
 
             HStack {
                 Text(event.type.replacingOccurrences(of: "Event", with: ""))
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
+                    .font(.caption2.weight(.medium))
+                    .foregroundStyle(.primary)
                 Spacer()
                 if let url = presentation.url {
                     Link("Open on GitHub", destination: url)
