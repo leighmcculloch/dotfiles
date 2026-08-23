@@ -84,6 +84,44 @@ final class CoreTests: XCTestCase {
         XCTAssertNil(GitHubUsername.normalize(String(repeating: "a", count: 40)))
     }
 
+    func testCredentialProviderPrefersNonEmptyEnvironmentToken() {
+        XCTAssertEqual(
+            GitHubCredentialProvider.token(environment: ["GITHUB_TOKEN": "  provided-token  "]),
+            "provided-token"
+        )
+    }
+
+    func testCredentialProviderFallsBackToGitHubCLI() throws {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("GitHubEventsGH-\(UUID().uuidString)", isDirectory: true)
+        let executable = directory.appendingPathComponent("gh")
+        defer { try? FileManager.default.removeItem(at: directory) }
+
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        try Data(
+            "#!/bin/sh\n[ \"$1\" = auth ] && [ \"$2\" = token ] && [ \"$3\" = --hostname ] && [ \"$4\" = github.com ] || exit 1\nprintf cli-token\n".utf8
+        ).write(to: executable)
+        try FileManager.default.setAttributes(
+            [.posixPermissions: 0o755],
+            ofItemAtPath: executable.path
+        )
+
+        XCTAssertEqual(
+            GitHubCredentialProvider.token(environment: [
+                "GITHUB_TOKEN": " ",
+                "PATH": directory.path
+            ]),
+            "cli-token"
+        )
+    }
+
+    func testClientWithoutTokenUsesConservativeDefault() {
+        let client = GitHubEventsClient(token: nil)
+
+        XCTAssertFalse(client.isAuthenticated)
+        XCTAssertEqual(client.defaultPollInterval, 300)
+    }
+
     func testCacheMergesByIDAndSortsNewestFirst() {
         var cache = CachedUserEvents(username: "octocat")
         cache.merge(
@@ -121,8 +159,8 @@ final class CoreTests: XCTestCase {
 
         XCTAssertEqual(cache.events.map(\.id), ["new", "middle", "old"])
         XCTAssertEqual(cache.events.count, 3)
-        XCTAssertEqual(cache.nextPage, 2)
-        XCTAssertEqual(cache.fetchedPages, [1])
+        XCTAssertEqual(cache.nextPage, 3)
+        XCTAssertEqual(cache.fetchedPages, [1, 2])
         XCTAssertEqual(cache.pageETags[1], "etag-3")
         XCTAssertEqual(cache.pageETags[2], "etag-2")
         XCTAssertEqual(cache.pageLastModified[2], "yesterday")
@@ -130,6 +168,33 @@ final class CoreTests: XCTestCase {
 
         cache.recordNotModified(page: 2, pollInterval: nil, perPage: 2)
         XCTAssertTrue(cache.exhausted)
+    }
+
+    func testCacheMergeReturnsOnlyTrulyNewEvents() {
+        var cache = CachedUserEvents(username: "octocat")
+        let existing = makeEvent(id: "existing")
+        let firstNewEvents = cache.merge(
+            [existing],
+            page: 1,
+            etag: nil,
+            lastModified: nil,
+            perPage: 100,
+            pollInterval: nil
+        )
+        XCTAssertEqual(firstNewEvents.map(\.id), ["existing"])
+
+        let later = makeEvent(id: "later", createdAt: Date(timeIntervalSince1970: 30))
+        let secondNewEvents = cache.merge(
+            [existing, later, later],
+            page: 1,
+            etag: nil,
+            lastModified: nil,
+            perPage: 100,
+            pollInterval: nil
+        )
+
+        XCTAssertEqual(secondNewEvents.map(\.id), ["later"])
+        XCTAssertEqual(cache.events.map(\.id), ["later", "existing"])
     }
 
     func testDiskCacheRoundTripsPaginationAndSeenState() throws {
@@ -181,6 +246,290 @@ final class CoreTests: XCTestCase {
         XCTAssertTrue(page.notModified)
         XCTAssertEqual(page.page, 1)
         XCTAssertEqual(page.pollInterval, 60)
+    }
+
+    func testClientPreservesLongServerPollInterval() async throws {
+        URLProtocolStub.handler = { request in
+            let response = HTTPURLResponse(
+                url: try XCTUnwrap(request.url),
+                statusCode: 304,
+                httpVersion: nil,
+                headerFields: ["X-Poll-Interval": "90000"]
+            )!
+            return (response, Data())
+        }
+        defer { URLProtocolStub.handler = nil }
+
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.protocolClasses = [URLProtocolStub.self]
+        let client = GitHubEventsClient(
+            session: URLSession(configuration: configuration),
+            token: nil
+        )
+        let page = try await client.fetch(username: "octocat", page: 1)
+
+        XCTAssertEqual(page.pollInterval, 90000)
+    }
+
+    func testClientSendsProvidedBearerToken() async throws {
+        URLProtocolStub.handler = { request in
+            XCTAssertEqual(request.value(forHTTPHeaderField: "Authorization"), "Bearer provided-token")
+            let response = HTTPURLResponse(
+                url: try XCTUnwrap(request.url),
+                statusCode: 304,
+                httpVersion: nil,
+                headerFields: nil
+            )!
+            return (response, Data())
+        }
+        defer { URLProtocolStub.handler = nil }
+
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.protocolClasses = [URLProtocolStub.self]
+        let client = GitHubEventsClient(
+            session: URLSession(configuration: configuration),
+            token: "provided-token"
+        )
+        let page = try await client.fetch(username: "octocat", page: 1)
+
+        XCTAssertTrue(client.isAuthenticated)
+        XCTAssertEqual(client.defaultPollInterval, 60)
+        XCTAssertTrue(page.notModified)
+    }
+
+    func testClientSurfacesRateLimitRetryDelay() async throws {
+        URLProtocolStub.handler = { request in
+            let response = HTTPURLResponse(
+                url: try XCTUnwrap(request.url),
+                statusCode: 429,
+                httpVersion: nil,
+                headerFields: ["Retry-After": "120"]
+            )!
+            return (response, Data("{\"message\":\"slow down\"}".utf8))
+        }
+        defer { URLProtocolStub.handler = nil }
+
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.protocolClasses = [URLProtocolStub.self]
+        let client = GitHubEventsClient(
+            session: URLSession(configuration: configuration),
+            token: nil
+        )
+
+        do {
+            _ = try await client.fetch(username: "octocat", page: 1)
+            XCTFail("Expected a rate-limit error")
+        } catch let error as GitHubEventsClientError {
+            XCTAssertTrue(error.isRateLimited)
+            XCTAssertEqual(error.retryAfter, 120)
+        }
+    }
+
+    func testClientParsesHTTPDateRetryAfter() async throws {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = TimeZone(secondsFromGMT: 0)
+        formatter.dateFormat = "EEE, dd MMM yyyy HH:mm:ss z"
+        let retryDate = formatter.string(from: Date().addingTimeInterval(120))
+        URLProtocolStub.handler = { request in
+            let response = HTTPURLResponse(
+                url: try XCTUnwrap(request.url),
+                statusCode: 403,
+                httpVersion: nil,
+                headerFields: ["Retry-After": retryDate]
+            )!
+            return (response, Data())
+        }
+        defer { URLProtocolStub.handler = nil }
+
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.protocolClasses = [URLProtocolStub.self]
+        let client = GitHubEventsClient(
+            session: URLSession(configuration: configuration),
+            token: nil
+        )
+
+        do {
+            _ = try await client.fetch(username: "octocat", page: 1)
+            XCTFail("Expected a rate-limit error")
+        } catch let error as GitHubEventsClientError {
+            XCTAssertGreaterThanOrEqual(try XCTUnwrap(error.retryAfter), 60)
+        }
+    }
+
+    func testClientUsesRateLimitResetOnlyWhenBudgetIsEmpty() async throws {
+        let reset = String(Int(Date().addingTimeInterval(120).timeIntervalSince1970))
+        URLProtocolStub.handler = { request in
+            let response = HTTPURLResponse(
+                url: try XCTUnwrap(request.url),
+                statusCode: 403,
+                httpVersion: nil,
+                headerFields: [
+                    "X-RateLimit-Remaining": "0",
+                    "X-RateLimit-Reset": reset
+                ]
+            )!
+            return (response, Data())
+        }
+        defer { URLProtocolStub.handler = nil }
+
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.protocolClasses = [URLProtocolStub.self]
+        let client = GitHubEventsClient(
+            session: URLSession(configuration: configuration),
+            token: nil
+        )
+
+        do {
+            _ = try await client.fetch(username: "octocat", page: 1)
+            XCTFail("Expected a rate-limit error")
+        } catch let error as GitHubEventsClientError {
+            XCTAssertGreaterThanOrEqual(try XCTUnwrap(error.retryAfter), 60)
+        }
+    }
+
+    @MainActor
+    func testStoreNotifiesOnlyForLaterPageOneEvents() async throws {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("GitHubEventsStore-\(UUID().uuidString)", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+
+        let first = try JSONEncoder().encode([makeEvent(id: "first")])
+        let history = try JSONEncoder().encode([
+            makeEvent(id: "history", createdAt: Date(timeIntervalSince1970: 10))
+        ])
+        let later = try JSONEncoder().encode([
+            makeEvent(id: "later", createdAt: Date(timeIntervalSince1970: 30)),
+            makeEvent(id: "first")
+        ])
+        let lock = NSLock()
+        var pageOneResponses = [first, later, later]
+
+        URLProtocolStub.handler = { request in
+            let page = URLComponents(url: try XCTUnwrap(request.url), resolvingAgainstBaseURL: false)?
+                .queryItems?.first(where: { $0.name == "page" })?.value
+            lock.lock()
+            defer { lock.unlock() }
+            if page == "2" {
+                return (try XCTUnwrap(HTTPURLResponse(
+                    url: try XCTUnwrap(request.url),
+                    statusCode: 200,
+                    httpVersion: nil,
+                    headerFields: nil
+                )), history)
+            }
+            let responseData = pageOneResponses.isEmpty
+                ? try XCTUnwrap(pageOneResponses.last)
+                : pageOneResponses.removeFirst()
+            return (try XCTUnwrap(HTTPURLResponse(
+                url: try XCTUnwrap(request.url),
+                statusCode: 200,
+                httpVersion: nil,
+                headerFields: nil
+            )), responseData)
+        }
+        defer { URLProtocolStub.handler = nil }
+
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.protocolClasses = [URLProtocolStub.self]
+        let client = GitHubEventsClient(
+            session: URLSession(configuration: configuration),
+            perPage: 1,
+            token: nil
+        )
+        let cacheStore = GitHubEventsDiskCache(directory: directory)
+        let initialStore = GitHubEventsStore(
+            usernames: ["octocat"],
+            cacheStore: cacheStore,
+            client: client
+        )
+        var notifications: [[String]] = []
+        initialStore.onNewEvents = { _, _, events in
+            notifications.append(events.map(\.id))
+        }
+
+        initialStore.refreshAll()
+        try await waitUntil { initialStore.users.first?.isLoading == false }
+        XCTAssertTrue(notifications.isEmpty)
+
+        let historicalStore = GitHubEventsStore(
+            usernames: ["octocat"],
+            cacheStore: cacheStore,
+            client: client
+        )
+        historicalStore.onNewEvents = { _, _, events in
+            notifications.append(events.map(\.id))
+        }
+        historicalStore.loadMore(for: "octocat")
+        try await waitUntil { historicalStore.users.first?.isLoadingMore == false }
+        XCTAssertTrue(notifications.isEmpty)
+
+        let newEventStore = GitHubEventsStore(
+            usernames: ["octocat"],
+            cacheStore: cacheStore,
+            client: client
+        )
+        newEventStore.onNewEvents = { _, _, events in
+            notifications.append(events.map(\.id))
+        }
+        newEventStore.refreshAll()
+        try await waitUntil { newEventStore.users.first?.isLoading == false }
+        XCTAssertEqual(notifications, [["later"]])
+    }
+
+    @MainActor
+    func testStoreSuppressesRefreshesDuringRateLimitBackoff() async throws {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("GitHubEventsBackoff-\(UUID().uuidString)", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+
+        let lock = NSLock()
+        var requestCount = 0
+        URLProtocolStub.handler = { request in
+            lock.lock()
+            requestCount += 1
+            lock.unlock()
+            let response = HTTPURLResponse(
+                url: try XCTUnwrap(request.url),
+                statusCode: 429,
+                httpVersion: nil,
+                headerFields: ["Retry-After": "120"]
+            )!
+            return (response, Data("{\"message\":\"slow down\"}".utf8))
+        }
+        defer { URLProtocolStub.handler = nil }
+
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.protocolClasses = [URLProtocolStub.self]
+        let store = GitHubEventsStore(
+            usernames: ["octocat"],
+            cacheStore: GitHubEventsDiskCache(directory: directory),
+            client: GitHubEventsClient(
+                session: URLSession(configuration: configuration),
+                token: nil
+            )
+        )
+
+        store.refreshAll()
+        try await waitUntil { store.users.first?.isLoading == false }
+        store.refreshAll()
+        try await Task.sleep(nanoseconds: 20_000_000)
+
+        lock.lock()
+        let requests = requestCount
+        lock.unlock()
+        XCTAssertEqual(requests, 1)
+    }
+
+    @MainActor
+    private func waitUntil(
+        _ condition: @escaping @MainActor () -> Bool
+    ) async throws {
+        for _ in 0..<100 {
+            if condition() { return }
+            try await Task.sleep(nanoseconds: 10_000_000)
+        }
+        XCTFail("Timed out waiting for GitHub events request")
     }
 
     private func makeEvent(

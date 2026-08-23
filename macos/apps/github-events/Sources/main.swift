@@ -1,16 +1,34 @@
 import AppKit
 import Combine
 import SwiftUI
+import UserNotifications
 
 @MainActor
-private final class AppDelegate: NSObject, NSApplicationDelegate {
+private final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDelegate {
     private let store = GitHubEventsStore()
+    private let notificationCenter = UNUserNotificationCenter.current()
     private var statusItem: NSStatusItem!
     private var popover: NSPopover!
     private var storeObservation: AnyCancellable?
+    private var notificationAuthorizationResolved = false
+    private var notificationsAuthorized = false
+    private var pendingNotifications: [(username: String, generation: Int, events: [GitHubEvent])] = []
+    private var notificationAuthorizationRetryDelay: TimeInterval = 1
+    private var notificationAuthorizationRetryScheduled = false
+    private var pendingNotificationRetryScheduled = false
+    private var notificationIdentifiersByUsername: [String: Set<String>] = [:]
 
     func applicationDidFinishLaunching(_: Notification) {
         NSApp.setActivationPolicy(.accessory)
+        notificationCenter.delegate = self
+        cleanupNotifications()
+        requestNotificationAuthorization()
+        store.onNewEvents = { [weak self] username, generation, events in
+            self?.notify(username: username, generation: generation, events: events)
+        }
+        store.onUsernameRemoved = { [weak self] username, generation in
+            self?.removeNotifications(for: username, generation: generation)
+        }
         setupStatusItem()
         setupPopover()
         storeObservation = store.objectWillChange.sink { [weak self] _ in
@@ -19,6 +37,30 @@ private final class AppDelegate: NSObject, NSApplicationDelegate {
             }
         }
         store.startPolling()
+    }
+
+    private func requestNotificationAuthorization() {
+        notificationCenter.requestAuthorization(options: [.alert, .sound]) { [weak self] granted, error in
+            if error != nil {
+                UNUserNotificationCenter.current().getNotificationSettings { settings in
+                    DispatchQueue.main.async {
+                        guard let self else { return }
+                        switch settings.authorizationStatus {
+                        case .authorized, .provisional:
+                            self.finishNotificationAuthorization(granted: true)
+                        case .denied:
+                            self.finishNotificationAuthorization(granted: false)
+                        default:
+                            self.retryNotificationAuthorizationLater()
+                        }
+                    }
+                }
+                return
+            }
+            DispatchQueue.main.async {
+                self?.finishNotificationAuthorization(granted: granted)
+            }
+        }
     }
 
     func applicationWillTerminate(_: Notification) {
@@ -61,6 +103,318 @@ private final class AppDelegate: NSObject, NSApplicationDelegate {
         statusItem.button?.toolTip = unseenCount == 0
             ? "GitHub Events"
             : "GitHub Events · \(unseenCount) new"
+    }
+
+    private func notify(username: String, generation: Int, events: [GitHubEvent]) {
+        guard !events.isEmpty else { return }
+        guard notificationAuthorizationResolved else {
+            pendingNotifications.append((username: username, generation: generation, events: events))
+            return
+        }
+        guard notificationsAuthorized else { return }
+        scheduleNotification(username: username, generation: generation, events: events)
+    }
+
+    private func finishNotificationAuthorization(granted: Bool) {
+        notificationAuthorizationResolved = true
+        notificationsAuthorized = granted
+        notificationAuthorizationRetryDelay = 1
+        guard granted else {
+            pendingNotifications.removeAll()
+            return
+        }
+
+        let pendingNotifications = pendingNotifications.filter { pending in
+            store.users.contains { $0.username == pending.username }
+                && store.configurationGeneration(for: pending.username) == pending.generation
+        }
+        self.pendingNotifications.removeAll()
+        pendingNotifications.forEach {
+            scheduleNotification(
+                username: $0.username,
+                generation: $0.generation,
+                events: $0.events
+            )
+        }
+    }
+
+    private func retryNotificationAuthorizationLater() {
+        guard !notificationAuthorizationRetryScheduled else { return }
+        notificationAuthorizationRetryScheduled = true
+        let delay = notificationAuthorizationRetryDelay
+        notificationAuthorizationRetryDelay = min(60, delay * 2)
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
+            guard let self else { return }
+            self.notificationAuthorizationRetryScheduled = false
+            self.requestNotificationAuthorization()
+        }
+    }
+
+    private func scheduleNotification(
+        username: String,
+        generation: Int,
+        events: [GitHubEvent],
+        retryCount: Int = 0
+    ) {
+        guard !events.isEmpty,
+              store.users.contains(where: { $0.username == username }),
+              store.configurationGeneration(for: username) == generation
+        else { return }
+
+        let sortedEvents = events.sorted {
+            if $0.createdAt == $1.createdAt {
+                return $0.id > $1.id
+            }
+            return $0.createdAt > $1.createdAt
+        }
+        let content = UNMutableNotificationContent()
+        content.title = sortedEvents.count == 1
+            ? "@\(username) · New GitHub event"
+            : "@\(username) · \(sortedEvents.count) new GitHub events"
+        content.body = sortedEvents.prefix(3).map { event in
+            let presentation = event.presentation
+            if presentation.summary.isEmpty || presentation.summary == presentation.title {
+                return presentation.title
+            }
+            return "\(presentation.title) — \(presentation.summary)"
+        }.joined(separator: "\n")
+        if sortedEvents.count > 3 {
+            content.body += "\n+and \(sortedEvents.count - 3) more"
+        }
+        content.sound = .default
+        content.threadIdentifier = "github-events.\(username)"
+
+        let identifier = "github-events.\(username).\(generation).\(sortedEvents.map(\.id).joined(separator: ","))"
+        notificationIdentifiersByUsername[username, default: []].insert(identifier)
+        notificationCenter.add(
+            UNNotificationRequest(identifier: identifier, content: content, trigger: nil)
+        ) { [weak self] error in
+            guard let self else { return }
+            if error == nil {
+                DispatchQueue.main.async {
+                    guard self.store.users.contains(where: { $0.username == username }),
+                          self.store.configurationGeneration(for: username) == generation
+                    else {
+                        self.notificationIdentifiersByUsername[username]?.remove(identifier)
+                        self.notificationCenter.removePendingNotificationRequests(
+                            withIdentifiers: [identifier]
+                        )
+                        self.notificationCenter.removeDeliveredNotifications(
+                            withIdentifiers: [identifier]
+                        )
+                        return
+                    }
+                    self.notificationIdentifiersByUsername[username]?.remove(identifier)
+                }
+                return
+            }
+            UNUserNotificationCenter.current().getNotificationSettings { settings in
+                DispatchQueue.main.async {
+                    self.notificationIdentifiersByUsername[username]?.remove(identifier)
+                    guard self.store.users.contains(where: { $0.username == username }),
+                          self.store.configurationGeneration(for: username) == generation
+                    else { return }
+                    if settings.authorizationStatus == .denied {
+                        self.finishNotificationAuthorization(granted: false)
+                    } else if settings.authorizationStatus == .notDetermined {
+                        self.pendingNotifications.append((username: username, generation: generation, events: events))
+                        self.notificationAuthorizationResolved = false
+                        self.retryNotificationAuthorizationLater()
+                    } else if retryCount == 0 {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [weak self] in
+                            guard let self,
+                                  self.store.users.contains(where: { $0.username == username }),
+                                  self.store.configurationGeneration(for: username) == generation
+                            else { return }
+                            self.scheduleNotification(
+                                username: username,
+                                generation: generation,
+                                events: events,
+                                retryCount: 1
+                            )
+                        }
+                    } else {
+                        self.pendingNotifications.append((username: username, generation: generation, events: events))
+                        self.retryPendingNotificationsLater()
+                    }
+                }
+            }
+        }
+    }
+
+    private func removeNotifications(for username: String, generation: Int) {
+        let knownIdentifiers = Array(
+            (notificationIdentifiersByUsername.removeValue(forKey: username) ?? [])
+                .filter {
+                    Self.notificationIdentifier(
+                        $0,
+                        belongsTo: username,
+                        generation: generation
+                    )
+                }
+        )
+        notificationCenter.getPendingNotificationRequests { requests in
+            let identifiers = requests
+                .filter {
+                    Self.notificationIdentifier(
+                        $0.identifier,
+                        belongsTo: username,
+                        generation: generation
+                    )
+                }
+                .map(\.identifier)
+            DispatchQueue.main.async { [weak self] in
+                guard let self,
+                      self.store.configurationGeneration(for: username) >= generation
+                else { return }
+                self.notificationCenter.removePendingNotificationRequests(
+                    withIdentifiers: Array(Set(identifiers).union(knownIdentifiers))
+                )
+            }
+        }
+        notificationCenter.getDeliveredNotifications { notifications in
+            let identifiers = notifications
+                .filter {
+                    Self.notificationIdentifier(
+                        $0.request.identifier,
+                        belongsTo: username,
+                        generation: generation
+                    )
+                }
+                .map { $0.request.identifier }
+            DispatchQueue.main.async { [weak self] in
+                guard let self,
+                      self.store.configurationGeneration(for: username) >= generation
+                else { return }
+                self.notificationCenter.removeDeliveredNotifications(
+                    withIdentifiers: Array(Set(identifiers).union(knownIdentifiers))
+                )
+            }
+        }
+    }
+
+    private func cleanupNotifications() {
+        let configuredUsernames = Set(store.users.map(\.username))
+        let generations = Dictionary(uniqueKeysWithValues: store.users.map {
+            ($0.username, store.configurationGeneration(for: $0.username))
+        })
+        notificationCenter.getPendingNotificationRequests { requests in
+            let identifiers = requests
+                .map(\.identifier)
+                .filter {
+                    Self.shouldRemoveNotification(
+                        $0,
+                        configuredUsernames: configuredUsernames,
+                        generations: generations
+                    )
+                }
+            guard !identifiers.isEmpty else { return }
+            DispatchQueue.main.async { [weak self] in
+                guard let self else { return }
+                let currentIdentifiers = self.currentlyStaleNotificationIdentifiers(identifiers)
+                guard !currentIdentifiers.isEmpty else { return }
+                self.notificationCenter.removePendingNotificationRequests(withIdentifiers: currentIdentifiers)
+            }
+        }
+        notificationCenter.getDeliveredNotifications { notifications in
+            let identifiers = notifications
+                .map { $0.request.identifier }
+                .filter {
+                    Self.shouldRemoveNotification(
+                        $0,
+                        configuredUsernames: configuredUsernames,
+                        generations: generations
+                    )
+                }
+            guard !identifiers.isEmpty else { return }
+            DispatchQueue.main.async { [weak self] in
+                guard let self else { return }
+                let currentIdentifiers = self.currentlyStaleNotificationIdentifiers(identifiers)
+                guard !currentIdentifiers.isEmpty else { return }
+                self.notificationCenter.removeDeliveredNotifications(withIdentifiers: currentIdentifiers)
+            }
+        }
+    }
+
+    private func currentlyStaleNotificationIdentifiers(_ identifiers: [String]) -> [String] {
+        let configuredUsernames = Set(store.users.map(\.username))
+        let generations = Dictionary(uniqueKeysWithValues: store.users.map {
+            ($0.username, store.configurationGeneration(for: $0.username))
+        })
+        return identifiers.filter {
+            Self.shouldRemoveNotification(
+                $0,
+                configuredUsernames: configuredUsernames,
+                generations: generations
+            )
+        }
+    }
+
+    private nonisolated static func shouldRemoveNotification(
+        _ identifier: String,
+        configuredUsernames: Set<String>,
+        generations: [String: Int]
+    ) -> Bool {
+        let prefix = "github-events."
+        guard identifier.hasPrefix(prefix) else { return false }
+        let suffix = identifier.dropFirst(prefix.count)
+        guard let usernameEnd = suffix.firstIndex(of: ".") else { return false }
+        let username = String(suffix[..<usernameEnd])
+        guard configuredUsernames.contains(username) else { return true }
+
+        let generationAndEvents = suffix[suffix.index(after: usernameEnd)...]
+        guard let generationEnd = generationAndEvents.firstIndex(of: "."),
+              let generation = Int(generationAndEvents[..<generationEnd])
+        else {
+            return false
+        }
+        return generation < (generations[username] ?? 0)
+    }
+
+    private nonisolated static func notificationIdentifier(
+        _ identifier: String,
+        belongsTo username: String,
+        generation: Int
+    ) -> Bool {
+        let prefix = "github-events.\(username)."
+        guard identifier.hasPrefix(prefix) else { return false }
+        let suffix = identifier.dropFirst(prefix.count)
+        guard let separator = suffix.firstIndex(of: "."),
+              let identifierGeneration = Int(suffix[..<separator])
+        else {
+            return true
+        }
+        return identifierGeneration < generation
+    }
+
+    private func retryPendingNotificationsLater() {
+        guard !pendingNotificationRetryScheduled else { return }
+        pendingNotificationRetryScheduled = true
+        DispatchQueue.main.asyncAfter(deadline: .now() + 5) { [weak self] in
+            guard let self else { return }
+            self.pendingNotificationRetryScheduled = false
+            guard self.notificationsAuthorized else { return }
+            let pendingNotifications = self.pendingNotifications.filter { pending in
+                self.store.users.contains { $0.username == pending.username }
+                    && self.store.configurationGeneration(for: pending.username) == pending.generation
+            }
+            self.pendingNotifications.removeAll()
+            pendingNotifications.forEach {
+                self.scheduleNotification(
+                    username: $0.username,
+                    generation: $0.generation,
+                    events: $0.events
+                )
+            }
+        }
+    }
+
+    nonisolated func userNotificationCenter(
+        _: UNUserNotificationCenter,
+        willPresent _: UNNotification,
+        withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
+    ) {
+        completionHandler([.banner, .sound])
     }
 }
 
