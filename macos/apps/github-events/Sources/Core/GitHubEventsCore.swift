@@ -1,6 +1,10 @@
 import Combine
 import Foundation
 
+private enum GitHubEventsLimits {
+    static let maximumPollInterval: TimeInterval = 24 * 60 * 60
+}
+
 enum JSONValue: Codable, Equatable {
     case string(String)
     case number(Double)
@@ -536,6 +540,16 @@ struct CachedUserEvents: Codable, Equatable {
         perPage: Int,
         pollInterval: TimeInterval?
     ) {
+        let hadPageOne = fetchedPages.contains(1)
+        if page == 1, hadPageOne {
+            // Page numbers move when new events arrive. Keep the event data and
+            // validators, but revalidate historical pages before advancing past
+            // the new page-one boundary.
+            fetchedPages = Set(fetchedPages.filter { $0 == 1 })
+            nextPage = 2
+            exhausted = false
+        }
+
         var byID = Dictionary(uniqueKeysWithValues: events.map { ($0.id, $0) })
         for event in newEvents {
             byID[event.id] = event
@@ -550,19 +564,31 @@ struct CachedUserEvents: Codable, Equatable {
         } else {
             nextPage = max(nextPage, page + 1)
         }
-        if newEvents.count < perPage {
+        if page == 1 {
+            exhausted = newEvents.count < perPage
+        } else if newEvents.count < perPage {
             exhausted = true
         }
         if let etag { pageETags[page] = etag }
         if let lastModified { pageLastModified[page] = lastModified }
-        if let pollInterval { self.pollInterval = max(60, pollInterval) }
+        if let pollInterval {
+            self.pollInterval = min(
+                GitHubEventsLimits.maximumPollInterval,
+                max(60, pollInterval)
+            )
+        }
         lastFetchedAt = Date()
     }
 
     mutating func recordNotModified(page: Int, pollInterval: TimeInterval?) {
         fetchedPages.insert(page)
-        if page == 1 { nextPage = max(nextPage, 2) }
-        if let pollInterval { self.pollInterval = max(60, pollInterval) }
+        nextPage = max(nextPage, page + 1)
+        if let pollInterval {
+            self.pollInterval = min(
+                GitHubEventsLimits.maximumPollInterval,
+                max(60, pollInterval)
+            )
+        }
         lastFetchedAt = Date()
     }
 }
@@ -676,7 +702,12 @@ struct GitHubEventsClient {
         }
 
         let pollInterval = response.value(forHTTPHeaderField: "X-Poll-Interval")
-            .flatMap(TimeInterval.init)
+            .flatMap { value -> TimeInterval? in
+                guard let interval = TimeInterval(value), interval.isFinite, interval >= 0 else {
+                    return nil
+                }
+                return min(GitHubEventsLimits.maximumPollInterval, interval)
+            }
         let responseETag = response.value(forHTTPHeaderField: "ETag")
         let responseLastModified = response.value(forHTTPHeaderField: "Last-Modified")
 
@@ -719,6 +750,7 @@ struct GitHubUserEvents: Identifiable, Equatable {
     var hasMore = true
     var errorMessage: String?
     var unseenCount = 0
+    var retryHistorical = false
 
     var id: String { username }
 }
@@ -756,7 +788,10 @@ final class GitHubEventsStore: ObservableObject {
         self.client = client
 
         let configured = usernames ?? UserDefaults.standard.stringArray(forKey: Self.usernamesKey) ?? []
-        let normalized = configured.compactMap(GitHubUsername.normalize)
+        var configuredUsernames = Set<String>()
+        let normalized = configured.compactMap(GitHubUsername.normalize).filter {
+            configuredUsernames.insert($0).inserted
+        }
         var loadedCaches: [String: CachedUserEvents] = [:]
         self.users = normalized.map { username in
             let cache = cacheStore.load(username: username) ?? CachedUserEvents(username: username)
@@ -776,7 +811,10 @@ final class GitHubEventsStore: ObservableObject {
         refreshAll()
         pollingTask = Task { [weak self] in
             while !Task.isCancelled {
-                let delay = max(60, self?.pollInterval ?? 300)
+                let delay = min(
+                    GitHubEventsLimits.maximumPollInterval,
+                    max(60, self?.pollInterval ?? 300)
+                )
                 try? await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
                 guard !Task.isCancelled else { return }
                 self?.refreshAll()
@@ -816,6 +854,15 @@ final class GitHubEventsStore: ObservableObject {
         )
     }
 
+    func retry(for username: String) {
+        guard let user = users.first(where: { $0.username == username }) else { return }
+        if user.retryHistorical {
+            loadMore(for: username)
+        } else {
+            refresh(username: username)
+        }
+    }
+
     @discardableResult
     func addUsername(_ input: String) -> GitHubUsernameError? {
         guard let username = GitHubUsername.normalize(input) else { return .invalid }
@@ -839,15 +886,14 @@ final class GitHubEventsStore: ObservableObject {
         saveConfiguredUsernames()
     }
 
-    func markAllAsSeen() {
-        for index in users.indices {
-            let username = users[index].username
-            guard var cache = caches[username] else { continue }
-            cache.seenEventIDs.formUnion(cache.events.map(\.id))
-            caches[username] = cache
-            cacheStore.save(cache)
-            users[index].unseenCount = 0
+    func markAsSeen(_ eventID: String, for username: String) {
+        guard var cache = caches[username], cache.seenEventIDs.insert(eventID).inserted else {
+            return
         }
+        caches[username] = cache
+        cacheStore.save(cache)
+        guard let index = users.firstIndex(where: { $0.username == username }) else { return }
+        users[index].unseenCount = cache.events.filter { !cache.seenEventIDs.contains($0.id) }.count
     }
 
     func isSeen(_ eventID: String, for username: String) -> Bool {
@@ -864,6 +910,7 @@ final class GitHubEventsStore: ObservableObject {
             return
         }
         inFlight.insert(username)
+        users[index].retryHistorical = historical
         if historical {
             users[index].isLoadingMore = true
         } else {
@@ -877,8 +924,8 @@ final class GitHubEventsStore: ObservableObject {
                 let pageResult = try await self.client.fetch(
                     username: username,
                     page: page,
-                    etag: page == 1 ? cache.pageETags[1] : nil,
-                    lastModified: page == 1 ? cache.pageLastModified[1] : nil
+                    etag: cache.pageETags[page],
+                    lastModified: cache.pageLastModified[page]
                 )
                 apply(pageResult, username: username, historical: historical)
             } catch {
@@ -913,6 +960,7 @@ final class GitHubEventsStore: ObservableObject {
         defer { finishRequest(username: username, historical: historical) }
         guard let index = users.firstIndex(where: { $0.username == username }) else { return }
         users[index].errorMessage = error.localizedDescription
+        users[index].retryHistorical = historical
     }
 
     private func finishRequest(username: String, historical: Bool) {
@@ -931,6 +979,7 @@ final class GitHubEventsStore: ObservableObject {
         users[index].hasMore = !cache.exhausted
         users[index].unseenCount = cache.events.filter { !cache.seenEventIDs.contains($0.id) }.count
         users[index].errorMessage = errorMessage
+        users[index].retryHistorical = false
     }
 
     private func saveConfiguredUsernames() {

@@ -3,7 +3,7 @@ import Combine
 import SwiftUI
 
 @MainActor
-private final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
+private final class AppDelegate: NSObject, NSApplicationDelegate {
     private let store = GitHubEventsStore()
     private var statusItem: NSStatusItem!
     private var popover: NSPopover!
@@ -25,11 +25,6 @@ private final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDeleg
         store.stopPolling()
     }
 
-    func popoverDidClose(_: Notification) {
-        store.markAllAsSeen()
-        updateStatusItem()
-    }
-
     private func setupStatusItem() {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
         guard let button = statusItem.button else { return }
@@ -45,7 +40,6 @@ private final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDeleg
     private func setupPopover() {
         popover = NSPopover()
         popover.behavior = .transient
-        popover.delegate = self
         popover.contentSize = NSSize(width: 820, height: 620)
         popover.contentViewController = NSHostingController(
             rootView: GitHubEventsView(store: store)
@@ -66,7 +60,7 @@ private final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDeleg
         let unseenCount = store.users.reduce(0) { $0 + $1.unseenCount }
         statusItem.button?.toolTip = unseenCount == 0
             ? "GitHub Events"
-            : "GitHub Events · (unseenCount) new"
+            : "GitHub Events · \(unseenCount) new"
     }
 }
 
@@ -260,10 +254,18 @@ private struct UserEventsColumn: View {
             }
 
             if let errorMessage = user.errorMessage {
-                Text(errorMessage)
+                HStack(alignment: .firstTextBaseline, spacing: 8) {
+                    Text(errorMessage)
+                        .font(.caption)
+                        .foregroundStyle(.red)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Spacer()
+                    Button("Retry") {
+                        store.retry(for: user.username)
+                    }
+                    .buttonStyle(.borderless)
                     .font(.caption)
-                    .foregroundStyle(.red)
-                    .fixedSize(horizontal: false, vertical: true)
+                }
             }
 
             Divider()
@@ -290,6 +292,7 @@ private struct UserEventsColumn: View {
                                 isSeen: store.isSeen(event.id, for: user.username)
                             )
                             .onAppear {
+                                store.markAsSeen(event.id, for: user.username)
                                 if index >= max(0, user.events.count - 4) {
                                     store.loadMore(for: user.username)
                                 }

@@ -97,7 +97,10 @@ final class CoreTests: XCTestCase {
             pollInterval: nil
         )
         cache.merge(
-            [makeEvent(id: "new", createdAt: Date(timeIntervalSince1970: 40))],
+            [
+                makeEvent(id: "old", createdAt: Date(timeIntervalSince1970: 10)),
+                makeEvent(id: "new", createdAt: Date(timeIntervalSince1970: 40))
+            ],
             page: 1,
             etag: "etag-3",
             lastModified: nil,
@@ -107,11 +110,12 @@ final class CoreTests: XCTestCase {
 
         XCTAssertEqual(cache.events.map(\.id), ["new", "middle", "old"])
         XCTAssertEqual(cache.events.count, 3)
-        XCTAssertEqual(cache.nextPage, 3)
-        XCTAssertEqual(cache.fetchedPages, [1, 2])
-        XCTAssertEqual(cache.pageETags[1], "etag-1")
+        XCTAssertEqual(cache.nextPage, 2)
+        XCTAssertEqual(cache.fetchedPages, [1])
+        XCTAssertEqual(cache.pageETags[1], "etag-3")
+        XCTAssertEqual(cache.pageETags[2], "etag-2")
         XCTAssertEqual(cache.pageLastModified[2], "yesterday")
-        XCTAssertTrue(cache.exhausted)
+        XCTAssertFalse(cache.exhausted)
     }
 
     func testDiskCacheRoundTripsPaginationAndSeenState() throws {

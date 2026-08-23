@@ -24,7 +24,9 @@ The app polls GitHub's public events endpoint using conditional requests. It
 stores fetched events, page cursors, HTTP validators, and seen event IDs in
 Application Support so reopening the app does not download historical pages
 again. Scroll toward the bottom of a column to fetch the next historical page.
-Events that were visible in a previous session are shown more subtly.
+If a new page-one response shifts the numbered feed, historical pages are
+revalidated from the next boundary with their saved validators. Events that
+were visible before are shown more subtly.
 
 No GitHub token is required. GitHub's public events feed is limited to recent
 activity and may have delivery latency.
