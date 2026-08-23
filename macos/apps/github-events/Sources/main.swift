@@ -430,14 +430,6 @@ private struct GitHubEventsView: View {
                     .foregroundStyle(.tint)
                 Text("GitHub Events")
                     .font(.headline.weight(.semibold))
-                if let total = unseenCountLabel {
-                    Text(total)
-                        .font(.caption.weight(.semibold))
-                        .padding(.horizontal, 7)
-                        .padding(.vertical, 3)
-                        .background(Capsule().fill(Color.accentColor.opacity(0.14)))
-                        .foregroundStyle(.tint)
-                }
                 Spacer()
                 Button {
                     store.refreshAll()
@@ -480,11 +472,6 @@ private struct GitHubEventsView: View {
         }
         .frame(minWidth: 360, minHeight: 560)
         .background(.regularMaterial)
-    }
-
-    private var unseenCountLabel: String? {
-        let count = store.users.reduce(0) { $0 + $1.unseenCount }
-        return count == 0 ? nil : "\(count) new"
     }
 }
 
@@ -598,10 +585,10 @@ private struct UserEventsColumn: View {
         self.user = user
         self.store = store
         let eventIDs = Set(user.events.map(\.id))
-        let unreadIDs = Set(
-            user.events
-                .filter { !store.isSeen($0.id, for: user.username) }
-                .map(\.id)
+        let unreadIDs = Self.initialUnreadEventIDs(
+            in: user.events,
+            username: user.username,
+            store: store
         )
         _knownEventIDs = State(initialValue: eventIDs)
         _unreadEventIDs = State(initialValue: unreadIDs)
@@ -623,8 +610,8 @@ private struct UserEventsColumn: View {
                 Text("@\(user.username)")
                     .font(.headline.weight(.semibold))
                     .foregroundStyle(.primary)
-                if user.unseenCount > 0 {
-                    Text("\(user.unseenCount)")
+                if !unreadEvents.isEmpty {
+                    Text("\(unreadEvents.count)")
                         .font(.caption2.weight(.bold))
                         .padding(.horizontal, 5)
                         .padding(.vertical, 2)
@@ -670,69 +657,82 @@ private struct UserEventsColumn: View {
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
-                ScrollView(.vertical) {
-                    LazyVStack(alignment: .leading, spacing: 10, pinnedViews: [.sectionHeaders]) {
-                        if !unreadEvents.isEmpty {
-                            Section {
-                                ForEach(unreadEvents, id: \.element.id) { indexedEvent in
-                                    EventCardView(
-                                        event: indexedEvent.element,
-                                        isUnread: displayUnreadEventIDs.contains(indexedEvent.element.id)
-                                    )
-                                    .onAppear {
-                                        handleEventAppearance(
-                                            indexedEvent.element,
-                                            at: indexedEvent.offset
+                GeometryReader { viewport in
+                    ScrollView(.vertical) {
+                        LazyVStack(alignment: .leading, spacing: 10, pinnedViews: [.sectionHeaders]) {
+                            if !unreadEvents.isEmpty {
+                                Section {
+                                    ForEach(unreadEvents, id: \.element.id) { indexedEvent in
+                                        EventCardView(
+                                            event: indexedEvent.element,
+                                            isUnread: true
                                         )
+                                        .background(
+                                            EventFrameReporter(
+                                                eventID: indexedEvent.element.id,
+                                                coordinateSpace: visibilityCoordinateSpace
+                                            )
+                                        )
+                                        .onAppear {
+                                            handleEventAppearance(at: indexedEvent.offset)
+                                        }
                                     }
+                                } header: {
+                                    EventSectionHeader(
+                                        title: "Unread",
+                                        count: unreadEvents.count,
+                                        isUnread: true
+                                    )
                                 }
-                            } header: {
-                                EventSectionHeader(
-                                    title: "Unread",
-                                    count: unreadEvents.count,
-                                    isUnread: true
-                                )
+                            }
+
+                            if !earlierEvents.isEmpty {
+                                Section {
+                                    ForEach(earlierEvents, id: \.element.id) { indexedEvent in
+                                        EventCardView(
+                                            event: indexedEvent.element,
+                                            isUnread: false
+                                        )
+                                        .background(
+                                            EventFrameReporter(
+                                                eventID: indexedEvent.element.id,
+                                                coordinateSpace: visibilityCoordinateSpace
+                                            )
+                                        )
+                                        .onAppear {
+                                            handleEventAppearance(at: indexedEvent.offset)
+                                        }
+                                    }
+                                } header: {
+                                    EventSectionHeader(
+                                        title: "Earlier",
+                                        count: nil,
+                                        isUnread: false
+                                    )
+                                }
+                            }
+
+                            if user.isLoadingMore {
+                                ProgressView()
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 8)
+                            } else if !user.hasMore {
+                                Text("End of available public activity")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 8)
                             }
                         }
-
-                        if !earlierEvents.isEmpty {
-                            Section {
-                                ForEach(earlierEvents, id: \.element.id) { indexedEvent in
-                                    EventCardView(
-                                        event: indexedEvent.element,
-                                        isUnread: displayUnreadEventIDs.contains(indexedEvent.element.id)
-                                    )
-                                    .onAppear {
-                                        handleEventAppearance(
-                                            indexedEvent.element,
-                                            at: indexedEvent.offset
-                                        )
-                                    }
-                                }
-                            } header: {
-                                EventSectionHeader(
-                                    title: "Earlier",
-                                    count: nil,
-                                    isUnread: false
-                                )
-                            }
-                        }
-
-                        if user.isLoadingMore {
-                            ProgressView()
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 8)
-                        } else if !user.hasMore {
-                            Text("End of available public activity")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 8)
-                        }
+                        .padding(.top, 2)
+                        .padding(.bottom, 8)
                     }
-                    .padding(.top, 2)
-                    .padding(.bottom, 8)
+                    .coordinateSpace(name: visibilityCoordinateSpace)
+                    .onPreferenceChange(EventFramePreferenceKey.self) { frames in
+                        markVisibleEvents(frames, viewportHeight: viewport.size.height)
+                    }
                 }
+                .frame(maxHeight: .infinity)
             }
         }
         .onChange(of: user.events.map(\.id)) { _ in
@@ -741,8 +741,7 @@ private struct UserEventsColumn: View {
         .frame(width: 360, height: 510, alignment: .top)
     }
 
-    private func handleEventAppearance(_ event: GitHubEvent, at index: Int) {
-        store.markAsSeen(event.id, for: user.username)
+    private func handleEventAppearance(at index: Int) {
         if index >= max(0, user.events.count - 4) {
             store.loadMore(for: user.username)
         }
@@ -764,6 +763,20 @@ private struct UserEventsColumn: View {
         return topEventIDs
     }
 
+    private func markVisibleEvents(
+        _ frames: [String: CGRect],
+        viewportHeight: CGFloat
+    ) {
+        guard viewportHeight > 0 else { return }
+        for (eventID, frame) in frames {
+            let visibleHeight = min(frame.maxY, viewportHeight) - max(frame.minY, 0)
+            let requiredHeight = min(frame.height * 0.5, 80)
+            if visibleHeight >= requiredHeight {
+                store.markAsSeen(eventID, for: user.username)
+            }
+        }
+    }
+
     private func countUnreadPrefix(
         in events: [GitHubEvent],
         unreadEventIDs: Set<String>
@@ -774,6 +787,45 @@ private struct UserEventsColumn: View {
             count += 1
         }
         return count
+    }
+
+    private static func initialUnreadEventIDs(
+        in events: [GitHubEvent],
+        username: String,
+        store: GitHubEventsStore
+    ) -> Set<String> {
+        var unreadIDs = Set<String>()
+        for event in events {
+            guard !store.isSeen(event.id, for: username) else { break }
+            unreadIDs.insert(event.id)
+        }
+        return unreadIDs
+    }
+
+    private var visibilityCoordinateSpace: String {
+        "github-events-\(user.username)"
+    }
+}
+
+private struct EventFramePreferenceKey: PreferenceKey {
+    static var defaultValue: [String: CGRect] = [:]
+
+    static func reduce(value: inout [String: CGRect], nextValue: () -> [String: CGRect]) {
+        value.merge(nextValue(), uniquingKeysWith: { _, new in new })
+    }
+}
+
+private struct EventFrameReporter: View {
+    let eventID: String
+    let coordinateSpace: String
+
+    var body: some View {
+        GeometryReader { proxy in
+            Color.clear.preference(
+                key: EventFramePreferenceKey.self,
+                value: [eventID: proxy.frame(in: .named(coordinateSpace))]
+            )
+        }
     }
 }
 
@@ -810,6 +862,7 @@ private struct EventSectionHeader: View {
         .padding(.horizontal, 2)
         .padding(.vertical, 5)
         .background(.regularMaterial)
+        .accessibilityElement(children: .combine)
         .accessibilityAddTraits(.isHeader)
     }
 }
@@ -876,6 +929,7 @@ private struct EventCardView: View {
             }
         }
         .textSelection(.enabled)
+        .accessibilityElement(children: .contain)
         .accessibilityValue(Text(isUnread ? "Unread" : "Earlier"))
     }
 }
