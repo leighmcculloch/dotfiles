@@ -561,29 +561,59 @@ private struct UserSettingsView: View {
 
 private struct UserColumnsView: View {
     @ObservedObject var store: GitHubEventsStore
+    private let visibilityCoordinateSpace = "github-events-columns"
 
     var body: some View {
-        ScrollView(.horizontal) {
-            HStack(alignment: .top, spacing: 12) {
-                ForEach(store.users) { user in
-                    UserEventsColumn(user: user, store: store)
+        GeometryReader { viewport in
+            ScrollView(.horizontal) {
+                HStack(alignment: .top, spacing: 12) {
+                    ForEach(store.users) { user in
+                        UserEventsColumn(
+                            user: user,
+                            store: store,
+                            visibilityCoordinateSpace: visibilityCoordinateSpace
+                        )
+                    }
                 }
+                .padding(12)
             }
-            .padding(12)
+            .coordinateSpace(name: visibilityCoordinateSpace)
+            .onPreferenceChange(EventFramePreferenceKey.self) { frames in
+                markVisibleEvents(frames, viewportSize: viewport.size)
+            }
         }
+        .frame(maxHeight: .infinity)
         .scrollIndicators(.visible)
+    }
+
+    private func markVisibleEvents(_ frames: [EventFrame], viewportSize: CGSize) {
+        guard viewportSize.width > 0, viewportSize.height > 0 else { return }
+        let viewport = CGRect(origin: .zero, size: viewportSize)
+        for frame in frames {
+            let visibleFrame = frame.frame.intersection(viewport)
+            let requiredHeight = min(frame.frame.height * 0.5, 80)
+            if visibleFrame.width > 0, visibleFrame.height >= requiredHeight {
+                store.markAsSeen(frame.eventID, for: frame.username)
+            }
+        }
     }
 }
 
 private struct UserEventsColumn: View {
     let user: GitHubUserEvents
     @ObservedObject var store: GitHubEventsStore
+    let visibilityCoordinateSpace: String
     @State private var unreadEventIDs: Set<String>
     @State private var knownEventIDs: Set<String>
 
-    init(user: GitHubUserEvents, store: GitHubEventsStore) {
+    init(
+        user: GitHubUserEvents,
+        store: GitHubEventsStore,
+        visibilityCoordinateSpace: String
+    ) {
         self.user = user
         self.store = store
+        self.visibilityCoordinateSpace = visibilityCoordinateSpace
         let eventIDs = Set(user.events.map(\.id))
         let unreadIDs = Self.initialUnreadEventIDs(
             in: user.events,
@@ -657,8 +687,7 @@ private struct UserEventsColumn: View {
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
-                GeometryReader { viewport in
-                    ScrollView(.vertical) {
+                ScrollView(.vertical) {
                         LazyVStack(alignment: .leading, spacing: 10, pinnedViews: [.sectionHeaders]) {
                             if !unreadEvents.isEmpty {
                                 Section {
@@ -670,6 +699,7 @@ private struct UserEventsColumn: View {
                                         .background(
                                             EventFrameReporter(
                                                 eventID: indexedEvent.element.id,
+                                                username: user.username,
                                                 coordinateSpace: visibilityCoordinateSpace
                                             )
                                         )
@@ -679,7 +709,7 @@ private struct UserEventsColumn: View {
                                     }
                                 } header: {
                                     EventSectionHeader(
-                                        title: "Unread",
+                                        title: "New",
                                         count: unreadEvents.count,
                                         isUnread: true
                                     )
@@ -696,6 +726,7 @@ private struct UserEventsColumn: View {
                                         .background(
                                             EventFrameReporter(
                                                 eventID: indexedEvent.element.id,
+                                                username: user.username,
                                                 coordinateSpace: visibilityCoordinateSpace
                                             )
                                         )
@@ -726,13 +757,7 @@ private struct UserEventsColumn: View {
                         }
                         .padding(.top, 2)
                         .padding(.bottom, 8)
-                    }
-                    .coordinateSpace(name: visibilityCoordinateSpace)
-                    .onPreferenceChange(EventFramePreferenceKey.self) { frames in
-                        markVisibleEvents(frames, viewportHeight: viewport.size.height)
-                    }
                 }
-                .frame(maxHeight: .infinity)
             }
         }
         .onChange(of: user.events.map(\.id)) { _ in
@@ -763,20 +788,6 @@ private struct UserEventsColumn: View {
         return topEventIDs
     }
 
-    private func markVisibleEvents(
-        _ frames: [String: CGRect],
-        viewportHeight: CGFloat
-    ) {
-        guard viewportHeight > 0 else { return }
-        for (eventID, frame) in frames {
-            let visibleHeight = min(frame.maxY, viewportHeight) - max(frame.minY, 0)
-            let requiredHeight = min(frame.height * 0.5, 80)
-            if visibleHeight >= requiredHeight {
-                store.markAsSeen(eventID, for: user.username)
-            }
-        }
-    }
-
     private func countUnreadPrefix(
         in events: [GitHubEvent],
         unreadEventIDs: Set<String>
@@ -802,28 +813,36 @@ private struct UserEventsColumn: View {
         return unreadIDs
     }
 
-    private var visibilityCoordinateSpace: String {
-        "github-events-\(user.username)"
-    }
+}
+
+private struct EventFrame: Equatable {
+    let eventID: String
+    let username: String
+    let frame: CGRect
 }
 
 private struct EventFramePreferenceKey: PreferenceKey {
-    static var defaultValue: [String: CGRect] = [:]
+    static var defaultValue: [EventFrame] = []
 
-    static func reduce(value: inout [String: CGRect], nextValue: () -> [String: CGRect]) {
-        value.merge(nextValue(), uniquingKeysWith: { _, new in new })
+    static func reduce(value: inout [EventFrame], nextValue: () -> [EventFrame]) {
+        value.append(contentsOf: nextValue())
     }
 }
 
 private struct EventFrameReporter: View {
     let eventID: String
+    let username: String
     let coordinateSpace: String
 
     var body: some View {
         GeometryReader { proxy in
             Color.clear.preference(
                 key: EventFramePreferenceKey.self,
-                value: [eventID: proxy.frame(in: .named(coordinateSpace))]
+                value: [EventFrame(
+                    eventID: eventID,
+                    username: username,
+                    frame: proxy.frame(in: .named(coordinateSpace))
+                )]
             )
         }
     }
@@ -929,8 +948,9 @@ private struct EventCardView: View {
             }
         }
         .textSelection(.enabled)
+        .accessibilityLabel(Text(presentation.title))
         .accessibilityElement(children: .contain)
-        .accessibilityValue(Text(isUnread ? "Unread" : "Earlier"))
+        .accessibilityValue(Text("\(isUnread ? "New" : "Earlier") · \(presentation.summary)"))
     }
 }
 
