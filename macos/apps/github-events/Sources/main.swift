@@ -76,7 +76,7 @@ private final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotifica
         )
         button.target = self
         button.action = #selector(togglePopover)
-        button.toolTip = "GitHub Events"
+        updateStatusItem()
     }
 
     private func setupPopover() {
@@ -673,7 +673,7 @@ private struct UserEventsColumn: View {
             .accessibilityElement(children: .combine)
             .accessibilityLabel(Text(
                 unreadCount > 0
-                    ? "@\(user.username), \(unreadCount) new events in this session"
+                    ? "@\(user.username), \(unreadCount) unseen events in this session"
                     : "@\(user.username)"
             ))
             .accessibilityAddTraits(.isHeader)
@@ -732,7 +732,7 @@ private struct UserEventsColumn: View {
                                     }
                                 } header: {
                                     EventSectionHeader(
-                                        title: group.isUnread ? "New in this session" : "Earlier in feed",
+                                        title: group.isUnread ? "Unseen in session" : "Earlier in feed",
                                         count: group.isUnread ? group.events.count : nil,
                                         isUnread: group.isUnread
                                     )
@@ -988,7 +988,7 @@ private struct EventCardView: View {
         .accessibilityLabel(Text(presentation.title))
         .accessibilityElement(children: .contain)
         .accessibilityValue(Text(
-            "\(isUnread ? "New in this session" : "Earlier in feed") · \(presentation.summary)"
+            "\(isUnread ? "Unseen in session" : "Earlier in feed") · \(presentation.summary)"
         ))
     }
 }
