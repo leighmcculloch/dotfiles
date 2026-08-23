@@ -976,6 +976,10 @@ final class GitHubEventsStore: ObservableObject {
     private static let rateLimitBackoffUntilKey = "GitHubEvents.rateLimitBackoffUntil"
     private let cacheStore: GitHubEventsDiskCache
     private let client: GitHubEventsClient
+    private let cacheWriteQueue = DispatchQueue(
+        label: "GitHubEvents.cache-writes",
+        qos: .utility
+    )
     private var caches: [String: CachedUserEvents]
     private var latestPageOneEventIDs: [String: Set<String>] = [:]
     private var pendingSeenUsernames = Set<String>()
@@ -1071,6 +1075,7 @@ final class GitHubEventsStore: ObservableObject {
         pendingSeenSaveTask?.cancel()
         pendingSeenSaveTask = nil
         flushPendingSeenCaches()
+        cacheWriteQueue.sync {}
     }
 
     func refreshAll() {
@@ -1171,6 +1176,10 @@ final class GitHubEventsStore: ObservableObject {
         pollRetryQueued.remove(username)
         pollRetryOrder.removeAll { $0 == username }
         pollForcedRequests.remove(username)
+        if pendingSeenUsernames.remove(username) != nil, let cache = caches[username] {
+            saveCache(cache)
+        }
+        cacheWriteQueue.sync {}
         caches.removeValue(forKey: username)
         latestPageOneEventIDs.removeValue(forKey: username)
         pendingSeenUsernames.remove(username)
@@ -1221,8 +1230,15 @@ final class GitHubEventsStore: ObservableObject {
         pendingSeenSaveTask = nil
         usernames.forEach { username in
             if let cache = caches[username] {
-                cacheStore.save(cache)
+                saveCache(cache)
             }
+        }
+    }
+
+    private func saveCache(_ cache: CachedUserEvents) {
+        let cacheStore = self.cacheStore
+        cacheWriteQueue.async {
+            cacheStore.save(cache)
         }
     }
 
@@ -1329,7 +1345,7 @@ final class GitHubEventsStore: ObservableObject {
             && !cache.fetchedPages.contains(cache.nextPage)
             && (page.notModified || (page.events.count >= client.perPage && newEvents.isEmpty))
         caches[username] = cache
-        cacheStore.save(cache)
+        saveCache(cache)
         if !historical {
             latestPageOneEventIDs[username, default: []].formUnion(newEvents.map(\.id))
             latestPageOneEventIDs[username]?.formIntersection(Set(cache.events.map(\.id)))

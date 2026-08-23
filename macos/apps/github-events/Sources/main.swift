@@ -104,6 +104,9 @@ private final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotifica
         statusItem.button?.toolTip = unseenCount == 0
             ? "GitHub Events"
             : "GitHub Events · \(unseenCount) unseen"
+        statusItem.button?.setAccessibilityValue(
+            unseenCount == 0 ? "No unseen events" : "\(unseenCount) unseen events"
+        )
     }
 
     private func notify(username: String, generation: Int, events: [GitHubEvent]) {
@@ -659,7 +662,7 @@ private struct UserEventsColumn: View {
                         .padding(.horizontal, 5)
                         .padding(.vertical, 2)
                         .background(Capsule().fill(.tint))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(Color(nsColor: .controlTextColor))
                 }
                 Spacer()
                 if user.isLoading {
