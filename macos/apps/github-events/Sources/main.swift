@@ -103,7 +103,7 @@ private final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotifica
         let unseenCount = store.users.reduce(0) { $0 + $1.unseenCount }
         statusItem.button?.toolTip = unseenCount == 0
             ? "GitHub Events"
-            : "GitHub Events · \(unseenCount) new"
+            : "GitHub Events · \(unseenCount) unseen"
     }
 
     private func notify(username: String, generation: Int, events: [GitHubEvent]) {
@@ -667,6 +667,13 @@ private struct UserEventsColumn: View {
                         .controlSize(.small)
                 }
             }
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel(Text(
+                unreadCount > 0
+                    ? "@\(user.username), \(unreadCount) new events in this session"
+                    : "@\(user.username)"
+            ))
+            .accessibilityAddTraits(.isHeader)
 
             if let errorMessage = user.errorMessage {
                 HStack(alignment: .firstTextBaseline, spacing: 8) {
@@ -722,7 +729,7 @@ private struct UserEventsColumn: View {
                                     }
                                 } header: {
                                     EventSectionHeader(
-                                        title: group.isUnread ? "New when opened" : "Earlier in feed",
+                                        title: group.isUnread ? "New in this session" : "Earlier in feed",
                                         count: group.isUnread ? group.events.count : nil,
                                         isUnread: group.isUnread
                                     )
@@ -978,7 +985,7 @@ private struct EventCardView: View {
         .accessibilityLabel(Text(presentation.title))
         .accessibilityElement(children: .contain)
         .accessibilityValue(Text(
-            "\(isUnread ? "New when opened" : "Earlier in feed") · \(presentation.summary)"
+            "\(isUnread ? "New in this session" : "Earlier in feed") · \(presentation.summary)"
         ))
     }
 }

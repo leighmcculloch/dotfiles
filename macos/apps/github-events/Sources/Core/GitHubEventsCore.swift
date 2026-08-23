@@ -978,6 +978,8 @@ final class GitHubEventsStore: ObservableObject {
     private let client: GitHubEventsClient
     private var caches: [String: CachedUserEvents]
     private var latestPageOneEventIDs: [String: Set<String>] = [:]
+    private var pendingSeenUsernames = Set<String>()
+    private var pendingSeenSaveTask: Task<Void, Never>?
     private var inFlight = Set<String>()
     private var pollingTask: Task<Void, Never>?
     private var pollRetryTask: Task<Void, Never>?
@@ -1066,6 +1068,9 @@ final class GitHubEventsStore: ObservableObject {
         pollingTask = nil
         pollRetryTask?.cancel()
         pollRetryTask = nil
+        pendingSeenSaveTask?.cancel()
+        pendingSeenSaveTask = nil
+        flushPendingSeenCaches()
     }
 
     func refreshAll() {
@@ -1168,6 +1173,7 @@ final class GitHubEventsStore: ObservableObject {
         pollForcedRequests.remove(username)
         caches.removeValue(forKey: username)
         latestPageOneEventIDs.removeValue(forKey: username)
+        pendingSeenUsernames.remove(username)
         historicalRequestAllowedAt.removeValue(forKey: username)
         if pollRetryOrder.isEmpty {
             pollRetryTask?.cancel()
@@ -1194,9 +1200,30 @@ final class GitHubEventsStore: ObservableObject {
         guard !unseenEventIDs.isEmpty else { return }
         cache.seenEventIDs.formUnion(unseenEventIDs)
         caches[username] = cache
-        cacheStore.save(cache)
+        scheduleSeenCacheSave(for: username)
         guard let index = users.firstIndex(where: { $0.username == username }) else { return }
         users[index].unseenCount = cache.events.filter { !cache.seenEventIDs.contains($0.id) }.count
+    }
+
+    private func scheduleSeenCacheSave(for username: String) {
+        pendingSeenUsernames.insert(username)
+        guard pendingSeenSaveTask == nil else { return }
+        pendingSeenSaveTask = Task { [weak self] in
+            try? await Task.sleep(nanoseconds: 250_000_000)
+            guard !Task.isCancelled else { return }
+            self?.flushPendingSeenCaches()
+        }
+    }
+
+    private func flushPendingSeenCaches() {
+        let usernames = pendingSeenUsernames
+        pendingSeenUsernames.removeAll()
+        pendingSeenSaveTask = nil
+        usernames.forEach { username in
+            if let cache = caches[username] {
+                cacheStore.save(cache)
+            }
+        }
     }
 
     func beginPresentationSession() {
@@ -1304,7 +1331,8 @@ final class GitHubEventsStore: ObservableObject {
         caches[username] = cache
         cacheStore.save(cache)
         if !historical {
-            latestPageOneEventIDs[username] = Set(newEvents.map(\.id))
+            latestPageOneEventIDs[username, default: []].formUnion(newEvents.map(\.id))
+            latestPageOneEventIDs[username]?.formIntersection(Set(cache.events.map(\.id)))
         }
         if let pagePollInterval = page.pollInterval {
             let currentInterval = max(GitHubEventsLimits.minimumPollInterval, pagePollInterval)
