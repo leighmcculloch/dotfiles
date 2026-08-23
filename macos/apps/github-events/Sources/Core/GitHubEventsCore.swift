@@ -964,6 +964,7 @@ enum GitHubUsernameError: LocalizedError {
 @MainActor
 final class GitHubEventsStore: ObservableObject {
     @Published private(set) var users: [GitHubUserEvents]
+    @Published private(set) var presentationSessionID = UUID()
 
     var onNewEvents: ((String, Int, [GitHubEvent]) -> Void)?
     var onUsernameRemoved: ((String, Int) -> Void)?
@@ -1187,6 +1188,10 @@ final class GitHubEventsStore: ObservableObject {
         cacheStore.save(cache)
         guard let index = users.firstIndex(where: { $0.username == username }) else { return }
         users[index].unseenCount = cache.events.filter { !cache.seenEventIDs.contains($0.id) }.count
+    }
+
+    func beginPresentationSession() {
+        presentationSessionID = UUID()
     }
 
     func isSeen(_ eventID: String, for username: String) -> Bool {

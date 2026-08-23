@@ -93,6 +93,7 @@ private final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotifica
         if popover.isShown {
             popover.performClose(nil)
         } else {
+            store.beginPresentationSession()
             popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
             updateStatusItem()
         }
@@ -474,6 +475,7 @@ private struct GitHubEventsView: View {
                 }
             } else {
                 UserColumnsView(store: store)
+                    .id(store.presentationSessionID)
             }
         }
         .frame(minWidth: 360, minHeight: 560)
@@ -589,14 +591,32 @@ private struct UserColumnsView: View {
 private struct UserEventsColumn: View {
     let user: GitHubUserEvents
     @ObservedObject var store: GitHubEventsStore
+    @State private var unreadEventIDs: Set<String>
+    @State private var knownEventIDs: Set<String>
+
+    init(user: GitHubUserEvents, store: GitHubEventsStore) {
+        self.user = user
+        self.store = store
+        let eventIDs = Set(user.events.map(\.id))
+        let unreadIDs = Set(
+            user.events
+                .filter { !store.isSeen($0.id, for: user.username) }
+                .map(\.id)
+        )
+        _knownEventIDs = State(initialValue: eventIDs)
+        _unreadEventIDs = State(initialValue: unreadIDs)
+    }
 
     var body: some View {
         let indexedEvents = Array(user.events.enumerated())
-        let unreadCount = indexedEvents.reduce(into: 0) {
-            if !store.isSeen($1.element.id, for: user.username) {
-                $0 += 1
-            }
-        }
+        let newTopEventIDs = newlyLoadedTopEventIDs(in: user.events)
+        let displayUnreadEventIDs = unreadEventIDs.union(newTopEventIDs)
+        let unreadPrefixCount = countUnreadPrefix(
+            in: user.events,
+            unreadEventIDs: displayUnreadEventIDs
+        )
+        let unreadEvents = Array(indexedEvents.prefix(unreadPrefixCount))
+        let earlierEvents = Array(indexedEvents.dropFirst(unreadPrefixCount))
 
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 6) {
@@ -651,36 +671,51 @@ private struct UserEventsColumn: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 ScrollView(.vertical) {
-                    LazyVStack(alignment: .leading, spacing: 10) {
-                        ForEach(indexedEvents, id: \.element.id) { indexedEvent in
-                            let isUnread = !store.isSeen(
-                                indexedEvent.element.id,
-                                for: user.username
-                            )
-                            let startsSection = indexedEvent.offset == 0
-                                || isUnread != !store.isSeen(
-                                    indexedEvents[indexedEvent.offset - 1].element.id,
-                                    for: user.username
-                                )
-
-                            if startsSection {
+                    LazyVStack(alignment: .leading, spacing: 10, pinnedViews: [.sectionHeaders]) {
+                        if !unreadEvents.isEmpty {
+                            Section {
+                                ForEach(unreadEvents, id: \.element.id) { indexedEvent in
+                                    EventCardView(
+                                        event: indexedEvent.element,
+                                        isUnread: displayUnreadEventIDs.contains(indexedEvent.element.id)
+                                    )
+                                    .onAppear {
+                                        handleEventAppearance(
+                                            indexedEvent.element,
+                                            at: indexedEvent.offset
+                                        )
+                                    }
+                                }
+                            } header: {
                                 EventSectionHeader(
-                                    title: isUnread ? "Unread" : "Earlier",
-                                    count: isUnread ? unreadCount : nil,
-                                    isUnread: isUnread
+                                    title: "Unread",
+                                    count: unreadEvents.count,
+                                    isUnread: true
                                 )
                             }
+                        }
 
-                            EventCardView(event: indexedEvent.element, isUnread: isUnread)
-                                .onAppear {
-                                    handleEventAppearance(at: indexedEvent.offset)
-                                }
-                                .onDisappear {
-                                    store.markAsSeen(
-                                        indexedEvent.element.id,
-                                        for: user.username
+                        if !earlierEvents.isEmpty {
+                            Section {
+                                ForEach(earlierEvents, id: \.element.id) { indexedEvent in
+                                    EventCardView(
+                                        event: indexedEvent.element,
+                                        isUnread: displayUnreadEventIDs.contains(indexedEvent.element.id)
                                     )
+                                    .onAppear {
+                                        handleEventAppearance(
+                                            indexedEvent.element,
+                                            at: indexedEvent.offset
+                                        )
+                                    }
                                 }
+                            } header: {
+                                EventSectionHeader(
+                                    title: "Earlier",
+                                    count: nil,
+                                    isUnread: false
+                                )
+                            }
                         }
 
                         if user.isLoadingMore {
@@ -700,13 +735,45 @@ private struct UserEventsColumn: View {
                 }
             }
         }
+        .onChange(of: user.events.map(\.id)) { _ in
+            synchronizeNewEvents()
+        }
         .frame(width: 360, height: 510, alignment: .top)
     }
 
-    private func handleEventAppearance(at index: Int) {
+    private func handleEventAppearance(_ event: GitHubEvent, at index: Int) {
+        store.markAsSeen(event.id, for: user.username)
         if index >= max(0, user.events.count - 4) {
             store.loadMore(for: user.username)
         }
+    }
+
+    private func synchronizeNewEvents() {
+        let currentEventIDs = Set(user.events.map(\.id))
+        unreadEventIDs.formUnion(newlyLoadedTopEventIDs(in: user.events))
+        knownEventIDs = currentEventIDs
+    }
+
+    private func newlyLoadedTopEventIDs(in events: [GitHubEvent]) -> Set<String> {
+        let newEventIDs = Set(events.map(\.id)).subtracting(knownEventIDs)
+        var topEventIDs = Set<String>()
+        for event in events {
+            guard newEventIDs.contains(event.id) else { break }
+            topEventIDs.insert(event.id)
+        }
+        return topEventIDs
+    }
+
+    private func countUnreadPrefix(
+        in events: [GitHubEvent],
+        unreadEventIDs: Set<String>
+    ) -> Int {
+        var count = 0
+        for event in events {
+            guard unreadEventIDs.contains(event.id) else { break }
+            count += 1
+        }
+        return count
     }
 }
 
@@ -743,6 +810,7 @@ private struct EventSectionHeader: View {
         .padding(.horizontal, 2)
         .padding(.vertical, 5)
         .background(.regularMaterial)
+        .accessibilityAddTraits(.isHeader)
     }
 }
 
@@ -808,6 +876,7 @@ private struct EventCardView: View {
             }
         }
         .textSelection(.enabled)
+        .accessibilityValue(Text(isUnread ? "Unread" : "Earlier"))
     }
 }
 
