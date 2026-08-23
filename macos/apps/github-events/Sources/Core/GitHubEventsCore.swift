@@ -1181,9 +1181,16 @@ final class GitHubEventsStore: ObservableObject {
     }
 
     func markAsSeen(_ eventID: String, for username: String) {
-        guard var cache = caches[username], cache.seenEventIDs.insert(eventID).inserted else {
+        markAsSeen(Set([eventID]), for: username)
+    }
+
+    func markAsSeen(_ eventIDs: Set<String>, for username: String) {
+        guard var cache = caches[username] else {
             return
         }
+        let unseenEventIDs = eventIDs.subtracting(cache.seenEventIDs)
+        guard !unseenEventIDs.isEmpty else { return }
+        cache.seenEventIDs.formUnion(unseenEventIDs)
         caches[username] = cache
         cacheStore.save(cache)
         guard let index = users.firstIndex(where: { $0.username == username }) else { return }

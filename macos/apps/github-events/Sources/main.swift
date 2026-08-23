@@ -578,23 +578,37 @@ private struct UserColumnsView: View {
                 .padding(12)
             }
             .coordinateSpace(name: visibilityCoordinateSpace)
-            .onPreferenceChange(EventFramePreferenceKey.self) { frames in
-                markVisibleEvents(frames, viewportSize: viewport.size)
+            .onPreferenceChange(VisibilityPreferenceKey.self) { report in
+                markVisibleEvents(report, viewportSize: viewport.size)
             }
         }
         .frame(maxHeight: .infinity)
         .scrollIndicators(.visible)
     }
 
-    private func markVisibleEvents(_ frames: [EventFrame], viewportSize: CGSize) {
+    private func markVisibleEvents(_ report: VisibilityReport, viewportSize: CGSize) {
         guard viewportSize.width > 0, viewportSize.height > 0 else { return }
-        let viewport = CGRect(origin: .zero, size: viewportSize)
-        for frame in frames {
-            let visibleFrame = frame.frame.intersection(viewport)
-            let requiredHeight = min(frame.frame.height * 0.5, 80)
-            if visibleFrame.width > 0, visibleFrame.height >= requiredHeight {
-                store.markAsSeen(frame.eventID, for: frame.username)
+        let outerViewport = CGRect(origin: .zero, size: viewportSize)
+        let columnFrames = Dictionary(
+            report.columnFrames.map { ($0.username, $0.frame) },
+            uniquingKeysWith: { _, new in new }
+        )
+        var visibleEventIDsByUsername: [String: Set<String>] = [:]
+
+        for eventFrame in report.eventFrames {
+            guard let columnFrame = columnFrames[eventFrame.username] else { continue }
+            let visibleFrame = eventFrame.frame
+                .intersection(outerViewport)
+                .intersection(columnFrame.insetBy(dx: 0, dy: 24))
+            let requiredHeight = min(eventFrame.frame.height * 0.5, 80)
+            let requiredWidth = eventFrame.frame.width * 0.5
+            if visibleFrame.width >= requiredWidth, visibleFrame.height >= requiredHeight {
+                visibleEventIDsByUsername[eventFrame.username, default: []].insert(eventFrame.eventID)
             }
+        }
+
+        visibleEventIDsByUsername.forEach { username, eventIDs in
+            store.markAsSeen(eventIDs, for: username)
         }
     }
 }
@@ -605,6 +619,7 @@ private struct UserEventsColumn: View {
     let visibilityCoordinateSpace: String
     @State private var unreadEventIDs: Set<String>
     @State private var knownEventIDs: Set<String>
+    @State private var oldestKnownEventDate: Date?
 
     init(
         user: GitHubUserEvents,
@@ -622,12 +637,13 @@ private struct UserEventsColumn: View {
         )
         _knownEventIDs = State(initialValue: eventIDs)
         _unreadEventIDs = State(initialValue: unreadIDs)
+        _oldestKnownEventDate = State(initialValue: user.events.map(\.createdAt).min())
     }
 
     var body: some View {
         let indexedEvents = Array(user.events.enumerated())
-        let newTopEventIDs = newlyLoadedTopEventIDs(in: user.events)
-        let displayUnreadEventIDs = unreadEventIDs.union(newTopEventIDs)
+        let newPageOneEventIDs = newlyLoadedPageOneEventIDs(in: user.events)
+        let displayUnreadEventIDs = unreadEventIDs.union(newPageOneEventIDs)
         let unreadPrefixCount = countUnreadPrefix(
             in: user.events,
             unreadEventIDs: displayUnreadEventIDs
@@ -709,7 +725,7 @@ private struct UserEventsColumn: View {
                                     }
                                 } header: {
                                     EventSectionHeader(
-                                        title: "New",
+                                        title: "New when opened",
                                         count: unreadEvents.count,
                                         isUnread: true
                                     )
@@ -736,7 +752,7 @@ private struct UserEventsColumn: View {
                                     }
                                 } header: {
                                     EventSectionHeader(
-                                        title: "Earlier",
+                                        title: "Earlier in feed",
                                         count: nil,
                                         isUnread: false
                                     )
@@ -758,6 +774,12 @@ private struct UserEventsColumn: View {
                         .padding(.top, 2)
                         .padding(.bottom, 8)
                 }
+                .background(
+                    ColumnFrameReporter(
+                        username: user.username,
+                        coordinateSpace: visibilityCoordinateSpace
+                    )
+                )
             }
         }
         .onChange(of: user.events.map(\.id)) { _ in
@@ -774,18 +796,29 @@ private struct UserEventsColumn: View {
 
     private func synchronizeNewEvents() {
         let currentEventIDs = Set(user.events.map(\.id))
-        unreadEventIDs.formUnion(newlyLoadedTopEventIDs(in: user.events))
+        unreadEventIDs.formUnion(newlyLoadedPageOneEventIDs(in: user.events))
         knownEventIDs = currentEventIDs
+        if let currentOldestEventDate = user.events.map(\.createdAt).min() {
+            oldestKnownEventDate = min(
+                oldestKnownEventDate ?? currentOldestEventDate,
+                currentOldestEventDate
+            )
+        }
     }
 
-    private func newlyLoadedTopEventIDs(in events: [GitHubEvent]) -> Set<String> {
+    private func newlyLoadedPageOneEventIDs(in events: [GitHubEvent]) -> Set<String> {
         let newEventIDs = Set(events.map(\.id)).subtracting(knownEventIDs)
-        var topEventIDs = Set<String>()
-        for event in events {
-            guard newEventIDs.contains(event.id) else { break }
-            topEventIDs.insert(event.id)
+        guard let oldestKnownEventDate else {
+            return newEventIDs
         }
-        return topEventIDs
+        return Set(
+            events.compactMap { event in
+                guard newEventIDs.contains(event.id),
+                      event.createdAt >= oldestKnownEventDate
+                else { return nil }
+                return event.id
+            }
+        )
     }
 
     private func countUnreadPrefix(
@@ -821,11 +854,23 @@ private struct EventFrame: Equatable {
     let frame: CGRect
 }
 
-private struct EventFramePreferenceKey: PreferenceKey {
-    static var defaultValue: [EventFrame] = []
+private struct ColumnFrame: Equatable {
+    let username: String
+    let frame: CGRect
+}
 
-    static func reduce(value: inout [EventFrame], nextValue: () -> [EventFrame]) {
-        value.append(contentsOf: nextValue())
+private struct VisibilityReport: Equatable {
+    var eventFrames: [EventFrame] = []
+    var columnFrames: [ColumnFrame] = []
+}
+
+private struct VisibilityPreferenceKey: PreferenceKey {
+    static var defaultValue = VisibilityReport()
+
+    static func reduce(value: inout VisibilityReport, nextValue: () -> VisibilityReport) {
+        let next = nextValue()
+        value.eventFrames.append(contentsOf: next.eventFrames)
+        value.columnFrames.append(contentsOf: next.columnFrames)
     }
 }
 
@@ -837,12 +882,33 @@ private struct EventFrameReporter: View {
     var body: some View {
         GeometryReader { proxy in
             Color.clear.preference(
-                key: EventFramePreferenceKey.self,
-                value: [EventFrame(
-                    eventID: eventID,
-                    username: username,
-                    frame: proxy.frame(in: .named(coordinateSpace))
-                )]
+                key: VisibilityPreferenceKey.self,
+                value: VisibilityReport(eventFrames: [
+                    EventFrame(
+                        eventID: eventID,
+                        username: username,
+                        frame: proxy.frame(in: .named(coordinateSpace))
+                    )
+                ])
+            )
+        }
+    }
+}
+
+private struct ColumnFrameReporter: View {
+    let username: String
+    let coordinateSpace: String
+
+    var body: some View {
+        GeometryReader { proxy in
+            Color.clear.preference(
+                key: VisibilityPreferenceKey.self,
+                value: VisibilityReport(columnFrames: [
+                    ColumnFrame(
+                        username: username,
+                        frame: proxy.frame(in: .named(coordinateSpace))
+                    )
+                ])
             )
         }
     }
@@ -901,7 +967,7 @@ private struct EventCardView: View {
                 Spacer(minLength: 4)
                 Text(event.createdAt, style: .relative)
                     .font(.caption.weight(.medium))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Color.primary.opacity(0.72))
                     .fixedSize()
             }
 
@@ -950,7 +1016,9 @@ private struct EventCardView: View {
         .textSelection(.enabled)
         .accessibilityLabel(Text(presentation.title))
         .accessibilityElement(children: .contain)
-        .accessibilityValue(Text("\(isUnread ? "New" : "Earlier") · \(presentation.summary)"))
+        .accessibilityValue(Text(
+            "\(isUnread ? "New when opened" : "Earlier in feed") · \(presentation.summary)"
+        ))
     }
 }
 
