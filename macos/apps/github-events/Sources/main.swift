@@ -426,12 +426,15 @@ private struct GitHubEventsView: View {
         VStack(spacing: 0) {
             HStack(spacing: 10) {
                 Image(systemName: "arrow.triangle.branch")
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.tint)
                 Text("GitHub Events")
-                    .font(.headline)
+                    .font(.headline.weight(.semibold))
                 if let total = unseenCountLabel {
                     Text(total)
-                        .font(.caption)
+                        .font(.caption.weight(.semibold))
+                        .padding(.horizontal, 7)
+                        .padding(.vertical, 3)
+                        .background(Capsule().fill(Color.accentColor.opacity(0.14)))
                         .foregroundStyle(.tint)
                 }
                 Spacer()
@@ -588,10 +591,19 @@ private struct UserEventsColumn: View {
     @ObservedObject var store: GitHubEventsStore
 
     var body: some View {
+        let indexedEvents = Array(user.events.enumerated())
+        let unreadEvents = indexedEvents.filter {
+            !store.isSeen($0.element.id, for: user.username)
+        }
+        let earlierEvents = indexedEvents.filter {
+            store.isSeen($0.element.id, for: user.username)
+        }
+
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 6) {
                 Text("@\(user.username)")
-                    .font(.subheadline.weight(.semibold))
+                    .font(.headline.weight(.semibold))
+                    .foregroundStyle(.primary)
                 if user.unseenCount > 0 {
                     Text("\(user.unseenCount)")
                         .font(.caption2.weight(.bold))
@@ -623,6 +635,7 @@ private struct UserEventsColumn: View {
             }
 
             Divider()
+                .overlay(Color.primary.opacity(0.16))
 
             if user.events.isEmpty {
                 VStack(spacing: 8) {
@@ -639,17 +652,44 @@ private struct UserEventsColumn: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 ScrollView(.vertical) {
-                    LazyVStack(alignment: .leading, spacing: 8) {
-                        ForEach(Array(user.events.enumerated()), id: \.element.id) { index, event in
-                            EventCardView(
-                                event: event,
-                                isSeen: store.isSeen(event.id, for: user.username)
-                            )
-                            .onAppear {
-                                store.markAsSeen(event.id, for: user.username)
-                                if index >= max(0, user.events.count - 4) {
-                                    store.loadMore(for: user.username)
+                    LazyVStack(alignment: .leading, spacing: 10, pinnedViews: [.sectionHeaders]) {
+                        if !unreadEvents.isEmpty {
+                            Section {
+                                ForEach(unreadEvents, id: \.element.id) { indexedEvent in
+                                    EventCardView(event: indexedEvent.element, isUnread: true)
+                                        .onAppear {
+                                            handleEventAppearance(
+                                                indexedEvent.element,
+                                                at: indexedEvent.offset
+                                            )
+                                        }
                                 }
+                            } header: {
+                                EventSectionHeader(
+                                    title: "Unread",
+                                    count: unreadEvents.count,
+                                    isUnread: true
+                                )
+                            }
+                        }
+
+                        if !earlierEvents.isEmpty {
+                            Section {
+                                ForEach(earlierEvents, id: \.element.id) { indexedEvent in
+                                    EventCardView(event: indexedEvent.element, isUnread: false)
+                                        .onAppear {
+                                            handleEventAppearance(
+                                                indexedEvent.element,
+                                                at: indexedEvent.offset
+                                            )
+                                        }
+                                }
+                            } header: {
+                                EventSectionHeader(
+                                    title: "Earlier",
+                                    count: nil,
+                                    isUnread: false
+                                )
                             }
                         }
 
@@ -665,17 +705,61 @@ private struct UserEventsColumn: View {
                                 .padding(.vertical, 8)
                         }
                     }
-                    .padding(.vertical, 2)
+                    .padding(.top, 2)
+                    .padding(.bottom, 8)
                 }
             }
         }
         .frame(width: 360, height: 510, alignment: .top)
     }
+
+    private func handleEventAppearance(_ event: GitHubEvent, at index: Int) {
+        store.markAsSeen(event.id, for: user.username)
+        if index >= max(0, user.events.count - 4) {
+            store.loadMore(for: user.username)
+        }
+    }
+}
+
+private struct EventSectionHeader: View {
+    let title: String
+    let count: Int?
+    let isUnread: Bool
+
+    var body: some View {
+        HStack(spacing: 7) {
+            if isUnread {
+                Circle()
+                    .fill(.tint)
+                    .frame(width: 7, height: 7)
+            }
+
+            Text(title)
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(.primary)
+
+            if let count {
+                Text("\(count)")
+                    .font(.caption2.weight(.bold))
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 2)
+                    .background(Capsule().fill(Color.accentColor.opacity(0.14)))
+                    .foregroundStyle(.tint)
+            }
+
+            Rectangle()
+                .fill(Color.primary.opacity(0.12))
+                .frame(height: 1)
+        }
+        .padding(.horizontal, 2)
+        .padding(.vertical, 5)
+        .background(.regularMaterial)
+    }
 }
 
 private struct EventCardView: View {
     let event: GitHubEvent
-    let isSeen: Bool
+    let isUnread: Bool
 
     var body: some View {
         let presentation = event.presentation
@@ -683,45 +767,57 @@ private struct EventCardView: View {
             HStack(alignment: .firstTextBaseline, spacing: 6) {
                 Text(presentation.title)
                     .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.primary)
                     .fixedSize(horizontal: false, vertical: true)
                 Spacer(minLength: 4)
                 Text(event.createdAt, style: .relative)
-                    .font(.caption2)
+                    .font(.caption.weight(.medium))
                     .foregroundStyle(.secondary)
                     .fixedSize()
             }
 
             Text(presentation.summary)
-                .font(.caption)
+                .font(.subheadline)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
 
             if let markdownBody = presentation.markdownBody,
                !markdownBody.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                Divider()
+                    .opacity(0.7)
                 MarkdownText(markdown: markdownBody)
             }
 
             HStack {
                 Text(event.type.replacingOccurrences(of: "Event", with: ""))
                     .font(.caption2)
-                    .foregroundStyle(.tertiary)
+                    .foregroundStyle(.secondary)
                 Spacer()
                 if let url = presentation.url {
                     Link("Open on GitHub", destination: url)
-                        .font(.caption2)
+                        .font(.caption.weight(.medium))
                 }
             }
         }
-        .padding(10)
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
         .background(
-            RoundedRectangle(cornerRadius: 8)
-                .fill(Color(nsColor: .controlBackgroundColor))
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                .fill(Color(nsColor: .textBackgroundColor))
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 8)
-                .stroke(Color(nsColor: .separatorColor).opacity(0.6), lineWidth: 0.5)
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                .stroke(Color(nsColor: .separatorColor).opacity(isUnread ? 0.9 : 0.65), lineWidth: 0.7)
         )
-        .opacity(isSeen ? 0.52 : 1)
+        .overlay(alignment: .leading) {
+            if isUnread {
+                Capsule()
+                    .fill(.tint)
+                    .frame(width: 3)
+                    .padding(.vertical, 12)
+                    .padding(.leading, 1)
+            }
+        }
         .textSelection(.enabled)
     }
 }
@@ -733,10 +829,12 @@ private struct MarkdownText: View {
         if let attributedString = try? AttributedString(markdown: markdown) {
             Text(attributedString)
                 .font(.callout)
+                .foregroundStyle(.primary)
                 .fixedSize(horizontal: false, vertical: true)
         } else {
             Text(markdown)
                 .font(.callout)
+                .foregroundStyle(.primary)
                 .fixedSize(horizontal: false, vertical: true)
         }
     }
