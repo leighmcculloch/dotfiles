@@ -65,6 +65,17 @@ final class CoreTests: XCTestCase {
         XCTAssertEqual(presentation.markdownBody, "- Add the feature\n- Fix the tests")
     }
 
+    func testPushEventWithoutCommitPayloadAvoidsInventingAZeroCount() {
+        let event = makeEvent(
+            id: "push-without-commits",
+            type: "PushEvent",
+            payload: ["ref": .string("refs/heads/main")]
+        )
+
+        XCTAssertEqual(event.presentation.title, "octocat pushed to octo/hello")
+        XCTAssertEqual(event.presentation.url?.absoluteString, "https://github.com/octo/hello")
+    }
+
     func testUsernameNormalization() {
         XCTAssertEqual(GitHubUsername.normalize("  OctoCat "), "octocat")
         XCTAssertEqual(GitHubUsername.normalize("a-user-123"), "a-user-123")

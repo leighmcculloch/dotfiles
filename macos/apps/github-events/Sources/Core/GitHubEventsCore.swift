@@ -217,7 +217,7 @@ extension GitHubEvent {
     var presentation: EventPresentation {
         let actor = actor.displayLogin
         let repository = repo.name
-        let repositoryURL = repo.url ?? URL(string: "https://github.com/\(repository)")
+        let repositoryURL = URL(string: "https://github.com/\(repository)") ?? repo.url
 
         switch type {
         case "IssueCommentEvent":
@@ -297,9 +297,11 @@ extension GitHubEvent {
             let branch = string("ref")?.replacingOccurrences(of: "refs/heads/", with: "") ?? "the repository"
             let commits = array("commits")?.compactMap { $0.objectValue?.string("message") }
             let commitCount = commits?.count ?? 0
-            let countText = commitCount == 1 ? "1 commit" : "\(commitCount) commits"
+            let title = commitCount > 0
+                ? "\(actor) pushed \(commitCount == 1 ? "1 commit" : "\(commitCount) commits") to \(repository)"
+                : "\(actor) pushed to \(repository)"
             return EventPresentation(
-                title: "\(actor) pushed \(countText) to \(repository)",
+                title: title,
                 summary: "\(branch)",
                 markdownBody: commits.map { $0.map { "- \($0)" }.joined(separator: "\n") },
                 url: repositoryURL
