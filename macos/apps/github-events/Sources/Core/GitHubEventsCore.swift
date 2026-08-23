@@ -977,6 +977,7 @@ final class GitHubEventsStore: ObservableObject {
     private let cacheStore: GitHubEventsDiskCache
     private let client: GitHubEventsClient
     private var caches: [String: CachedUserEvents]
+    private var latestPageOneEventIDs: [String: Set<String>] = [:]
     private var inFlight = Set<String>()
     private var pollingTask: Task<Void, Never>?
     private var pollRetryTask: Task<Void, Never>?
@@ -1166,6 +1167,7 @@ final class GitHubEventsStore: ObservableObject {
         pollRetryOrder.removeAll { $0 == username }
         pollForcedRequests.remove(username)
         caches.removeValue(forKey: username)
+        latestPageOneEventIDs.removeValue(forKey: username)
         historicalRequestAllowedAt.removeValue(forKey: username)
         if pollRetryOrder.isEmpty {
             pollRetryTask?.cancel()
@@ -1203,6 +1205,10 @@ final class GitHubEventsStore: ObservableObject {
 
     func isSeen(_ eventID: String, for username: String) -> Bool {
         caches[username]?.seenEventIDs.contains(eventID) ?? false
+    }
+
+    func pageOneInsertedEventIDs(for username: String) -> Set<String> {
+        latestPageOneEventIDs[username] ?? []
     }
 
     func configurationGeneration(for username: String) -> Int {
@@ -1297,6 +1303,9 @@ final class GitHubEventsStore: ObservableObject {
             && (page.notModified || (page.events.count >= client.perPage && newEvents.isEmpty))
         caches[username] = cache
         cacheStore.save(cache)
+        if !historical {
+            latestPageOneEventIDs[username] = Set(newEvents.map(\.id))
+        }
         if let pagePollInterval = page.pollInterval {
             let currentInterval = max(GitHubEventsLimits.minimumPollInterval, pagePollInterval)
             if !historical {

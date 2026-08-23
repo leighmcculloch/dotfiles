@@ -619,7 +619,6 @@ private struct UserEventsColumn: View {
     let visibilityCoordinateSpace: String
     @State private var unreadEventIDs: Set<String>
     @State private var knownEventIDs: Set<String>
-    @State private var oldestKnownEventDate: Date?
 
     init(
         user: GitHubUserEvents,
@@ -630,34 +629,32 @@ private struct UserEventsColumn: View {
         self.store = store
         self.visibilityCoordinateSpace = visibilityCoordinateSpace
         let eventIDs = Set(user.events.map(\.id))
-        let unreadIDs = Self.initialUnreadEventIDs(
-            in: user.events,
-            username: user.username,
-            store: store
-        )
+        let unreadIDs = Set(user.events.filter {
+            !store.isSeen($0.id, for: user.username)
+        }.map(\.id))
         _knownEventIDs = State(initialValue: eventIDs)
         _unreadEventIDs = State(initialValue: unreadIDs)
-        _oldestKnownEventDate = State(initialValue: user.events.map(\.createdAt).min())
     }
 
     var body: some View {
-        let indexedEvents = Array(user.events.enumerated())
         let newPageOneEventIDs = newlyLoadedPageOneEventIDs(in: user.events)
         let displayUnreadEventIDs = unreadEventIDs.union(newPageOneEventIDs)
-        let unreadPrefixCount = countUnreadPrefix(
-            in: user.events,
+        let eventGroups = makeEventGroups(
+            from: user.events,
             unreadEventIDs: displayUnreadEventIDs
         )
-        let unreadEvents = Array(indexedEvents.prefix(unreadPrefixCount))
-        let earlierEvents = Array(indexedEvents.dropFirst(unreadPrefixCount))
+        let unreadCount = eventGroups
+            .filter(\.isUnread)
+            .reduce(0) { $0 + $1.events.count }
 
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 6) {
                 Text("@\(user.username)")
                     .font(.headline.weight(.semibold))
                     .foregroundStyle(.primary)
-                if !unreadEvents.isEmpty {
-                    Text("\(unreadEvents.count)")
+                    .accessibilityAddTraits(.isHeader)
+                if unreadCount > 0 {
+                    Text("\(unreadCount)")
                         .font(.caption2.weight(.bold))
                         .padding(.horizontal, 5)
                         .padding(.vertical, 2)
@@ -703,14 +700,14 @@ private struct UserEventsColumn: View {
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
-                ScrollView(.vertical) {
+                    ScrollView(.vertical) {
                         LazyVStack(alignment: .leading, spacing: 10, pinnedViews: [.sectionHeaders]) {
-                            if !unreadEvents.isEmpty {
+                            ForEach(eventGroups) { group in
                                 Section {
-                                    ForEach(unreadEvents, id: \.element.id) { indexedEvent in
+                                    ForEach(group.events, id: \.element.id) { indexedEvent in
                                         EventCardView(
                                             event: indexedEvent.element,
-                                            isUnread: true
+                                            isUnread: group.isUnread
                                         )
                                         .background(
                                             EventFrameReporter(
@@ -725,36 +722,9 @@ private struct UserEventsColumn: View {
                                     }
                                 } header: {
                                     EventSectionHeader(
-                                        title: "New when opened",
-                                        count: unreadEvents.count,
-                                        isUnread: true
-                                    )
-                                }
-                            }
-
-                            if !earlierEvents.isEmpty {
-                                Section {
-                                    ForEach(earlierEvents, id: \.element.id) { indexedEvent in
-                                        EventCardView(
-                                            event: indexedEvent.element,
-                                            isUnread: false
-                                        )
-                                        .background(
-                                            EventFrameReporter(
-                                                eventID: indexedEvent.element.id,
-                                                username: user.username,
-                                                coordinateSpace: visibilityCoordinateSpace
-                                            )
-                                        )
-                                        .onAppear {
-                                            handleEventAppearance(at: indexedEvent.offset)
-                                        }
-                                    }
-                                } header: {
-                                    EventSectionHeader(
-                                        title: "Earlier in feed",
-                                        count: nil,
-                                        isUnread: false
+                                        title: group.isUnread ? "New when opened" : "Earlier in feed",
+                                        count: group.isUnread ? group.events.count : nil,
+                                        isUnread: group.isUnread
                                     )
                                 }
                             }
@@ -798,54 +768,45 @@ private struct UserEventsColumn: View {
         let currentEventIDs = Set(user.events.map(\.id))
         unreadEventIDs.formUnion(newlyLoadedPageOneEventIDs(in: user.events))
         knownEventIDs = currentEventIDs
-        if let currentOldestEventDate = user.events.map(\.createdAt).min() {
-            oldestKnownEventDate = min(
-                oldestKnownEventDate ?? currentOldestEventDate,
-                currentOldestEventDate
-            )
-        }
     }
 
     private func newlyLoadedPageOneEventIDs(in events: [GitHubEvent]) -> Set<String> {
         let newEventIDs = Set(events.map(\.id)).subtracting(knownEventIDs)
-        guard let oldestKnownEventDate else {
+        guard !knownEventIDs.isEmpty else {
             return newEventIDs
         }
-        return Set(
-            events.compactMap { event in
-                guard newEventIDs.contains(event.id),
-                      event.createdAt >= oldestKnownEventDate
-                else { return nil }
-                return event.id
-            }
+        return newEventIDs.intersection(
+            store.pageOneInsertedEventIDs(for: user.username)
         )
     }
 
-    private func countUnreadPrefix(
-        in events: [GitHubEvent],
+    private func makeEventGroups(
+        from events: [GitHubEvent],
         unreadEventIDs: Set<String>
-    ) -> Int {
-        var count = 0
-        for event in events {
-            guard unreadEventIDs.contains(event.id) else { break }
-            count += 1
+    ) -> [EventGroup] {
+        var groups: [EventGroup] = []
+        for (offset, event) in events.enumerated() {
+            let isUnread = unreadEventIDs.contains(event.id)
+            if let lastGroup = groups.last, lastGroup.isUnread == isUnread {
+                groups[groups.count - 1].events.append((offset: offset, element: event))
+            } else {
+                groups.append(EventGroup(
+                    isUnread: isUnread,
+                    events: [(offset: offset, element: event)]
+                ))
+            }
         }
-        return count
+        return groups
     }
+}
 
-    private static func initialUnreadEventIDs(
-        in events: [GitHubEvent],
-        username: String,
-        store: GitHubEventsStore
-    ) -> Set<String> {
-        var unreadIDs = Set<String>()
-        for event in events {
-            guard !store.isSeen(event.id, for: username) else { break }
-            unreadIDs.insert(event.id)
-        }
-        return unreadIDs
+private struct EventGroup: Identifiable {
+    let isUnread: Bool
+    var events: [(offset: Int, element: GitHubEvent)]
+
+    var id: String {
+        events.first?.element.id ?? "empty"
     }
-
 }
 
 private struct EventFrame: Equatable {
