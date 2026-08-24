@@ -5,6 +5,8 @@ import UserNotifications
 
 private enum GitHubEventsLayout {
     static let minimumPopoverWidth: CGFloat = 360
+    static let maximumPopoverWidth: CGFloat = 1200
+    static let popoverEdgePadding: CGFloat = 32
     static let popoverHeight: CGFloat = 620
     static let columnWidth: CGFloat = 360
     static let columnHeight: CGFloat = 510
@@ -118,8 +120,22 @@ private final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotifica
     }
 
     private func updatePopoverSize() {
+        let availableScreenWidth = statusItem?.button?.window?.screen?.visibleFrame.width
+        let screenMaximumWidth = availableScreenWidth.map {
+            $0 - GitHubEventsLayout.popoverEdgePadding
+        }
+        let maximumWidth = max(
+            GitHubEventsLayout.minimumPopoverWidth,
+            min(
+                GitHubEventsLayout.maximumPopoverWidth,
+                screenMaximumWidth ?? GitHubEventsLayout.maximumPopoverWidth
+            )
+        )
         let size = NSSize(
-            width: GitHubEventsLayout.popoverWidth(for: store.users.count),
+            width: min(
+                GitHubEventsLayout.popoverWidth(for: store.users.count),
+                maximumWidth
+            ),
             height: GitHubEventsLayout.popoverHeight
         )
         guard popover.contentSize != size else { return }
@@ -132,6 +148,7 @@ private final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotifica
             popover.performClose(nil)
         } else {
             store.beginPresentationSession()
+            updatePopoverSize()
             popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
             updateStatusItem()
         }
