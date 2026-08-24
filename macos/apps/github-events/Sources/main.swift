@@ -12,7 +12,8 @@ private enum GitHubEventsLayout {
     static let columnHorizontalPadding: CGFloat = 12
 
     static func popoverWidth(for userCount: Int) -> CGFloat {
-        let columnCount = max(userCount, 1)
+        guard userCount > 0 else { return minimumPopoverWidth }
+        let columnCount = userCount
         let spacing = CGFloat(max(columnCount - 1, 0)) * columnSpacing
         let padding = columnHorizontalPadding * 2
         return max(
@@ -29,6 +30,7 @@ private final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotifica
     private var statusItem: NSStatusItem!
     private var popover: NSPopover!
     private var storeObservation: AnyCancellable?
+    private var userCountObservation: AnyCancellable?
     private var notificationAuthorizationResolved = false
     private var notificationsAuthorized = false
     private var pendingNotifications: [(username: String, generation: Int, events: [GitHubEvent])] = []
@@ -53,9 +55,16 @@ private final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotifica
         storeObservation = store.objectWillChange.sink { [weak self] _ in
             DispatchQueue.main.async {
                 self?.updateStatusItem()
-                self?.updatePopoverSize()
             }
         }
+        userCountObservation = store.$users
+            .map(\.count)
+            .removeDuplicates()
+            .sink { [weak self] _ in
+                DispatchQueue.main.async {
+                    self?.updatePopoverSize()
+                }
+            }
         store.startPolling()
     }
 
@@ -102,10 +111,10 @@ private final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotifica
     private func setupPopover() {
         popover = NSPopover()
         popover.behavior = .transient
-        updatePopoverSize()
         popover.contentViewController = NSHostingController(
             rootView: GitHubEventsView(store: store)
         )
+        updatePopoverSize()
     }
 
     private func updatePopoverSize() {
