@@ -3,6 +3,25 @@ import Combine
 import SwiftUI
 import UserNotifications
 
+private enum GitHubEventsLayout {
+    static let minimumPopoverWidth: CGFloat = 360
+    static let popoverHeight: CGFloat = 620
+    static let columnWidth: CGFloat = 360
+    static let columnHeight: CGFloat = 510
+    static let columnSpacing: CGFloat = 12
+    static let columnHorizontalPadding: CGFloat = 12
+
+    static func popoverWidth(for userCount: Int) -> CGFloat {
+        let columnCount = max(userCount, 1)
+        let spacing = CGFloat(max(columnCount - 1, 0)) * columnSpacing
+        let padding = columnHorizontalPadding * 2
+        return max(
+            minimumPopoverWidth,
+            CGFloat(columnCount) * columnWidth + spacing + padding
+        )
+    }
+}
+
 @MainActor
 private final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDelegate {
     private let store = GitHubEventsStore()
@@ -34,6 +53,7 @@ private final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotifica
         storeObservation = store.objectWillChange.sink { [weak self] _ in
             DispatchQueue.main.async {
                 self?.updateStatusItem()
+                self?.updatePopoverSize()
             }
         }
         store.startPolling()
@@ -82,10 +102,19 @@ private final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotifica
     private func setupPopover() {
         popover = NSPopover()
         popover.behavior = .transient
-        popover.contentSize = NSSize(width: 820, height: 620)
+        updatePopoverSize()
         popover.contentViewController = NSHostingController(
             rootView: GitHubEventsView(store: store)
         )
+    }
+
+    private func updatePopoverSize() {
+        let size = NSSize(
+            width: GitHubEventsLayout.popoverWidth(for: store.users.count),
+            height: GitHubEventsLayout.popoverHeight
+        )
+        guard popover.contentSize != size else { return }
+        popover.contentSize = size
     }
 
     @objc private func togglePopover() {
@@ -473,7 +502,7 @@ private struct GitHubEventsView: View {
                     .id(store.presentationSessionID)
             }
         }
-        .frame(minWidth: 360, minHeight: 560)
+        .frame(minWidth: GitHubEventsLayout.minimumPopoverWidth, minHeight: 560)
         .background(.regularMaterial)
     }
 }
@@ -569,7 +598,7 @@ private struct UserColumnsView: View {
     var body: some View {
         GeometryReader { viewport in
             ScrollView(.horizontal) {
-                HStack(alignment: .top, spacing: 12) {
+                HStack(alignment: .top, spacing: GitHubEventsLayout.columnSpacing) {
                     ForEach(store.users) { user in
                         UserEventsColumn(
                             user: user,
@@ -578,7 +607,8 @@ private struct UserColumnsView: View {
                         )
                     }
                 }
-                .padding(12)
+                .padding(.horizontal, GitHubEventsLayout.columnHorizontalPadding)
+                .padding(.vertical, GitHubEventsLayout.columnHorizontalPadding)
             }
             .coordinateSpace(name: visibilityCoordinateSpace)
             .onPreferenceChange(VisibilityPreferenceKey.self) { report in
@@ -765,7 +795,11 @@ private struct UserEventsColumn: View {
         .onChange(of: user.events.map(\.id)) { _ in
             synchronizeNewEvents()
         }
-        .frame(width: 360, height: 510, alignment: .top)
+        .frame(
+            width: GitHubEventsLayout.columnWidth,
+            height: GitHubEventsLayout.columnHeight,
+            alignment: .top
+        )
     }
 
     private func handleEventAppearance(at index: Int) {
