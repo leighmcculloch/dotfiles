@@ -12,3 +12,4 @@ pnpm/
 swiftpm/
 gcloud/
 */ssh/agent.toml
+telemetry-enabled
