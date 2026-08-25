@@ -1003,9 +1003,7 @@ private struct EventCardView: View {
     var body: some View {
         let presentation = event.presentation
         let summary = presentation.summary.truncated(to: EventCardLayout.summaryCharacterLimit)
-        let accessibilitySummary = summary.isEmpty
-            ? presentation.title
-            : "\(presentation.title) · \(summary)"
+        let sectionTitle = isUnread ? "Unseen in session" : "Earlier in feed"
         VStack(alignment: .leading, spacing: 7) {
             HStack(alignment: .firstTextBaseline, spacing: 6) {
                 Text(presentation.title)
@@ -1034,9 +1032,8 @@ private struct EventCardView: View {
                 Divider()
                     .opacity(0.7)
                 MarkdownText(
-                    markdown: markdownBody.truncated(
-                        to: EventCardLayout.markdownCharacterLimit
-                    )
+                    markdown: markdownBody,
+                    characterLimit: EventCardLayout.markdownCharacterLimit
                 )
             }
         }
@@ -1060,36 +1057,53 @@ private struct EventCardView: View {
             }
         }
         .contentShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-        .onTapGesture {
-            guard let url = presentation.url else { return }
-            NSWorkspace.shared.open(url)
-        }
+        .onTapGesture(perform: openEvent)
         .textSelection(.enabled)
         .accessibilityLabel(Text(presentation.title))
         .accessibilityElement(children: .contain)
         .accessibilityAddTraits(.isButton)
         .accessibilityHint(Text("Opens this event on GitHub"))
+        .accessibilityAction(named: Text("Open on GitHub")) {
+            openEvent()
+        }
         .accessibilityValue(Text(
-            "\(isUnread ? "Unseen in session" : "Earlier in feed") · \(accessibilitySummary)"
+            summary.isEmpty ? sectionTitle : "\(sectionTitle) · \(summary)"
         ))
+    }
+
+    private func openEvent() {
+        guard let url = event.presentation.url else { return }
+        NSWorkspace.shared.open(url)
     }
 }
 
 private struct MarkdownText: View {
     let markdown: String
+    let characterLimit: Int
 
     var body: some View {
         if let attributedString = try? AttributedString(markdown: markdown) {
-            Text(attributedString)
+            Text(truncated(attributedString))
                 .font(.callout)
                 .foregroundStyle(.primary)
                 .fixedSize(horizontal: false, vertical: true)
+                .lineLimit(8)
+                .truncationMode(.tail)
         } else {
-            Text(markdown)
+            Text(markdown.truncated(to: characterLimit))
                 .font(.callout)
                 .foregroundStyle(.primary)
                 .fixedSize(horizontal: false, vertical: true)
+                .lineLimit(8)
+                .truncationMode(.tail)
         }
+    }
+
+    private func truncated(_ value: AttributedString) -> AttributedString {
+        guard value.characters.count > characterLimit else { return value }
+        var result = AttributedString(value.characters.prefix(max(characterLimit - 1, 1)))
+        result.append(AttributedString("…"))
+        return result
     }
 }
 
