@@ -32,7 +32,7 @@ final class CoreTests: XCTestCase {
         let events = try JSONDecoder().decode([GitHubEvent].self, from: data)
         let presentation = try XCTUnwrap(events.first?.presentation)
 
-        XCTAssertEqual(presentation.title, "octocat commented on octo/hello#42")
+        XCTAssertEqual(presentation.title, "octo/hello · commented on #42")
         XCTAssertEqual(presentation.summary, "A useful issue")
         XCTAssertEqual(
             presentation.markdownBody,
@@ -60,7 +60,7 @@ final class CoreTests: XCTestCase {
         )
 
         let presentation = event.presentation
-        XCTAssertEqual(presentation.title, "octocat pushed 2 commits to octo/hello")
+        XCTAssertEqual(presentation.title, "octo/hello · pushed 2 commits")
         XCTAssertEqual(presentation.summary, "main")
         XCTAssertEqual(presentation.markdownBody, "- Add the feature\n- Fix the tests")
     }
@@ -72,7 +72,7 @@ final class CoreTests: XCTestCase {
             payload: ["ref": .string("refs/heads/main")]
         )
 
-        XCTAssertEqual(event.presentation.title, "octocat pushed to octo/hello")
+        XCTAssertEqual(event.presentation.title, "octo/hello · pushed")
         XCTAssertEqual(event.presentation.url?.absoluteString, "https://github.com/octo/hello")
     }
 

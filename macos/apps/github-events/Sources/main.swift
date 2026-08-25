@@ -983,18 +983,37 @@ private struct EventSectionHeader: View {
     }
 }
 
+private enum EventCardLayout {
+    static let summaryCharacterLimit = 120
+    static let markdownCharacterLimit = 320
+}
+
+private extension String {
+    func truncated(to characterLimit: Int) -> String {
+        guard count > characterLimit else { return self }
+        guard characterLimit > 1 else { return "…" }
+        return String(prefix(characterLimit - 1)) + "…"
+    }
+}
+
 private struct EventCardView: View {
     let event: GitHubEvent
     let isUnread: Bool
 
     var body: some View {
         let presentation = event.presentation
+        let summary = presentation.summary.truncated(to: EventCardLayout.summaryCharacterLimit)
+        let accessibilitySummary = summary.isEmpty
+            ? presentation.title
+            : "\(presentation.title) · \(summary)"
         VStack(alignment: .leading, spacing: 7) {
             HStack(alignment: .firstTextBaseline, spacing: 6) {
                 Text(presentation.title)
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(.primary)
-                    .fixedSize(horizontal: false, vertical: true)
+                    .lineLimit(2)
+                    .truncationMode(.tail)
+                    .layoutPriority(1)
                 Spacer(minLength: 4)
                 Text(event.createdAt, style: .relative)
                     .font(.caption.weight(.medium))
@@ -1002,27 +1021,23 @@ private struct EventCardView: View {
                     .fixedSize()
             }
 
-            Text(presentation.summary)
-                .font(.subheadline)
-                .foregroundStyle(.primary)
-                .fixedSize(horizontal: false, vertical: true)
+            if !summary.isEmpty {
+                Text(summary)
+                    .font(.subheadline)
+                    .foregroundStyle(.primary)
+                    .lineLimit(3)
+                    .truncationMode(.tail)
+            }
 
             if let markdownBody = presentation.markdownBody,
                !markdownBody.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                 Divider()
                     .opacity(0.7)
-                MarkdownText(markdown: markdownBody)
-            }
-
-            HStack {
-                Text(event.type.replacingOccurrences(of: "Event", with: ""))
-                    .font(.caption2.weight(.medium))
-                    .foregroundStyle(.primary)
-                Spacer()
-                if let url = presentation.url {
-                    Link("Open on GitHub", destination: url)
-                        .font(.caption.weight(.medium))
-                }
+                MarkdownText(
+                    markdown: markdownBody.truncated(
+                        to: EventCardLayout.markdownCharacterLimit
+                    )
+                )
             }
         }
         .padding(12)
@@ -1044,11 +1059,18 @@ private struct EventCardView: View {
                     .padding(.leading, 1)
             }
         }
+        .contentShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+        .onTapGesture {
+            guard let url = presentation.url else { return }
+            NSWorkspace.shared.open(url)
+        }
         .textSelection(.enabled)
         .accessibilityLabel(Text(presentation.title))
         .accessibilityElement(children: .contain)
+        .accessibilityAddTraits(.isButton)
+        .accessibilityHint(Text("Opens this event on GitHub"))
         .accessibilityValue(Text(
-            "\(isUnread ? "Unseen in session" : "Earlier in feed") · \(presentation.summary)"
+            "\(isUnread ? "Unseen in session" : "Earlier in feed") · \(accessibilitySummary)"
         ))
     }
 }

@@ -269,20 +269,23 @@ struct EventPresentation: Equatable {
 
 extension GitHubEvent {
     var presentation: EventPresentation {
-        let actor = actor.displayLogin
         let repository = repo.name
         let repositoryURL = URL(string: "https://github.com/\(repository)") ?? repo.url
+
+        func eventTitle(_ action: String) -> String {
+            "\(repository) · \(action)"
+        }
 
         switch type {
         case "IssueCommentEvent":
             let issue = object("issue")
             let comment = object("comment")
             let number = issue?.int("number").map(String.init) ?? "issue"
-            let issueTitle = issue?.string("title") ?? repository
+            let issueTitle = issue?.string("title") ?? ""
             let action = string("action") ?? "created"
             let verb = action == "created" ? "commented on" : "updated a comment on"
             return EventPresentation(
-                title: "\(actor) \(verb) \(repository)#\(number)",
+                title: eventTitle("\(verb) #\(number)"),
                 summary: issueTitle,
                 markdownBody: comment?.string("body"),
                 url: comment?.url("html_url") ?? issue?.url("html_url") ?? repositoryURL
@@ -292,12 +295,12 @@ extension GitHubEvent {
             let request = object("pull_request") ?? object("issue")
             let comment = object("comment")
             let number = request?.int("number").map(String.init) ?? "pull request"
-            let title = request?.string("title") ?? repository
+            let requestTitle = request?.string("title")
             let path = comment?.string("path")
-            let location = path.map { " · \($0)" } ?? ""
+            let summary = [requestTitle, path].compactMap { $0 }.joined(separator: " · ")
             return EventPresentation(
-                title: "\(actor) commented on \(repository)#\(number)",
-                summary: "\(title)\(location)",
+                title: eventTitle("commented on #\(number)"),
+                summary: summary,
                 markdownBody: comment?.string("body"),
                 url: comment?.url("html_url") ?? request?.url("html_url") ?? repositoryURL
             )
@@ -306,8 +309,8 @@ extension GitHubEvent {
             let comment = object("comment")
             let commit = string("commit_id").map { String($0.prefix(7)) } ?? "a commit"
             return EventPresentation(
-                title: "\(actor) commented on \(repository) \(commit)",
-                summary: "Commit comment",
+                title: eventTitle("commented on \(commit)"),
+                summary: "",
                 markdownBody: comment?.string("body"),
                 url: comment?.url("html_url") ?? repositoryURL
             )
@@ -316,10 +319,10 @@ extension GitHubEvent {
             let request = object("pull_request")
             let review = object("review")
             let number = request?.int("number").map(String.init) ?? "pull request"
-            let title = request?.string("title") ?? repository
+            let title = request?.string("title") ?? ""
             let state = review?.string("state")?.lowercased() ?? "reviewed"
             return EventPresentation(
-                title: "\(actor) \(state) \(repository)#\(number)",
+                title: eventTitle("\(state) #\(number)"),
                 summary: title,
                 markdownBody: review?.string("body"),
                 url: review?.url("html_url") ?? request?.url("html_url") ?? repositoryURL
@@ -330,8 +333,8 @@ extension GitHubEvent {
             let number = issue?.int("number").map(String.init) ?? "issue"
             let action = string("action") ?? "updated"
             return EventPresentation(
-                title: "\(actor) \(action) \(repository)#\(number)",
-                summary: issue?.string("title") ?? repository,
+                title: eventTitle("\(action) issue #\(number)"),
+                summary: issue?.string("title") ?? "",
                 markdownBody: issue?.string("body"),
                 url: issue?.url("html_url") ?? repositoryURL
             )
@@ -341,8 +344,8 @@ extension GitHubEvent {
             let number = request?.int("number").map(String.init) ?? "pull request"
             let action = string("action") ?? "updated"
             return EventPresentation(
-                title: "\(actor) \(action) \(repository)#\(number)",
-                summary: request?.string("title") ?? repository,
+                title: eventTitle("\(action) pull request #\(number)"),
+                summary: request?.string("title") ?? "",
                 markdownBody: request?.string("body"),
                 url: request?.url("html_url") ?? repositoryURL
             )
@@ -351,11 +354,11 @@ extension GitHubEvent {
             let branch = string("ref")?.replacingOccurrences(of: "refs/heads/", with: "") ?? "the repository"
             let commits = array("commits")?.compactMap { $0.objectValue?.string("message") }
             let commitCount = commits?.count ?? 0
-            let title = commitCount > 0
-                ? "\(actor) pushed \(commitCount == 1 ? "1 commit" : "\(commitCount) commits") to \(repository)"
-                : "\(actor) pushed to \(repository)"
+            let action = commitCount > 0
+                ? "pushed \(commitCount == 1 ? "1 commit" : "\(commitCount) commits")"
+                : "pushed"
             return EventPresentation(
-                title: title,
+                title: eventTitle(action),
                 summary: "\(branch)",
                 markdownBody: commits.map { $0.map { "- \($0)" }.joined(separator: "\n") },
                 url: repositoryURL
@@ -364,8 +367,8 @@ extension GitHubEvent {
         case "WatchEvent":
             let action = string("action") == "started" ? "starred" : (string("action") ?? "updated")
             return EventPresentation(
-                title: "\(actor) \(action) \(repository)",
-                summary: "Repository activity",
+                title: eventTitle(action),
+                summary: "",
                 markdownBody: nil,
                 url: repositoryURL
             )
@@ -373,7 +376,7 @@ extension GitHubEvent {
         case "ForkEvent":
             let fork = object("forkee")
             return EventPresentation(
-                title: "\(actor) forked \(repository)",
+                title: eventTitle("forked"),
                 summary: fork?.string("full_name") ?? fork?.string("name") ?? "New fork",
                 markdownBody: nil,
                 url: fork?.url("html_url") ?? repositoryURL
@@ -381,20 +384,20 @@ extension GitHubEvent {
 
         case "CreateEvent":
             let refType = string("ref_type") ?? "resource"
-            let ref = string("ref").map { " · \($0)" } ?? ""
+            let ref = string("ref") ?? ""
             return EventPresentation(
-                title: "\(actor) created a \(refType) in \(repository)",
-                summary: "\(repository)\(ref)",
+                title: eventTitle("created a \(refType)"),
+                summary: ref,
                 markdownBody: nil,
                 url: repositoryURL
             )
 
         case "DeleteEvent":
             let refType = string("ref_type") ?? "resource"
-            let ref = string("ref").map { " · \($0)" } ?? ""
+            let ref = string("ref") ?? ""
             return EventPresentation(
-                title: "\(actor) deleted a \(refType) in \(repository)",
-                summary: "\(repository)\(ref)",
+                title: eventTitle("deleted a \(refType)"),
+                summary: ref,
                 markdownBody: nil,
                 url: repositoryURL
             )
@@ -402,9 +405,9 @@ extension GitHubEvent {
         case "ReleaseEvent":
             let release = object("release")
             let action = string("action") ?? "updated"
-            let name = release?.string("name") ?? release?.string("tag_name") ?? repository
+            let name = release?.string("name") ?? release?.string("tag_name") ?? ""
             return EventPresentation(
-                title: "\(actor) \(action) a release in \(repository)",
+                title: eventTitle("\(action) a release"),
                 summary: name,
                 markdownBody: release?.string("body"),
                 url: release?.url("html_url") ?? repositoryURL
@@ -414,16 +417,16 @@ extension GitHubEvent {
             let member = object("member")?.string("login") ?? "a member"
             let action = string("action") ?? "updated"
             return EventPresentation(
-                title: "\(actor) \(action) \(member) in \(repository)",
-                summary: "Repository membership",
+                title: eventTitle("\(action) \(member)"),
+                summary: "",
                 markdownBody: nil,
                 url: repositoryURL
             )
 
         case "PublicEvent":
             return EventPresentation(
-                title: "\(actor) made \(repository) public",
-                summary: "Repository visibility changed",
+                title: eventTitle("made public"),
+                summary: "",
                 markdownBody: nil,
                 url: repositoryURL
             )
@@ -432,9 +435,9 @@ extension GitHubEvent {
             let discussion = object("discussion")
             let comment = object("comment")
             let number = discussion?.int("number").map(String.init) ?? "discussion"
-            let title = discussion?.string("title") ?? repository
+            let title = discussion?.string("title") ?? ""
             return EventPresentation(
-                title: "\(actor) commented on \(repository)#\(number)",
+                title: eventTitle("commented on discussion #\(number)"),
                 summary: title,
                 markdownBody: comment?.string("body"),
                 url: comment?.url("html_url") ?? discussion?.url("html_url") ?? repositoryURL
@@ -445,8 +448,8 @@ extension GitHubEvent {
             let number = discussion?.int("number").map(String.init) ?? "discussion"
             let action = string("action") ?? "updated"
             return EventPresentation(
-                title: "\(actor) \(action) \(repository)#\(number)",
-                summary: discussion?.string("title") ?? repository,
+                title: eventTitle("\(action) discussion #\(number)"),
+                summary: discussion?.string("title") ?? "",
                 markdownBody: discussion?.string("body"),
                 url: discussion?.url("html_url") ?? repositoryURL
             )
@@ -456,8 +459,8 @@ extension GitHubEvent {
             let comment = object("comment") ?? object("thread")
             let number = request?.int("number").map(String.init) ?? "pull request"
             return EventPresentation(
-                title: "\(actor) updated a review thread on \(repository)#\(number)",
-                summary: request?.string("title") ?? repository,
+                title: eventTitle("updated review thread #\(number)"),
+                summary: request?.string("title") ?? "",
                 markdownBody: comment?.string("body"),
                 url: comment?.url("html_url") ?? request?.url("html_url") ?? repositoryURL
             )
@@ -470,8 +473,8 @@ extension GitHubEvent {
                 return "- \(action) \(title)"
             }
             return EventPresentation(
-                title: "\(actor) updated the wiki for \(repository)",
-                summary: "Wiki activity",
+                title: eventTitle("updated wiki"),
+                summary: "",
                 markdownBody: pages?.isEmpty == false ? pages?.joined(separator: "\n") : nil,
                 url: repositoryURL
             )
@@ -480,8 +483,8 @@ extension GitHubEvent {
             let deployment = object("deployment")
             let environment = deployment?.string("environment") ?? "an environment"
             return EventPresentation(
-                title: "\(actor) deployed \(repository) to \(environment)",
-                summary: deployment?.string("description") ?? "Deployment",
+                title: eventTitle("deployed to \(environment)"),
+                summary: deployment?.string("description") ?? "",
                 markdownBody: nil,
                 url: repositoryURL
             )
@@ -491,8 +494,8 @@ extension GitHubEvent {
             let status = object("deployment_status")?.string("state") ?? "updated"
             let environment = deployment?.string("environment") ?? "an environment"
             return EventPresentation(
-                title: "\(actor) marked the \(environment) deployment \(status)",
-                summary: repository,
+                title: eventTitle("\(environment) deployment \(status)"),
+                summary: "",
                 markdownBody: nil,
                 url: repositoryURL
             )
@@ -501,8 +504,8 @@ extension GitHubEvent {
             let state = string("state") ?? "updated"
             let context = string("context") ?? "a status"
             return EventPresentation(
-                title: "\(actor) set \(context) to \(state) on \(repository)",
-                summary: string("description") ?? "Commit status",
+                title: eventTitle("\(context) is \(state)"),
+                summary: string("description") ?? "",
                 markdownBody: nil,
                 url: repositoryURL
             )
@@ -513,17 +516,16 @@ extension GitHubEvent {
                 ?? object("sponsorship")?.string("privacy_level")
                 ?? "a sponsorship"
             return EventPresentation(
-                title: "\(actor) \(action) \(plan)",
-                summary: repository,
+                title: eventTitle("\(action) \(plan)"),
+                summary: "",
                 markdownBody: nil,
                 url: repositoryURL
             )
 
         default:
             let action = string("action")
-            let title = action.map { "\(actor) \($0) in \(repository)" } ?? "\(actor) updated \(repository)"
             return EventPresentation(
-                title: title,
+                title: eventTitle(action ?? "updated"),
                 summary: type.replacingOccurrences(of: "Event", with: ""),
                 markdownBody: nil,
                 url: repositoryURL
