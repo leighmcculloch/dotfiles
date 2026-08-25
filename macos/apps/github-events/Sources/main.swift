@@ -1060,10 +1060,10 @@ private struct EventCardView: View {
         .onTapGesture(perform: openEvent)
         .textSelection(.enabled)
         .accessibilityLabel(Text(presentation.title))
-        .accessibilityElement(children: .contain)
+        .accessibilityElement(children: .ignore)
         .accessibilityAddTraits(.isButton)
         .accessibilityHint(Text("Opens this event on GitHub"))
-        .accessibilityAction(named: Text("Open on GitHub")) {
+        .accessibilityAction(.default) {
             openEvent()
         }
         .accessibilityValue(Text(
@@ -1101,7 +1101,9 @@ private struct MarkdownText: View {
 
     private func truncated(_ value: AttributedString) -> AttributedString {
         guard value.characters.count > characterLimit else { return value }
-        var result = AttributedString(value.characters.prefix(max(characterLimit - 1, 1)))
+        let prefixLength = max(characterLimit - 1, 1)
+        let end = value.index(value.startIndex, offsetByCharacters: prefixLength)
+        var result = AttributedString(value[value.startIndex..<end])
         result.append(AttributedString("…"))
         return result
     }
