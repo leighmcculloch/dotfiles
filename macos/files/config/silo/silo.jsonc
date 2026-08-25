@@ -19,8 +19,8 @@
   ],
   "mounts_ro": [
     "~/.zenv_apikey_pushover",
-    "~/.zenv_apikey_github_ro",
-    "~/.zenv_apikey_github_ro_plus_w_issues_prs",
+    //"~/.zenv_apikey_github_ro",
+    //"~/.zenv_apikey_github_ro_plus_w_issues_prs",
     "~/.dotfiles/files/scripts/gbb",
     "~/.dotfiles/files/scripts/claude-transcript",
     "~/.dotfiles/files/scripts/ai"
@@ -30,7 +30,7 @@
     "XDG_CONFIG_HOME"
   ],
   "pre_run_hooks": [
-    "source ~/.zenv_apikey_github_ro_plus_w_issues_prs 2>/dev/null || source ~/.zenv_apikey_github_ro",
+    //"source ~/.zenv_apikey_github_ro_plus_w_issues_prs 2>/dev/null || source ~/.zenv_apikey_github_ro",
     "export PATH=${HOME}/.deno/bin:${PATH}",
     "export PATH=${HOME}/.dotfiles/files/scripts:${PATH}",
     "export GEMMA_HOST=host.docker.internal"
@@ -47,6 +47,11 @@
       ],
       "pre_run_hooks": [
         "source ~/.zenv_apikey_github_copilot"
+      ]
+    },
+    "pi": {
+      "mounts_ro": [
+        "~/.pi/agent/lmstudio.json"
       ]
     }
   },
