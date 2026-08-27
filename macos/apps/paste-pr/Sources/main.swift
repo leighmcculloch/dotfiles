@@ -394,6 +394,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         ])
         grid.rowSpacing = 8
         grid.columnSpacing = 12
+        grid.frame = NSRect(x: 0, y: 0, width: 320, height: 90)
 
         let alert = NSAlert()
         alert.messageText = "Slack Emojis"
