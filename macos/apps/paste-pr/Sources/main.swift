@@ -113,6 +113,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         menu.addItem(.separator())
 
+        menu.addItem(NSMenuItem(
+            title: "Configure Slack Emojis…",
+            action: #selector(configureSlackEmojis),
+            keyEquivalent: ""
+        ))
+
+        menu.addItem(.separator())
+
         launchAtLoginItem = NSMenuItem(
             title: "Launch at Login",
             action: #selector(toggleLaunchAtLogin),
@@ -187,7 +195,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Fetching the GitHub resource may block on the network, so do it off
         // the main thread and update the clipboard back on the main thread.
         DispatchQueue.global(qos: .userInitiated).async {
-            let result = try? PRToRichText.convert(prLink: link)
+            let result = self.convert(link)
             DispatchQueue.main.async {
                 guard let result else {
                     self.showFeedback(success: false)
@@ -256,7 +264,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         automaticConversionInFlight = true
 
         DispatchQueue.global(qos: .userInitiated).async {
-            let result = try? PRToRichText.convert(prLink: request.originalInput)
+            let result = self.convert(request.originalInput)
             DispatchQueue.main.async { [weak self] in
                 self?.completeAutomaticConversion(request, result: result)
             }
@@ -357,6 +365,50 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func updateAutoConvertState() {
         autoConvertItem?.state = autoConvertEnabled ? .on : .off
+    }
+
+    private func convert(_ link: String) -> PRToRichText.Result? {
+        try? PRToRichText.convert(
+            prLink: link,
+            emojiSettings: SlackEmojiSettings(userDefaults: .standard)
+        )
+    }
+
+    // MARK: Slack Emojis
+
+    @objc private func configureSlackEmojis() {
+        let settings = SlackEmojiSettings(userDefaults: .standard)
+        let pullRequestField = NSTextField(string: settings.pullRequestEmoji)
+        let issueField = NSTextField(string: settings.issueEmoji)
+        let discussionField = NSTextField(string: settings.discussionEmoji)
+        let fields = [pullRequestField, issueField, discussionField]
+
+        fields.forEach { field in
+            field.widthAnchor.constraint(equalToConstant: 200).isActive = true
+        }
+
+        let grid = NSGridView(views: [
+            [NSTextField(labelWithString: "Pull requests"), pullRequestField],
+            [NSTextField(labelWithString: "Issues"), issueField],
+            [NSTextField(labelWithString: "Discussions"), discussionField],
+        ])
+        grid.rowSpacing = 8
+        grid.columnSpacing = 12
+
+        let alert = NSAlert()
+        alert.messageText = "Slack Emojis"
+        alert.informativeText = "Enter an emoji name for each GitHub link type. Colons are optional."
+        alert.accessoryView = grid
+        alert.addButton(withTitle: "Save")
+        alert.addButton(withTitle: "Cancel")
+
+        guard alert.runModal() == .alertFirstButtonReturn else { return }
+
+        SlackEmojiSettings(
+            pullRequest: pullRequestField.stringValue,
+            issue: issueField.stringValue,
+            discussion: discussionField.stringValue
+        ).save()
     }
 
     private func showFeedback(success: Bool) {

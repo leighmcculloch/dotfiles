@@ -168,12 +168,13 @@ final class PRToRichTextTests: XCTestCase {
             "issue", "view", "https://github.com/owner/repo/issues/42",
             "--json", "title,number",
         ])
-        XCTAssertEqual(result.html, "<p>:github-rainbow: Track this <a href=\"https://github.com/owner/repo/issues/42\">repo#42</a></p>")
+        XCTAssertEqual(result.markdown, ":github-issue: Track this [repo#42](https://github.com/owner/repo/issues/42)")
+        XCTAssertEqual(result.html, "<p>:github-issue: Track this <a href=\"https://github.com/owner/repo/issues/42\">repo#42</a></p>")
     }
 
     func testDiscussionUsesCanonicalURL() throws {
         var arguments: [String]?
-        _ = try PRToRichText.convert(
+        let result = try PRToRichText.convert(
             prLink: "github.com/owner/repo/discussions/7/answer",
             ghRunner: { receivedArguments in
                 arguments = receivedArguments
@@ -185,6 +186,69 @@ final class PRToRichTextTests: XCTestCase {
             "discussion", "view", "https://github.com/owner/repo/discussions/7",
             "--json", "title,number",
         ])
+        XCTAssertEqual(result.markdown, ":github-rainbow: Question [repo#7](https://github.com/owner/repo/discussions/7)")
+        XCTAssertEqual(result.html, "<p>:github-rainbow: Question <a href=\"https://github.com/owner/repo/discussions/7\">repo#7</a></p>")
+    }
+
+    func testConversionUsesConfiguredEmojiForEachLinkKind() throws {
+        let settings = SlackEmojiSettings(
+            pullRequest: "custom-pr",
+            issue: "custom-issue",
+            discussion: "custom-discussion"
+        )
+
+        var pullRequestCallCount = 0
+        let pullRequestResult = try PRToRichText.convert(
+            prLink: "github.com/owner/repo/pull/123",
+            ghRunner: { _ in
+                pullRequestCallCount += 1
+                if pullRequestCallCount == 1 {
+                    return Data(#"{"title":"Pull request","number":123}"#.utf8)
+                }
+                return Data("".utf8)
+            },
+            emojiSettings: settings
+        )
+
+        let issueResult = try PRToRichText.convert(
+            prLink: "github.com/owner/repo/issues/42",
+            ghRunner: { _ in Data(#"{"title":"Issue","number":42}"#.utf8) },
+            emojiSettings: settings
+        )
+
+        let discussionResult = try PRToRichText.convert(
+            prLink: "github.com/owner/repo/discussions/7",
+            ghRunner: { _ in Data(#"{"title":"Discussion","number":7}"#.utf8) },
+            emojiSettings: settings
+        )
+
+        XCTAssertEqual(pullRequestResult.markdown, ":custom-pr: Pull request [repo#123](https://github.com/owner/repo/pull/123) `+0 -0`")
+        XCTAssertEqual(issueResult.markdown, ":custom-issue: Issue [repo#42](https://github.com/owner/repo/issues/42)")
+        XCTAssertEqual(discussionResult.markdown, ":custom-discussion: Discussion [repo#7](https://github.com/owner/repo/discussions/7)")
+    }
+
+    func testSlackEmojiSettingsPersistNormalizedNames() throws {
+        let suiteName = "PastePRTests.\(UUID().uuidString)"
+        let userDefaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
+        defer { userDefaults.removePersistentDomain(forName: suiteName) }
+
+        XCTAssertEqual(SlackEmojiSettings(userDefaults: userDefaults), .standard)
+
+        let settings = SlackEmojiSettings(
+            pullRequest: " :custom-pr: ",
+            issue: "custom-issue",
+            discussion: ":custom-discussion"
+        )
+        settings.save(to: userDefaults)
+
+        XCTAssertEqual(
+            SlackEmojiSettings(userDefaults: userDefaults),
+            SlackEmojiSettings(
+                pullRequest: "custom-pr",
+                issue: "custom-issue",
+                discussion: "custom-discussion"
+            )
+        )
     }
 
     func testUnsupportedHostDoesNotInvokeGitHubCLI() {

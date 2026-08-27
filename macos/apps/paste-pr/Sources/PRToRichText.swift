@@ -6,9 +6,12 @@ import Foundation
 /// This mirrors the behaviour of the reference shell script: it asks the
 /// GitHub CLI for the resource's title, number, and repository, then counts
 /// additions and deletions in filtered pull request diffs before formatting a
-/// single line of Markdown:
+/// single line of Markdown. The Slack emoji names are configurable in the app
+/// and default to:
 ///
-///     :github-rainbow: <title> [<repo>#<number>](<url>) `+<additions> -<deletions>`
+///     Pull requests: :github-rainbow: <title> [<repo>#<number>](<url>) `+<additions> -<deletions>`
+///     Issues: :github-issue: <title> [<repo>#<number>](<url>)
+///     Discussions: :github-rainbow: <title> [<repo>#<number>](<url>)
 ///
 /// The result includes the Markdown representation and an equivalent HTML
 /// fragment (what `pandoc -f markdown -t html` would produce) for rich text.
@@ -28,14 +31,18 @@ enum PRToRichText {
 
     // MARK: - Conversion
 
-    static func convert(prLink: String, ghRunner: GHRunner? = nil) throws -> Result {
+    static func convert(
+        prLink: String,
+        ghRunner: GHRunner? = nil,
+        emojiSettings: SlackEmojiSettings = .standard
+    ) throws -> Result {
         let link = try parseGitHubLink(prLink)
 
         switch link.kind {
         case .pullRequest:
-            return try convertPullRequest(link, ghRunner: ghRunner)
+            return try convertPullRequest(link, ghRunner: ghRunner, emojiSettings: emojiSettings)
         case .issue, .discussion:
-            return try convertIssueOrDiscussion(link, ghRunner: ghRunner)
+            return try convertIssueOrDiscussion(link, ghRunner: ghRunner, emojiSettings: emojiSettings)
         }
     }
 
@@ -43,7 +50,11 @@ enum PRToRichText {
         (try? parseGitHubLink(input)) != nil
     }
 
-    private static func convertPullRequest(_ link: GitHubLink, ghRunner: GHRunner?) throws -> Result {
+    private static func convertPullRequest(
+        _ link: GitHubLink,
+        ghRunner: GHRunner?,
+        emojiSettings: SlackEmojiSettings
+    ) throws -> Result {
         let json = try fetch([
             "pr", "view", link.url,
             "--json", "title,number",
@@ -66,21 +77,27 @@ enum PRToRichText {
 
         let repo = link.repository
         let url = link.url
+        let emoji = emojiSettings.pullRequestEmoji
+        let escapedEmoji = escapeHTML(emoji)
 
         let markdown =
-            ":github-rainbow: \(pr.title) " +
+            "\(emoji) \(pr.title) " +
             "[\(repo)#\(pr.number)](\(url)) " +
             "`+\(counts.additions) -\(counts.deletions)`"
 
         let html =
-            "<p>:github-rainbow: \(escapeHTML(pr.title)) " +
+            "<p>\(escapedEmoji) \(escapeHTML(pr.title)) " +
             "<a href=\"\(escapeHTML(url))\">\(escapeHTML(repo))#\(pr.number)</a> " +
             "<code>+\(counts.additions) -\(counts.deletions)</code></p>"
 
         return Result(markdown: markdown, html: html)
     }
 
-    private static func convertIssueOrDiscussion(_ link: GitHubLink, ghRunner: GHRunner?) throws -> Result {
+    private static func convertIssueOrDiscussion(
+        _ link: GitHubLink,
+        ghRunner: GHRunner?,
+        emojiSettings: SlackEmojiSettings
+    ) throws -> Result {
         let command = link.kind == .issue ? "issue" : "discussion"
         let json = try fetch([
             command, "view", link.url,
@@ -91,12 +108,16 @@ enum PRToRichText {
             throw ConversionError.parseFailed
         }
 
+        let emoji = link.kind == .issue
+            ? emojiSettings.issueEmoji
+            : emojiSettings.discussionEmoji
+        let escapedEmoji = escapeHTML(emoji)
         let markdown =
-            ":github-rainbow: \(item.title) " +
+            "\(emoji) \(item.title) " +
             "[\(link.repository)#\(item.number)](\(link.url))"
 
         let html =
-            "<p>:github-rainbow: \(escapeHTML(item.title)) " +
+            "<p>\(escapedEmoji) \(escapeHTML(item.title)) " +
             "<a href=\"\(escapeHTML(link.url))\">" +
             "\(escapeHTML(link.repository))#\(item.number)</a></p>"
 
@@ -291,6 +312,58 @@ enum PRToRichText {
         result = result.replacingOccurrences(of: ">", with: "&gt;")
         result = result.replacingOccurrences(of: "\"", with: "&quot;")
         return result
+    }
+}
+
+struct SlackEmojiSettings: Equatable {
+    static let defaultPullRequest = "github-rainbow"
+    static let defaultIssue = "github-issue"
+    static let defaultDiscussion = "github-rainbow"
+
+    private static let pullRequestDefaultsKey = "SlackEmojiPullRequest"
+    private static let issueDefaultsKey = "SlackEmojiIssue"
+    private static let discussionDefaultsKey = "SlackEmojiDiscussion"
+
+    static let standard = Self(
+        pullRequest: defaultPullRequest,
+        issue: defaultIssue,
+        discussion: defaultDiscussion
+    )
+
+    let pullRequest: String
+    let issue: String
+    let discussion: String
+
+    init(pullRequest: String, issue: String, discussion: String) {
+        self.pullRequest = Self.normalizedName(pullRequest, fallback: Self.defaultPullRequest)
+        self.issue = Self.normalizedName(issue, fallback: Self.defaultIssue)
+        self.discussion = Self.normalizedName(discussion, fallback: Self.defaultDiscussion)
+    }
+
+    init(userDefaults: UserDefaults = .standard) {
+        self.init(
+            pullRequest: userDefaults.string(forKey: Self.pullRequestDefaultsKey) ?? Self.defaultPullRequest,
+            issue: userDefaults.string(forKey: Self.issueDefaultsKey) ?? Self.defaultIssue,
+            discussion: userDefaults.string(forKey: Self.discussionDefaultsKey) ?? Self.defaultDiscussion
+        )
+    }
+
+    func save(to userDefaults: UserDefaults = .standard) {
+        userDefaults.set(pullRequest, forKey: Self.pullRequestDefaultsKey)
+        userDefaults.set(issue, forKey: Self.issueDefaultsKey)
+        userDefaults.set(discussion, forKey: Self.discussionDefaultsKey)
+    }
+
+    var pullRequestEmoji: String { ":\(pullRequest):" }
+    var issueEmoji: String { ":\(issue):" }
+    var discussionEmoji: String { ":\(discussion):" }
+
+    private static func normalizedName(_ value: String, fallback: String) -> String {
+        let name = value
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .trimmingCharacters(in: CharacterSet(charactersIn: ":"))
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        return name.isEmpty ? fallback : name
     }
 }
 
