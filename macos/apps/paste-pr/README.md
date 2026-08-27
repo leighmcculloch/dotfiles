@@ -4,7 +4,7 @@ A macOS menu bar app that converts a GitHub pull request, issue, or discussion l
 
 The pasted result looks like:
 
-> :github-rainbow: Add the thing [my-repo#123](https://github.com/owner/my-repo/pull/123) `+42 -7`
+> :github-link-pr: Add the thing [my-repo#123](https://github.com/owner/my-repo/pull/123) `+42 -7`
 
 ## Requirements
 
@@ -44,6 +44,6 @@ The menu bar icon briefly changes to a checkmark on success or an X if the clipb
 
 - **Launch at Login** — available in the menu bar dropdown.
 - **Automatically Convert GitHub Links** — off by default. When enabled, newly copied supported GitHub pull request, issue, and discussion links are converted automatically. Enabling it does not convert the clipboard value already present.
-- **Configure Slack Emojis…** — choose the Slack emoji used for pull requests, issues, and discussions (defaults: `:github-rainbow:`, `:github-issue:`, and `:github-rainbow:`). Colons are optional.
+- **Configure Slack Emojis…** — choose the Slack emoji used for pull requests, issues, and discussions (defaults: `:github-link-pr:`, `:github-link-issue:`, and `:github-link-discussion:`). Colons are optional.
 
 Automatic conversion rechecks clipboard ownership before and after replacement. macOS does not provide an atomic compare-and-write operation for the pasteboard, so a simultaneous external clipboard change can only be detected after the write.

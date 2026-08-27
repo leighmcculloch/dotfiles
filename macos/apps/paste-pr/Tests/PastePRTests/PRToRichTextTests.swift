@@ -64,7 +64,7 @@ final class PRToRichTextTests: XCTestCase {
                 "--exclude", "tests-expanded/*",
             ],
         ])
-        XCTAssertEqual(result.markdown, ":github-rainbow: Fix the thing [base#123](https://github.com/owner/base/pull/123) `+1 -1`")
+        XCTAssertEqual(result.markdown, ":github-link-pr: Fix the thing [base#123](https://github.com/owner/base/pull/123) `+1 -1`")
     }
 
     func testPullRequestCountsChangedLinesThatBeginWithDiffCharacters() throws {
@@ -90,7 +90,7 @@ final class PRToRichTextTests: XCTestCase {
             }
         )
 
-        XCTAssertEqual(result.markdown, ":github-rainbow: Count the diff [repo#123](https://github.com/owner/repo/pull/123) `+2 -2`")
+        XCTAssertEqual(result.markdown, ":github-link-pr: Count the diff [repo#123](https://github.com/owner/repo/pull/123) `+2 -2`")
     }
 
     func testPullRequestExcludesJSONLockAndNestedTestsExpandedFiles() throws {
@@ -151,7 +151,7 @@ final class PRToRichTextTests: XCTestCase {
             }
         )
 
-        XCTAssertEqual(result.markdown, ":github-rainbow: Filter the diff [repo#123](https://github.com/owner/repo/pull/123) `+2 -2`")
+        XCTAssertEqual(result.markdown, ":github-link-pr: Filter the diff [repo#123](https://github.com/owner/repo/pull/123) `+2 -2`")
     }
 
     func testIssueUsesCanonicalURL() throws {
@@ -168,8 +168,8 @@ final class PRToRichTextTests: XCTestCase {
             "issue", "view", "https://github.com/owner/repo/issues/42",
             "--json", "title,number",
         ])
-        XCTAssertEqual(result.markdown, ":github-issue: Track this [repo#42](https://github.com/owner/repo/issues/42)")
-        XCTAssertEqual(result.html, "<p>:github-issue: Track this <a href=\"https://github.com/owner/repo/issues/42\">repo#42</a></p>")
+        XCTAssertEqual(result.markdown, ":github-link-issue: Track this [repo#42](https://github.com/owner/repo/issues/42)")
+        XCTAssertEqual(result.html, "<p>:github-link-issue: Track this <a href=\"https://github.com/owner/repo/issues/42\">repo#42</a></p>")
     }
 
     func testDiscussionUsesCanonicalURL() throws {
@@ -186,8 +186,8 @@ final class PRToRichTextTests: XCTestCase {
             "discussion", "view", "https://github.com/owner/repo/discussions/7",
             "--json", "title,number",
         ])
-        XCTAssertEqual(result.markdown, ":github-rainbow: Question [repo#7](https://github.com/owner/repo/discussions/7)")
-        XCTAssertEqual(result.html, "<p>:github-rainbow: Question <a href=\"https://github.com/owner/repo/discussions/7\">repo#7</a></p>")
+        XCTAssertEqual(result.markdown, ":github-link-discussion: Question [repo#7](https://github.com/owner/repo/discussions/7)")
+        XCTAssertEqual(result.html, "<p>:github-link-discussion: Question <a href=\"https://github.com/owner/repo/discussions/7\">repo#7</a></p>")
     }
 
     func testConversionUsesConfiguredEmojiForEachLinkKind() throws {

@@ -9,9 +9,9 @@ import Foundation
 /// single line of Markdown. The Slack emoji names are configurable in the app
 /// and default to:
 ///
-///     Pull requests: :github-rainbow: <title> [<repo>#<number>](<url>) `+<additions> -<deletions>`
-///     Issues: :github-issue: <title> [<repo>#<number>](<url>)
-///     Discussions: :github-rainbow: <title> [<repo>#<number>](<url>)
+///     Pull requests: :github-link-pr: <title> [<repo>#<number>](<url>) `+<additions> -<deletions>`
+///     Issues: :github-link-issue: <title> [<repo>#<number>](<url>)
+///     Discussions: :github-link-discussion: <title> [<repo>#<number>](<url>)
 ///
 /// The result includes the Markdown representation and an equivalent HTML
 /// fragment (what `pandoc -f markdown -t html` would produce) for rich text.
@@ -316,9 +316,9 @@ enum PRToRichText {
 }
 
 struct SlackEmojiSettings: Equatable {
-    static let defaultPullRequest = "github-rainbow"
-    static let defaultIssue = "github-issue"
-    static let defaultDiscussion = "github-rainbow"
+    static let defaultPullRequest = "github-link-pr"
+    static let defaultIssue = "github-link-issue"
+    static let defaultDiscussion = "github-link-discussion"
 
     private static let pullRequestDefaultsKey = "SlackEmojiPullRequest"
     private static let issueDefaultsKey = "SlackEmojiIssue"
