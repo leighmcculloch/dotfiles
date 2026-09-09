@@ -4,7 +4,7 @@ import UniformTypeIdentifiers
 
 private func fileURLs(from pasteboard: NSPasteboard) -> [URL] {
     let options: [NSPasteboard.ReadingOptionKey: Any] = [
-        .urlReadingFileURLs: true,
+        .urlReadingFileURLsOnly: true,
     ]
     guard let objects = pasteboard.readObjects(
         forClasses: [NSURL.self],
@@ -290,7 +290,7 @@ private final class QRResultsWindowController: NSWindowController {
     }
 }
 
-private final class AppDelegate: NSObject, NSApplicationDelegate {
+final class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem!
     private var launchAtLoginItem: NSMenuItem!
     private let resultsWindow = QRResultsWindowController()
