@@ -38,7 +38,7 @@ final class PRToRichTextTests: XCTestCase {
             ghRunner: { receivedArguments in
                 arguments.append(receivedArguments)
                 if receivedArguments[1] == "view" {
-                    return Data(#"{"title":"Fix the thing","number":123}"#.utf8)
+                    return Data(#"{"title":"Fix the thing","number":123,"additions":8,"deletions":3}"#.utf8)
                 }
                 return Data("""
                 diff --git a/file.swift b/file.swift
@@ -55,7 +55,7 @@ final class PRToRichTextTests: XCTestCase {
         XCTAssertEqual(arguments, [
             [
                 "pr", "view", "https://github.com/owner/base/pull/123",
-                "--json", "title,number",
+                "--json", "title,number,additions,deletions",
             ],
             [
                 "pr", "diff", "https://github.com/owner/base/pull/123",
@@ -74,7 +74,7 @@ final class PRToRichTextTests: XCTestCase {
             ghRunner: { _ in
                 callCount += 1
                 if callCount == 1 {
-                    return Data(#"{"title":"Count the diff","number":123}"#.utf8)
+                    return Data(#"{"title":"Count the diff","number":123,"additions":8,"deletions":3}"#.utf8)
                 }
                 return Data("""
                 diff --git a/file.txt b/file.txt
@@ -93,6 +93,29 @@ final class PRToRichTextTests: XCTestCase {
         XCTAssertEqual(result.markdown, ":github-link-pr: Count the diff [repo#123](https://github.com/owner/repo/pull/123) `+2 -2`")
     }
 
+    func testPullRequestFallsBackToBasicDiffCountsWhenFilteredDiffFails() throws {
+        var callCount = 0
+        let result = try PRToRichText.convert(
+            prLink: "github.com/owner/repo/pull/123",
+            ghRunner: { _ in
+                callCount += 1
+                if callCount == 1 {
+                    return Data(#"{"title":"Large generated diff","number":123,"additions":31019,"deletions":21}"#.utf8)
+                }
+                throw NSError(domain: "PastePRTests", code: 1)
+            }
+        )
+
+        XCTAssertEqual(
+            result.markdown,
+            ":github-link-pr: Large generated diff [repo#123](https://github.com/owner/repo/pull/123) `+31019 -21`"
+        )
+        XCTAssertEqual(
+            result.html,
+            "<p>:github-link-pr: Large generated diff <a href=\"https://github.com/owner/repo/pull/123\">repo#123</a> <code>+31019 -21</code></p>"
+        )
+    }
+
     func testPullRequestExcludesJSONLockAndNestedTestsExpandedFiles() throws {
         var callCount = 0
         let result = try PRToRichText.convert(
@@ -100,7 +123,7 @@ final class PRToRichTextTests: XCTestCase {
             ghRunner: { _ in
                 callCount += 1
                 if callCount == 1 {
-                    return Data(#"{"title":"Filter the diff","number":123}"#.utf8)
+                    return Data(#"{"title":"Filter the diff","number":123,"additions":2,"deletions":2}"#.utf8)
                 }
                 return Data("""
                 diff --git a/keep.swift b/keep.swift
@@ -203,7 +226,7 @@ final class PRToRichTextTests: XCTestCase {
             ghRunner: { _ in
                 pullRequestCallCount += 1
                 if pullRequestCallCount == 1 {
-                    return Data(#"{"title":"Pull request","number":123}"#.utf8)
+                    return Data(#"{"title":"Pull request","number":123,"additions":0,"deletions":0}"#.utf8)
                 }
                 return Data("".utf8)
             },
