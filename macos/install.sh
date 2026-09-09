@@ -85,6 +85,7 @@ echo "$fg[cyan]Installing local mac programs...$reset_color"
 make -C apps/menu-bar-usage-codex install
 make -C apps/paste-markdown install
 make -C apps/paste-pr install
+make -C apps/qr-reader install
 
 echo "$fg[green]Critical install complete.$reset_color"
 
