@@ -6,7 +6,9 @@ import Foundation
 /// This mirrors the behaviour of the reference shell script: it asks the
 /// GitHub CLI for the resource's title, number, and repository, then counts
 /// additions and deletions in filtered pull request diffs before formatting a
-/// single line of Markdown. The Slack emoji names are configurable in the app
+/// single line of Markdown. If GitHub cannot provide the filtered diff, the
+/// pull request's basic additions and deletions counts are used instead. The
+/// Slack emoji names are configurable in the app
 /// and default to:
 ///
 ///     Pull requests: :github-link-pr: <title> [<repo>#<number>](<url>) `+<additions> -<deletions>`
@@ -57,23 +59,31 @@ enum PRToRichText {
     ) throws -> Result {
         let json = try fetch([
             "pr", "view", link.url,
-            "--json", "title,number",
+            "--json", "title,number,additions,deletions",
         ], with: ghRunner)
 
         guard let pr = try? JSONDecoder().decode(PullRequest.self, from: json) else {
             throw ConversionError.parseFailed
         }
 
-        let diff = try fetch([
-            "pr", "diff", link.url,
-            "--exclude", "*.json",
-            "--exclude", "*.lock",
-            "--exclude", "tests-expanded/*",
-        ], with: ghRunner)
-        guard let diff = String(data: diff, encoding: .utf8) else {
-            throw ConversionError.parseFailed
+        let counts: (additions: Int, deletions: Int)
+        do {
+            let diff = try fetch([
+                "pr", "diff", link.url,
+                "--exclude", "*.json",
+                "--exclude", "*.lock",
+                "--exclude", "tests-expanded/*",
+            ], with: ghRunner)
+            guard let diff = String(data: diff, encoding: .utf8) else {
+                throw ConversionError.parseFailed
+            }
+            counts = countDiffLines(in: diff)
+        } catch {
+            // GitHub rejects diffs that exceed its size limits. The metadata
+            // counts are less precise because they include excluded files,
+            // but they let large PRs remain pasteable.
+            counts = (pr.additions, pr.deletions)
         }
-        let counts = countDiffLines(in: diff)
 
         let repo = link.repository
         let url = link.url
@@ -384,6 +394,8 @@ private struct GitHubLink {
 private struct PullRequest: Decodable {
     let title: String
     let number: Int
+    let additions: Int
+    let deletions: Int
 }
 
 private struct IssueOrDiscussion: Decodable {
