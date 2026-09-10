@@ -14,6 +14,7 @@ build:
 	codesign --force --sign - "$(APP_BUNDLE)"
 
 install: build
+	-@killall QRReader 2>/dev/null || true
 	rm -rf "/Applications/$(APP_NAME).app"
 	cp -R "$(APP_BUNDLE)" /Applications/
 	@echo 'Installed "$(APP_NAME).app" to /Applications/'
@@ -27,4 +28,5 @@ clean:
 	rm -rf build
 
 run: build
+	-@killall QRReader 2>/dev/null || true
 	open "$(APP_BUNDLE)"

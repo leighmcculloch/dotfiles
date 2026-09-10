@@ -16,4 +16,11 @@ final class QRCodeTests: XCTestCase {
         XCTAssertNil(QRCode(value: "WIFI:T:WPA;S:network;P:password;;").url)
         XCTAssertNil(QRCode(value: "plain text").url)
     }
+
+    func testStoresNormalizedBoundsForImageHighlights() {
+        let bounds = CGRect(x: 0.1, y: 0.2, width: 0.3, height: 0.4)
+
+        XCTAssertEqual(QRCode(value: "https://example.com", bounds: bounds).bounds, bounds)
+        XCTAssertNil(QRCode(value: "https://example.com").bounds)
+    }
 }
