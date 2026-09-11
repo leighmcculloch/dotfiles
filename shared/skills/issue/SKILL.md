@@ -1,9 +1,11 @@
 ---
 name: issue
-description: Create GitHub issues with context from linked issues/PRs
+description: Drafts GitHub issues with context from linked issues/PRs, provides a prefilled URL for review by default, and creates one only after an explicit user request.
 ---
 
 # GitHub Issue Creation Skill
+
+Drafts GitHub issues for the user to review. The default handoff is a prefilled GitHub URL that the user can open and submit themselves; do not create the issue unless the user explicitly asks you to create or submit it.
 
 **Formatting rules:**
 - Do not hard-wrap lines. Write paragraphs as a single continuous line; let the renderer wrap.
@@ -13,14 +15,18 @@ description: Create GitHub issues with context from linked issues/PRs
 
 ## Workflow
 
-### 1. Gather Context from Linked Issues/PRs
+### 1. Determine the Target Repository
+
+Inspect the repository remotes, especially `upstream` and `origin`, and GitHub fork metadata when needed. If the current checkout is a fork with an upstream repository, set `{repo_owner}` and `{repo_name}` to the upstream repository and use those values for all issue work: template discovery, the draft's repository field, the prefilled URL, and direct issue creation. Never prepare or create the issue on the fork. If there is no fork/upstream relationship, use the current repository. If the target is ambiguous, ask the user before proceeding.
+
+### 2. Gather Context from Linked Issues/PRs
 
 If the user provides GitHub issue or PR links:
 - Use `mcp__github__issue_read` with `method: "get"` to fetch issue details
 - Use `mcp__github__pull_request_read` with `method: "get"` to fetch PR details
 - Review the linked content and incorporate relevant context into the new issue
 
-### 2. Discover Issue Templates
+### 3. Discover Issue Templates
 
 **Step 1: Find issue templates**
 Do steps 1a and 1b in parallel:
@@ -55,9 +61,9 @@ Analyze the user's request and auto-select the most appropriate template:
 
 If multiple templates exist and the best match is unclear, briefly list options and ask the user.
 
-### 3. Draft and Review (REQUIRED)
+### 4. Draft and Provide a Prefilled URL (REQUIRED)
 
-**IMPORTANT: Always write the draft to a file and present it to the user for review before creating the issue.**
+**IMPORTANT: Always write the draft to a file and present it to the user together with a prefilled URL. The default is to let the user open and submit that URL themselves; do not create the issue merely because the user approved the draft.**
 
 **Step 1: Write the draft to NOTES_ISSUE.md**
 
@@ -66,7 +72,7 @@ Write the complete draft issue to `NOTES_ISSUE.md` in the current working direct
 ```markdown
 # Draft Issue
 
-**Repository:** {owner}/{repo}
+**Repository:** {repo_owner}/{repo_name}
 **Title:** {title}
 **Labels:** {labels}
 
@@ -75,20 +81,33 @@ Write the complete draft issue to `NOTES_ISSUE.md` in the current working direct
 {full issue body}
 ```
 
-**Step 2: Present for review**
+**Step 2: Build the prefilled issue URL**
+
+Build a URL for the new issue form:
+
+```
+https://github.com/{repo_owner}/{repo_name}/issues/new?title={title}&body={body}&labels={labels}&template={template}
+```
+
+URL-encode every query parameter value, including all line breaks and Markdown in the body. Include only parameters that have values; include `template` when a repository template was selected, and use a comma-separated value for multiple labels.
+When the checkout is a fork, `{repo_owner}/{repo_name}` must be the upstream repository; never use the fork in this URL.
+
+**Step 3: Present the draft and URL for review**
 
 After writing the file, inform the user:
 ```
 I've written the draft issue to NOTES_ISSUE.md for your review.
 
-Would you like me to create this issue, or would you like to make any changes?
+Prefilled issue URL: {prefilled_url}
+
+Open the URL to review and submit the issue yourself. I will not create it unless you explicitly ask me to.
 ```
 
-Wait for explicit user confirmation before proceeding. If the user requests modifications, update `NOTES_ISSUE.md` with the changes before creating the issue.
+If the user requests modifications, update `NOTES_ISSUE.md` and regenerate the URL. If the user approves the draft without explicitly asking you to create or submit the issue, do not call `mcp__github__issue_write`.
 
-### 4. Create the Issue
+### 5. Create the Issue (Only on Explicit Request)
 
-Only after user confirmation, use `mcp__github__issue_write` with:
+Only after a later user message explicitly asks you to create, open, or submit the issue on their behalf, use `mcp__github__issue_write` with:
 ```
 method: "create"
 owner: {repo_owner}
@@ -97,6 +116,8 @@ title: {issue_title}
 body: {issue_body}
 labels: {from_template_if_available}
 ```
+
+When the checkout is a fork, `{repo_owner}/{repo_name}` must identify the upstream repository.
 
 **Fallback Body Structure (when no template available):**
 If using a template, follow its structure. Otherwise write a short paragraph (or two) with no headings, no bullets, and no other formatting — describing the issue or proposal and incorporating any relevant context from linked issues/PRs. Write each paragraph as a single continuous line.
