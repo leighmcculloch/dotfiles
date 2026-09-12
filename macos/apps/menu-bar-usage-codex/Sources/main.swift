@@ -2,10 +2,20 @@ import AppKit
 import Foundation
 import ServiceManagement
 
-fileprivate struct UsageSnapshot {
+fileprivate struct UsageWindow {
     let remainingPercent: Int
-    let primaryResetDate: Date?
-    let secondaryResetDate: Date?
+    let resetDate: Date?
+}
+
+fileprivate struct UsageSnapshot {
+    let primary: UsageWindow?
+    let secondary: UsageWindow?
+
+    var remainingPercent: Int {
+        [primary, secondary]
+            .compactMap { $0?.remainingPercent }
+            .min() ?? 0
+    }
 }
 
 private enum UsageError: LocalizedError {
@@ -263,28 +273,29 @@ private final class CodexAppServerClient {
             return .failure(UsageError.invalidResponse)
         }
 
-        var windows: [(remaining: Int, resetsAt: Date?)] = []
-        for key in ["primary", "secondary"] {
-            guard let window = rateLimits[key] as? [String: Any],
-                  let usedPercent = (window["usedPercent"] as? NSNumber)?.intValue else {
-                continue
-            }
-            let remaining = max(0, min(100, 100 - usedPercent))
-            let resetDate = (window["resetsAt"] as? NSNumber).map {
-                Date(timeIntervalSince1970: $0.doubleValue)
-            }
-            windows.append((remaining, resetDate))
-        }
-
-        guard let minimum = windows.min(by: { $0.remaining < $1.remaining }) else {
+        let primary = usageWindow(for: "primary", in: rateLimits)
+        let secondary = usageWindow(for: "secondary", in: rateLimits)
+        guard primary != nil || secondary != nil else {
             return .failure(UsageError.noUsageWindow)
         }
 
         return .success(UsageSnapshot(
-            remainingPercent: minimum.remaining,
-            primaryResetDate: windows.first?.resetsAt,
-            secondaryResetDate: windows.dropFirst().first?.resetsAt
+            primary: primary,
+            secondary: secondary
         ))
+    }
+
+    private func usageWindow(for key: String, in rateLimits: [String: Any]) -> UsageWindow? {
+        guard let window = rateLimits[key] as? [String: Any],
+              let usedPercent = (window["usedPercent"] as? NSNumber)?.intValue else {
+            return nil
+        }
+        return UsageWindow(
+            remainingPercent: max(0, min(100, 100 - usedPercent)),
+            resetDate: (window["resetsAt"] as? NSNumber).map {
+                Date(timeIntervalSince1970: $0.doubleValue)
+            }
+        )
     }
 
     private func notify(_ result: Result<UsageSnapshot, Error>, completion: Completion? = nil) {
@@ -324,11 +335,13 @@ private final class CodexAppServerClient {
 }
 
 private final class AppDelegate: NSObject, NSApplicationDelegate {
-    private let cachedRemainingPercentKey = "cachedRemainingPercent"
+    private let cachedPrimaryRemainingPercentKey = "cachedPrimaryRemainingPercent"
     private let client = CodexAppServerClient()
     private var statusItem: NSStatusItem!
     private var launchAtLoginItem: NSMenuItem!
     private var refreshItem: NSMenuItem!
+    private var fiveHourUsageItem: NSMenuItem!
+    private var weeklyUsageItem: NSMenuItem!
     private var lastSnapshot: UsageSnapshot?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
@@ -357,6 +370,20 @@ private final class AppDelegate: NSObject, NSApplicationDelegate {
         }
 
         let menu = NSMenu()
+        let usageHeader = NSMenuItem(title: "Usage", action: nil, keyEquivalent: "")
+        usageHeader.isEnabled = false
+        menu.addItem(usageHeader)
+
+        fiveHourUsageItem = NSMenuItem(title: "5h: —", action: nil, keyEquivalent: "")
+        fiveHourUsageItem.isEnabled = false
+        menu.addItem(fiveHourUsageItem)
+
+        weeklyUsageItem = NSMenuItem(title: "Weekly: —", action: nil, keyEquivalent: "")
+        weeklyUsageItem.isEnabled = false
+        menu.addItem(weeklyUsageItem)
+        updateUsageMenu()
+
+        menu.addItem(.separator())
         refreshItem = NSMenuItem(title: "Refresh", action: #selector(refreshUsage), keyEquivalent: "r")
         refreshItem.target = self
         menu.addItem(refreshItem)
@@ -389,13 +416,16 @@ private final class AppDelegate: NSObject, NSApplicationDelegate {
         switch result {
         case let .success(snapshot):
             lastSnapshot = snapshot
-            UserDefaults.standard.set(snapshot.remainingPercent, forKey: cachedRemainingPercentKey)
+            if let primary = snapshot.primary {
+                UserDefaults.standard.set(primary.remainingPercent, forKey: cachedPrimaryRemainingPercentKey)
+            }
             statusItem.button?.title = statusTitle(for: snapshot)
             statusItem.button?.toolTip = tooltip(for: snapshot)
+            updateUsageMenu()
         case let .failure(error):
-            if let lastSnapshot {
-                statusItem.button?.title = "\(lastSnapshot.remainingPercent)%"
-                statusItem.button?.toolTip = "Last known value: \(lastSnapshot.remainingPercent)%\nCodex usage unavailable: \(error.localizedDescription)"
+            if let lastSnapshot, let primary = lastSnapshot.primary {
+                statusItem.button?.title = statusTitle(for: lastSnapshot)
+                statusItem.button?.toolTip = "Last known value: \(primary.remainingPercent)%\nCodex usage unavailable: \(error.localizedDescription)"
             } else {
                 statusItem.button?.title = "—"
                 statusItem.button?.toolTip = "Codex usage unavailable: \(error.localizedDescription)"
@@ -404,13 +434,12 @@ private final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func loadCachedSnapshot() -> UsageSnapshot? {
-        guard let remainingPercent = UserDefaults.standard.object(forKey: cachedRemainingPercentKey) as? Int else {
+        guard let remainingPercent = UserDefaults.standard.object(forKey: cachedPrimaryRemainingPercentKey) as? Int else {
             return nil
         }
         return UsageSnapshot(
-            remainingPercent: remainingPercent,
-            primaryResetDate: nil,
-            secondaryResetDate: nil
+            primary: UsageWindow(remainingPercent: remainingPercent, resetDate: nil),
+            secondary: nil
         )
     }
 
@@ -437,21 +466,36 @@ private final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func tooltip(for snapshot: UsageSnapshot) -> String {
         var text = "Codex usage remaining: \(snapshot.remainingPercent)%"
-        if let primaryResetDate = snapshot.primaryResetDate {
+        if let primaryResetDate = snapshot.primary?.resetDate {
             text += "\nPrimary window resets \(resetDetails(for: primaryResetDate))"
         }
-        if let secondaryResetDate = snapshot.secondaryResetDate {
+        if let secondaryResetDate = snapshot.secondary?.resetDate {
             text += "\nSecondary window resets \(resetDetails(for: secondaryResetDate))"
         }
         return text
     }
 
     private func statusTitle(for snapshot: UsageSnapshot) -> String {
-        let resetDates = [snapshot.primaryResetDate, snapshot.secondaryResetDate].compactMap { $0 }
-        guard let nextResetDate = resetDates.min() else {
-            return "\(snapshot.remainingPercent)%"
+        guard let primary = snapshot.primary else {
+            return "—"
         }
-        return "\(snapshot.remainingPercent)% \(compactCountdown(to: nextResetDate))"
+        guard let resetDate = primary.resetDate else {
+            return "\(primary.remainingPercent)%"
+        }
+        return "\(primary.remainingPercent)% \(compactCountdown(to: resetDate))"
+    }
+
+    private func updateUsageMenu() {
+        fiveHourUsageItem?.title = usageMenuTitle(label: "5h", window: lastSnapshot?.primary)
+        weeklyUsageItem?.title = usageMenuTitle(label: "Weekly", window: lastSnapshot?.secondary)
+    }
+
+    private func usageMenuTitle(label: String, window: UsageWindow?) -> String {
+        guard let window else {
+            return "\(label): —"
+        }
+        let timeLeft = window.resetDate.map { "\(compactCountdown(to: $0)) left" } ?? "time unavailable"
+        return "\(label): \(window.remainingPercent)% · \(timeLeft)"
     }
 
     private func resetDetails(for date: Date) -> String {
