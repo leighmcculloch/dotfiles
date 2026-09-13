@@ -68,3 +68,5 @@
 	hunk-header-style = omit
 [worktree]
 	guessRemote = true
+[credential "https://ampcode.com"]
+	helper = !amp git-credential-helper
