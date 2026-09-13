@@ -1,0 +1,10 @@
+theme = "sonokai"
+
+[editor.cursor-shape]
+insert = "bar"
+normal = "block"
+select = "underline"
+
+[keys.normal]
+"C-]" = "goto_definition"
+V = ["extend_line_below", "select_mode"]
