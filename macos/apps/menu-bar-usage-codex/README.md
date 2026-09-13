@@ -2,7 +2,7 @@
 
 Show remaining usage of a Codex subscription in the macOS menu bar.
 
-Codex Usage is a small, native menu bar app. It shows the 5-hour window's remaining percentage with a compact countdown to its reset, such as `83% 2d 4h`.
+Codex Usage is a small, native menu bar app. It shows the 5-hour window's remaining percentage with a compact countdown to its reset, such as `83% 4h`, switching to minutes once less than an hour remains, such as `83% 45m`.
 
 ## How it works
 

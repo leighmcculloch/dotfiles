@@ -507,6 +507,11 @@ private final class AppDelegate: NSObject, NSApplicationDelegate {
         let secondsUntilReset = date.timeIntervalSinceNow
         guard secondsUntilReset > 0 else { return "now" }
 
+        if secondsUntilReset < 3600 {
+            let totalMinutes = Int(ceil(secondsUntilReset / 60))
+            return "\(totalMinutes)m"
+        }
+
         let totalHours = Int(ceil(secondsUntilReset / 3600))
         let days = totalHours / 24
         let hours = totalHours % 24
