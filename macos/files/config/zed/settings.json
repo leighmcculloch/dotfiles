@@ -7,6 +7,7 @@
 // custom settings, run `zed: open default settings` from the
 // command palette (cmd-shift-p / ctrl-shift-p)
 {
+  "diff_view_style": "unified",
   "agent": {
     "default_model": {
       "effort": "max",
@@ -42,7 +43,7 @@
     "rust-analyzer": {
       "initialization_options": {
         "cargo": {
-          "features": ["const"]
+          "features": [], //["const"]
         }
       }
     }
