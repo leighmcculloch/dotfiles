@@ -5,16 +5,15 @@ import ServiceManagement
 fileprivate struct UsageWindow {
     let remainingPercent: Int
     let resetDate: Date?
+    let durationMinutes: Int?
 }
 
 fileprivate struct UsageSnapshot {
-    let primary: UsageWindow?
-    let secondary: UsageWindow?
+    let fiveHour: UsageWindow?
+    let weekly: UsageWindow?
 
-    var remainingPercent: Int {
-        [primary, secondary]
-            .compactMap { $0?.remainingPercent }
-            .min() ?? 0
+    var displayWindow: UsageWindow? {
+        fiveHour ?? weekly
     }
 }
 
@@ -273,15 +272,30 @@ private final class CodexAppServerClient {
             return .failure(UsageError.invalidResponse)
         }
 
-        let primary = usageWindow(for: "primary", in: rateLimits)
-        let secondary = usageWindow(for: "secondary", in: rateLimits)
-        guard primary != nil || secondary != nil else {
+        let windows = ["primary", "secondary"].compactMap { key in
+            usageWindow(for: key, in: rateLimits).map { (key: key, window: $0) }
+        }
+        let fiveHourByDuration = windows.first {
+            isDuration($0.window.durationMinutes, approximately: 5 * 60)
+        }?.window
+        let weeklyByDuration = windows.first {
+            isDuration($0.window.durationMinutes, approximately: 7 * 24 * 60)
+        }?.window
+        let primaryWithoutDuration = windows.first {
+            $0.key == "primary" && $0.window.durationMinutes == nil
+        }?.window
+        let secondaryWithoutDuration = windows.first {
+            $0.key == "secondary" && $0.window.durationMinutes == nil
+        }?.window
+        let fiveHour = fiveHourByDuration ?? (weeklyByDuration == nil ? primaryWithoutDuration : nil)
+        let weekly = weeklyByDuration ?? secondaryWithoutDuration
+        guard fiveHour != nil || weekly != nil else {
             return .failure(UsageError.noUsageWindow)
         }
 
         return .success(UsageSnapshot(
-            primary: primary,
-            secondary: secondary
+            fiveHour: fiveHour,
+            weekly: weekly
         ))
     }
 
@@ -294,8 +308,16 @@ private final class CodexAppServerClient {
             remainingPercent: max(0, min(100, 100 - usedPercent)),
             resetDate: (window["resetsAt"] as? NSNumber).map {
                 Date(timeIntervalSince1970: $0.doubleValue)
-            }
+            },
+            durationMinutes: (window["windowDurationMins"] as? NSNumber)?.intValue
         )
+    }
+
+    private func isDuration(_ durationMinutes: Int?, approximately expectedMinutes: Int) -> Bool {
+        guard let durationMinutes else {
+            return false
+        }
+        return abs(durationMinutes - expectedMinutes) <= expectedMinutes / 20
     }
 
     private func notify(_ result: Result<UsageSnapshot, Error>, completion: Completion? = nil) {
@@ -335,7 +357,8 @@ private final class CodexAppServerClient {
 }
 
 private final class AppDelegate: NSObject, NSApplicationDelegate {
-    private let cachedPrimaryRemainingPercentKey = "cachedPrimaryRemainingPercent"
+    private let cachedRemainingPercentKey = "cachedRemainingPercent"
+    private let cachedWindowKey = "cachedWindow"
     private let client = CodexAppServerClient()
     private var statusItem: NSStatusItem!
     private var launchAtLoginItem: NSMenuItem!
@@ -376,6 +399,7 @@ private final class AppDelegate: NSObject, NSApplicationDelegate {
 
         fiveHourUsageItem = NSMenuItem(title: "5h: —", action: nil, keyEquivalent: "")
         fiveHourUsageItem.isEnabled = false
+        fiveHourUsageItem.isHidden = true
         menu.addItem(fiveHourUsageItem)
 
         weeklyUsageItem = NSMenuItem(title: "Weekly: —", action: nil, keyEquivalent: "")
@@ -416,16 +440,20 @@ private final class AppDelegate: NSObject, NSApplicationDelegate {
         switch result {
         case let .success(snapshot):
             lastSnapshot = snapshot
-            if let primary = snapshot.primary {
-                UserDefaults.standard.set(primary.remainingPercent, forKey: cachedPrimaryRemainingPercentKey)
+            if let displayWindow = snapshot.displayWindow {
+                UserDefaults.standard.set(displayWindow.remainingPercent, forKey: cachedRemainingPercentKey)
+                UserDefaults.standard.set(
+                    snapshot.fiveHour == nil ? "weekly" : "fiveHour",
+                    forKey: cachedWindowKey
+                )
             }
             statusItem.button?.title = statusTitle(for: snapshot)
             statusItem.button?.toolTip = tooltip(for: snapshot)
             updateUsageMenu()
         case let .failure(error):
-            if let lastSnapshot, let primary = lastSnapshot.primary {
+            if let lastSnapshot, let displayWindow = lastSnapshot.displayWindow {
                 statusItem.button?.title = statusTitle(for: lastSnapshot)
-                statusItem.button?.toolTip = "Last known value: \(primary.remainingPercent)%\nCodex usage unavailable: \(error.localizedDescription)"
+                statusItem.button?.toolTip = "Last known value: \(displayWindow.remainingPercent)%\nCodex usage unavailable: \(error.localizedDescription)"
             } else {
                 statusItem.button?.title = "—"
                 statusItem.button?.toolTip = "Codex usage unavailable: \(error.localizedDescription)"
@@ -434,13 +462,24 @@ private final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func loadCachedSnapshot() -> UsageSnapshot? {
-        guard let remainingPercent = UserDefaults.standard.object(forKey: cachedPrimaryRemainingPercentKey) as? Int else {
+        guard let remainingPercent = UserDefaults.standard.object(forKey: cachedRemainingPercentKey) as? Int,
+              let cachedWindow = UserDefaults.standard.string(forKey: cachedWindowKey) else {
             return nil
         }
-        return UsageSnapshot(
-            primary: UsageWindow(remainingPercent: remainingPercent, resetDate: nil),
-            secondary: nil
-        )
+        switch cachedWindow {
+        case "fiveHour", "primary":
+            return UsageSnapshot(
+                fiveHour: UsageWindow(remainingPercent: remainingPercent, resetDate: nil, durationMinutes: nil),
+                weekly: nil
+            )
+        case "weekly", "secondary":
+            return UsageSnapshot(
+                fiveHour: nil,
+                weekly: UsageWindow(remainingPercent: remainingPercent, resetDate: nil, durationMinutes: nil)
+            )
+        default:
+            return nil
+        }
     }
 
     @objc private func openUsageSettings() {
@@ -465,29 +504,30 @@ private final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func tooltip(for snapshot: UsageSnapshot) -> String {
-        var text = "Codex usage remaining: \(snapshot.remainingPercent)%"
-        if let primaryResetDate = snapshot.primary?.resetDate {
-            text += "\nPrimary window resets \(resetDetails(for: primaryResetDate))"
+        var text = "Codex usage remaining: \(snapshot.displayWindow?.remainingPercent ?? 0)%"
+        if let fiveHourResetDate = snapshot.fiveHour?.resetDate {
+            text += "\n5-hour window resets \(resetDetails(for: fiveHourResetDate))"
         }
-        if let secondaryResetDate = snapshot.secondary?.resetDate {
-            text += "\nSecondary window resets \(resetDetails(for: secondaryResetDate))"
+        if let weeklyResetDate = snapshot.weekly?.resetDate {
+            text += "\nWeekly window resets \(resetDetails(for: weeklyResetDate))"
         }
         return text
     }
 
     private func statusTitle(for snapshot: UsageSnapshot) -> String {
-        guard let primary = snapshot.primary else {
+        guard let displayWindow = snapshot.displayWindow else {
             return "—"
         }
-        guard let resetDate = primary.resetDate else {
-            return "\(primary.remainingPercent)%"
+        guard let resetDate = displayWindow.resetDate else {
+            return "\(displayWindow.remainingPercent)%"
         }
-        return "\(primary.remainingPercent)% \(compactCountdown(to: resetDate))"
+        return "\(displayWindow.remainingPercent)% \(compactCountdown(to: resetDate))"
     }
 
     private func updateUsageMenu() {
-        fiveHourUsageItem?.title = usageMenuTitle(label: "5h", window: lastSnapshot?.primary)
-        weeklyUsageItem?.title = usageMenuTitle(label: "Weekly", window: lastSnapshot?.secondary)
+        fiveHourUsageItem?.isHidden = lastSnapshot?.fiveHour == nil
+        fiveHourUsageItem?.title = usageMenuTitle(label: "5h", window: lastSnapshot?.fiveHour)
+        weeklyUsageItem?.title = usageMenuTitle(label: "Weekly", window: lastSnapshot?.weekly)
     }
 
     private func usageMenuTitle(label: String, window: UsageWindow?) -> String {
@@ -512,13 +552,12 @@ private final class AppDelegate: NSObject, NSApplicationDelegate {
             return "\(totalMinutes)m"
         }
 
-        let totalHours = Int(ceil(secondsUntilReset / 3600))
-        let days = totalHours / 24
-        let hours = totalHours % 24
-        if days > 0 {
-            return "\(days)d \(hours)h"
+        let totalDays = Int(secondsUntilReset / (24 * 3600))
+        if totalDays > 0 {
+            return "\(totalDays)d"
         }
-        return "\(hours)h"
+        let totalHours = Int(ceil(secondsUntilReset / 3600))
+        return "\(totalHours)h"
     }
 }
 
