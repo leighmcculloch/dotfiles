@@ -15,7 +15,8 @@
   "tool": "claude",
   "post_build_hooks": [
     "curl -fsSL https://deno.land/install.sh | sh",
-    "curl -fsSL https://github.com/stellar/stellar-cli/raw/main/install.sh | sh -s -- --install-deps"
+    "curl -fsSL https://github.com/stellar/stellar-cli/raw/main/install.sh | sh -s -- --install-deps",
+    "curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/refs/heads/master/install.sh | sh"
   ],
   "mounts_ro": [
     "~/.zenv_apikey_pushover",
@@ -32,6 +33,7 @@
   "pre_run_hooks": [
     //"source ~/.zenv_apikey_github_ro_plus_w_issues_prs 2>/dev/null || source ~/.zenv_apikey_github_ro",
     "export PATH=${HOME}/.deno/bin:${PATH}",
+    "export PATH=${HOME}/.local/bin:${PATH}",
     "export PATH=${HOME}/.dotfiles/files/scripts:${PATH}",
     "export GEMMA_HOST=host.docker.internal"
   ],
