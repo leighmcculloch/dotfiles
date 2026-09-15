@@ -1,5 +1,6 @@
 {
   "trustedformulae": [
+    "https://github.com/leighmcculloch/silo.git/silo",
     "leighmcculloch/silo/silo"
   ]
 }
