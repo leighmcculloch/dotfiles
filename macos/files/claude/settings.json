@@ -95,6 +95,12 @@
   },
   "spinnerTipsEnabled": false,
   "effortLevel": "high",
+  "modelSettings": {
+    "claude-opus-5": {
+      "effortLevel": "medium"
+    }
+  },
+  "tui": "fullscreen",
   "prefersReducedMotion": true,
   "skipDangerousModePermissionPrompt": true,
   "theme": "dark",
@@ -106,5 +112,6 @@
   },
   "feedbackSurveyState": {
     "lastShownTime": 1753919494306
-  }
+  },
+  "model": "opus[1m]"
 }
