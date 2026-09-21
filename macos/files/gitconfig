@@ -70,3 +70,5 @@
 	guessRemote = true
 [credential "https://ampcode.com"]
 	helper = !amp git-credential-helper
+[safe]
+	directory = /Users/leighmcculloch/OrbStack/docker/volumes/*
