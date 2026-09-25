@@ -83,7 +83,7 @@
     "pr-review-toolkit@claude-plugins-official": true
   },
   "sandbox": {
-    "enabled": false,
+    "enabled": true,
     "autoAllowBashIfSandboxed": true,
     "allow": [
       "api.github.com",
