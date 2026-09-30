@@ -23,3 +23,7 @@ macOS:
 ```
 
 Claude Code Cloud: configure the environment's setup command to run `./claude-cloud/install.sh`.
+
+Package installs run noninteractively, using dpkg's default action for configuration
+file conflicts and keeping the existing file when there is no default. This avoids
+setup failures when the cloud image already contains `/etc/zsh/zshrc`.

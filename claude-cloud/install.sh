@@ -17,7 +17,11 @@ if [ -z "${ZSH_VERSION:-}" ]; then
   if ! command -v zsh >/dev/null 2>&1; then
     echo "Installing zsh..."
     DEBIAN_FRONTEND=noninteractive apt-get update
-    DEBIAN_FRONTEND=noninteractive apt-get install -y zsh
+    # dpkg conffile prompts are separate from debconf's noninteractive mode.
+    DEBIAN_FRONTEND=noninteractive apt-get install -y \
+      -o Dpkg::Options::=--force-confdef \
+      -o Dpkg::Options::=--force-confold \
+      zsh
   fi
   # re-exec the remainder under zsh
   exec zsh "$0" "$@"
@@ -117,6 +121,8 @@ done
 # apt packages: prerequisite for the curl downloads below, so install them first
 echo "Installing apt packages..."
 DEBIAN_FRONTEND=noninteractive apt-get install -y \
+  -o Dpkg::Options::=--force-confdef \
+  -o Dpkg::Options::=--force-confold \
   curl \
   xxd \
   build-essential \
