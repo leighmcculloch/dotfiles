@@ -9,9 +9,14 @@ Drafts GitHub issues for the user to review. The default handoff is a prefilled 
 
 **Formatting rules:**
 - Do not hard-wrap lines. Write paragraphs as a single continuous line; let the renderer wrap.
-- Minimal formatting. No diagrams. No bullet lists — write prose paragraphs, even when filling in template sections. If a template literally provides a checklist (e.g. `- [ ] Tested`), keep that as-is; do not invent prose bullets of your own.
+- Minimal formatting. No diagrams or invented bullet lists. Use prose paragraphs for narrative and fenced code blocks for commands, code, and output the reader will copy or compare, including under template headings. Keep the template's headings and any literal checklists (e.g. `- [ ] Tested`) unchanged.
 - When a template section poses several questions or prompts, answer each one in its own paragraph (in the order asked), separated by blank lines, rather than collapsing them into a single block. This keeps each section easy for a human to scan.
-- Describe the problem, not the solution. Never prescribe a fix or state what the solution is with certainty. If you mention a possible approach, weaken it with tentative language (e.g. "one option might be", "perhaps", "could") so it reads as a suggestion to consider, not a decision already made.
+- Describe the problem, not the solution. For bug reports, write from the user's point of view, describing actions and user-visible behaviour. Code reading may uncover a bug, but distinguish observed behaviour from suspected behaviour; never imply an unverified scenario was run. Do not add internal source paths, line numbers, function names, types, code paths, diagnosis, severity commentary, or fix suggestions (even tentative ones); leave diagnosis to whoever picks it up. Internal details in verbatim captured output are allowed.
+- Give a complete, minimal, copy-pasteable reproduction from scratch: all prerequisites, project setup, minimal source (with language-tagged fences), build, key generation/funding, deployment, and exact commands as applicable. Include a working control case and its output beside the failing case when helpful. For a theoretical report, label the reproduction and any control case as unverified.
+- Under "What did you see instead?", quote actual captured stdout/stderr and exit status in fenced code blocks. Trim long noise such as backtraces with `...`, but never invent or paraphrase captured output. If reproduction remains unverified, say so, briefly explain what prevented confirmation, and describe the suspected user-visible symptom in explicitly tentative prose, not fabricated output.
+- Under "What version are you using?", give the output of the version command for the tool actually used in the reproduction, or the commit it was built from for an unreleased build. For a theoretical report, identify the version or commit inspected and state that it was not verified by reproduction; never use "found by code reading" as a version. Keep "What did you expect to see?" to one or two plain sentences about correct user-visible behaviour, without proposing an implementation. Use the template's equivalent sections if its headings differ.
+- Name the command and user-visible symptom in the title, with the command in backticks, e.g. "`contract invoke` crashes instead of showing an error for a malformed union argument".
+- Draft one issue per distinct bug, even when related bugs share a symptom, each with its own minimal reproduction. Optionally add one closing sentence noting related reports.
 
 ## Workflow
 
@@ -61,7 +66,11 @@ Analyze the user's request and auto-select the most appropriate template:
 
 If multiple templates exist and the best match is unclear, briefly list options and ask the user.
 
-### 4. Draft and Provide a Prefilled URL (REQUIRED)
+### 4. Attempt Reproduction Before Drafting
+
+For bug reports, make a serious attempt to run the complete minimal reproduction before drafting: install missing tools or dependencies, build the tool locally, and use testnet or a local network as needed. If an approach fails, try reasonable alternatives rather than stopping at the first blocker. Capture the version (or build commit), exact setup and commands, stdout/stderr, and exit status, including any control case. If confirmation remains blocked or attempts do not reproduce the bug, tell the user what you tried and proceed with a clearly labelled theoretical draft, noting blockers or contrary results and separating evidence from inference. Do not block drafting on tool availability or require permission to use this fallback.
+
+### 5. Draft and Provide a Prefilled URL (REQUIRED)
 
 **IMPORTANT: Always write the draft to a file and present it to the user together with a prefilled URL. The default is to let the user open and submit that URL themselves; do not create the issue merely because the user approved the draft.**
 
@@ -105,7 +114,7 @@ Open the URL to review and submit the issue yourself. I will not create it unles
 
 If the user requests modifications, update `NOTES_ISSUE.md` and regenerate the URL. If the user approves the draft without explicitly asking you to create or submit the issue, do not call `mcp__github__issue_write`.
 
-### 5. Create the Issue (Only on Explicit Request)
+### 6. Create the Issue (Only on Explicit Request)
 
 Only after a later user message explicitly asks you to create, open, or submit the issue on their behalf, use `mcp__github__issue_write` with:
 ```
@@ -120,4 +129,4 @@ labels: {from_template_if_available}
 When the checkout is a fork, `{repo_owner}/{repo_name}` must identify the upstream repository.
 
 **Fallback Body Structure (when no template available):**
-If using a template, follow its structure. Otherwise write a short paragraph (or two) with no headings, no bullets, and no other formatting — describing the issue or proposal and incorporating any relevant context from linked issues/PRs. Write each paragraph as a single continuous line.
+If using a template, follow its structure. Otherwise use short prose paragraphs with no headings or bullets, incorporating relevant context from linked issues/PRs. For bug reports, include the version, complete reproduction, expected behaviour, and actual output required above, using fenced code blocks for commands, code, and output. Write each paragraph as a single continuous line.
