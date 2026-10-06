@@ -5,3 +5,4 @@ install:
 	$(MAKE) -C qr-reader install
 	$(MAKE) -C github-events install
 	$(MAKE) -C stopwatch install
+	$(MAKE) -C app-scheduler install

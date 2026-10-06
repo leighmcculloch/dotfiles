@@ -87,6 +87,7 @@ make -C apps/paste-markdown install
 make -C apps/paste-pr install
 make -C apps/qr-reader install
 make -C apps/stopwatch install
+make -C apps/app-scheduler install
 
 echo "$fg[green]Critical install complete.$reset_color"
 
