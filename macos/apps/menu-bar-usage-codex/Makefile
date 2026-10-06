@@ -7,8 +7,10 @@ APP_BUNDLE := build/$(APP_NAME).app
 build:
 	swift build -c release
 	mkdir -p "$(APP_BUNDLE)/Contents/MacOS" "$(APP_BUNDLE)/Contents/Resources"
+	swift scripts/generate-icon.swift
 	cp .build/release/$(PRODUCT) "$(APP_BUNDLE)/Contents/MacOS/$(PRODUCT)"
 	cp Info.plist "$(APP_BUNDLE)/Contents/Info.plist"
+	cp build/AppIcon.icns "$(APP_BUNDLE)/Contents/Resources/AppIcon.icns"
 	codesign --force --sign - "$(APP_BUNDLE)"
 
 bundle: build
