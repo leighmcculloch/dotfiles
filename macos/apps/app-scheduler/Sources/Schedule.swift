@@ -10,6 +10,9 @@ enum AppAction: String, Codable, CaseIterable {
 struct ScheduledAction: Identifiable, Codable, Equatable {
     var id = UUID()
     var appPath = ""
+    // nil selects an app; a string (including an unfinished empty input) selects
+    // a URL. Optional decoding keeps previously saved app schedules compatible.
+    var appURL: String?
     var action = AppAction.open
     var hour = 9
     var minute = 0
@@ -21,8 +24,27 @@ struct ScheduledAction: Identifiable, Codable, Equatable {
         URL(fileURLWithPath: appPath).deletingPathExtension().lastPathComponent
     }
 
+    var urlToOpen: URL? {
+        guard let appURL else { return nil }
+        let value = appURL.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !value.isEmpty,
+              value.rangeOfCharacter(from: .whitespacesAndNewlines) == nil,
+              let url = URL(string: value), let scheme = url.scheme, !scheme.isEmpty
+        else { return nil }
+        return url
+    }
+
+    var targetName: String {
+        appURL.map { $0.trimmingCharacters(in: .whitespacesAndNewlines) } ?? appName
+    }
+
+    var targetKey: String {
+        appURL == nil ? "app:\(appPath)" : "url:\(urlToOpen?.absoluteString ?? "")"
+    }
+
     var isActive: Bool {
-        isEnabled && !appPath.isEmpty && !weekdays.isEmpty
+        isEnabled && (appURL == nil ? !appPath.isEmpty : action == .open && urlToOpen != nil)
+            && !weekdays.isEmpty
             && weekdays.allSatisfy { (1...7).contains($0) }
             && (0...23).contains(hour) && (0...59).contains(minute)
     }
@@ -53,9 +75,9 @@ struct Scheduler {
         guard now > after else { return [] }
         lastCheck = now
 
-        // Only the latest missed action per app is useful after sleep. Looking
-        // back one week suffices because every rule repeats weekly.
-        var latestByApp: [String: (event: ScheduledEvent, row: Int)] = [:]
+        // Only the latest missed action per app or exact URL is useful after
+        // sleep. Looking back one week suffices because rules repeat weekly.
+        var latestByTarget: [String: (event: ScheduledEvent, row: Int)] = [:]
         let today = calendar.startOfDay(for: now)
         for (row, schedule) in schedules.enumerated() where schedule.isActive {
             for offset in 0...7 {
@@ -70,15 +92,15 @@ struct Scheduler {
                 else { continue }
 
                 let event = ScheduledEvent(schedule: schedule, date: date)
-                if let previous = latestByApp[schedule.appPath], previous.event.date > date {
+                if let previous = latestByTarget[schedule.targetKey], previous.event.date > date {
                     break
                 }
                 // Equal times are resolved by row order: the last row wins.
-                latestByApp[schedule.appPath] = (event, row)
+                latestByTarget[schedule.targetKey] = (event, row)
                 break
             }
         }
-        return latestByApp.values.sorted {
+        return latestByTarget.values.sorted {
             if $0.event.date == $1.event.date { return $0.row < $1.row }
             return $0.event.date < $1.event.date
         }.map(\.event)

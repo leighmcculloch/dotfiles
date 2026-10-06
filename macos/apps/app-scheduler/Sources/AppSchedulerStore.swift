@@ -105,7 +105,7 @@ final class AppSchedulerStore: ObservableObject {
                     available[app.path] = app
                 }
                 for schedule in self.schedules
-                    where !schedule.appPath.isEmpty && available[schedule.appPath] == nil {
+                    where schedule.appURL == nil && !schedule.appPath.isEmpty && available[schedule.appPath] == nil {
                     available[schedule.appPath] = InstalledApp(path: schedule.appPath, name: schedule.appName)
                 }
                 self.applications = available.values.sorted {
@@ -151,6 +151,14 @@ final class AppSchedulerStore: ObservableObject {
     }
 
     private func perform(_ schedule: ScheduledAction) {
+        if schedule.appURL != nil {
+            guard schedule.action == .open, let url = schedule.urlToOpen else { return }
+            report(NSWorkspace.shared.open(url)
+                ? "Requested to open \(schedule.targetName)."
+                : "Could not open \(schedule.targetName). Check that an app is installed to handle this URL.")
+            return
+        }
+
         let appURL = URL(fileURLWithPath: schedule.appPath).resolvingSymlinksInPath()
         switch schedule.action {
         case .open:

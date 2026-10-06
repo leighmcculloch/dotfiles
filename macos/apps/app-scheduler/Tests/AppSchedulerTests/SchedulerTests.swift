@@ -141,6 +141,81 @@ final class SchedulerTests: XCTestCase {
         XCTAssertEqual(restored[0].appName, "Test")
     }
 
+    func testLegacyAppSchedulesDecodeWithoutURLField() throws {
+        let data = Data("""
+        [{"id":"00000000-0000-0000-0000-000000000001",
+          "appPath":"/Applications/Test.app","action":"quit",
+          "hour":17,"minute":23,"weekdays":[2,4,6],"isEnabled":true}]
+        """.utf8)
+        let restored = try XCTUnwrap(JSONDecoder().decode([ScheduledAction].self, from: data).first)
+        XCTAssertNil(restored.appURL)
+        XCTAssertEqual(restored.appPath, "/Applications/Test.app")
+        XCTAssertEqual(restored.action, .quit)
+        XCTAssertEqual(restored.hour, 17)
+        XCTAssertEqual(restored.minute, 23)
+        XCTAssertEqual(restored.weekdays, [2, 4, 6])
+        XCTAssertTrue(restored.isActive)
+    }
+
+    func testURLsRequireASchemeAndPreserveEncodedParameters() {
+        var rule = schedule(hour: 9, minute: 0)
+        let valid = [
+            ("slack://", "slack://"),
+            ("  myapp://run?message=hello%20world&value=one%2Ftwo\n", "myapp://run?message=hello%20world&value=one%2Ftwo"),
+            ("https://example.com/path?x=1&y=2", "https://example.com/path?x=1&y=2")
+        ]
+        for (input, expected) in valid {
+            rule.appURL = input
+            XCTAssertEqual(rule.urlToOpen?.absoluteString, expected)
+            XCTAssertEqual(rule.targetName, expected)
+            XCTAssertTrue(rule.isActive)
+        }
+        for invalid in ["", " \n", "example.com/path", "/Applications/Test.app", "not a url", "myapp://hello world", "://missing"] {
+            rule.appURL = invalid
+            XCTAssertNil(rule.urlToOpen, invalid)
+            // A previously selected app must never be a fallback for a bad URL.
+            XCTAssertFalse(rule.isActive, invalid)
+        }
+        rule.appURL = "myapp://run"
+        rule.action = .quit
+        XCTAssertFalse(rule.isActive)
+    }
+
+    func testURLSchedulesStayIndependentAndRepeatAtDifferentTimes() {
+        var early = schedule(hour: 9, minute: 0)
+        early.appURL = "slack://channel?team=T1&id=C1"
+        var late = early
+        late.id = UUID()
+        late.hour = 13
+        var differentURL = early
+        differentURL.id = UUID()
+        differentURL.appURL = "slack://channel?team=T1&id=C2"
+        differentURL.hour = 11
+        let appQuit = schedule(action: .quit, hour: 17, minute: 0)
+        let rules = [late, differentURL, appQuit, early]
+        var scheduler = Scheduler(at: date("2026-10-05T08:00:00+10:00"))
+        XCTAssertEqual(scheduler.dueActions(rules, at: date("2026-10-05T09:00:05+10:00"), calendar: brisbane).map(\.schedule), [early])
+        XCTAssertEqual(scheduler.dueActions(rules, at: date("2026-10-05T14:00:00+10:00"), calendar: brisbane).map(\.schedule), [differentURL, late])
+
+        var sleepingScheduler = Scheduler(at: date("2026-10-05T08:00:00+10:00"))
+        XCTAssertEqual(sleepingScheduler.dueActions(rules, at: date("2026-10-05T18:00:00+10:00"), calendar: brisbane).map(\.schedule), [differentURL, late, appQuit])
+        XCTAssertTrue(sleepingScheduler.dueActions(rules, at: date("2026-10-05T18:00:15+10:00"), calendar: brisbane).isEmpty)
+    }
+
+    func testPersistencePreservesURLAndUnfinishedURLMode() throws {
+        var urlRule = schedule(hour: 10, minute: 31, days: [1, 5])
+        urlRule.appURL = "myapp://open?document=hello%20world"
+        var unfinished = schedule(hour: 12, minute: 5)
+        unfinished.appURL = ""
+        let rows = [urlRule, unfinished, schedule(action: .quit, hour: 18, minute: 42)]
+        let restored = try JSONDecoder().decode([ScheduledAction].self, from: JSONEncoder().encode(rows))
+        XCTAssertEqual(restored, rows)
+        XCTAssertEqual(restored[0].appURL, "myapp://open?document=hello%20world")
+        XCTAssertEqual(restored[1].appURL, "")
+        XCTAssertFalse(restored[1].isActive)
+        XCTAssertNil(restored[2].appURL)
+    }
+
     private func schedule(
         path: String = "/Applications/Test.app", action: AppAction = .open,
         hour: Int, minute: Int, days: Set<Int> = [2, 3, 4, 5, 6]

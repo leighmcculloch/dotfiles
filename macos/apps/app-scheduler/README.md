@@ -7,9 +7,12 @@ settings window leaves the scheduler running, with no Dock icon.
 ## Use
 
 1. Click **Add Schedule**.
-2. Select an app from the dropdown, choose **Open** or **Quit**, set the time,
-   and select the days of the week. New rows default to Monday–Friday.
-3. Add as many rows as needed, including multiple rows for the same app.
+2. Choose **App** to select an app from the dropdown, or **URL** to enter an
+   app URL such as `slack://` or a deep link including its query parameters.
+3. Choose **Open** or **Quit** for an app. URLs support **Open** only and are
+   handed to macOS to open with the app registered for their scheme. Set the
+   time and days of the week. New rows default to Monday–Friday.
+4. Add as many rows as needed, including multiple rows for the same app or URL.
    For example, open Slack at 9:00 AM and quit it at 5:00 PM on weekdays.
 
 Changes save automatically. The checkbox enables or disables a row, and the
@@ -18,6 +21,14 @@ The dropdown includes apps in `/Applications`, `/System/Applications`, and
 `~/Applications`, including Utilities folders. **Add Other App…** lets you
 select an app elsewhere. Saved app selections survive relaunches.
 
+URLs must include a scheme (for example, `myapp://open?document=123`). Leading
+and trailing whitespace is ignored; encode spaces inside a URL as `%20`.
+Blank or invalid URLs do not run. HTTP and HTTPS links are also supported and
+open in the registered handler, normally your browser. Opening a URL can bring
+its app to the foreground or perform the action specified by the deep link.
+URL schedules save automatically alongside app schedules, and existing saved
+app schedules remain compatible.
+
 The menu also has **Launch at Login** and **Quit App Scheduler**.
 
 ## Timing and safety
@@ -25,8 +36,9 @@ The menu also has **Launch at Login** and **Quit App Scheduler**.
 - Times follow the Mac’s current local time zone, not a fixed UTC offset.
 - While awake, actions run within roughly 15 seconds of their scheduled minute.
 - If the Mac sleeps while the scheduler is running, it applies only the latest
-  missed action for each app on wake, rather than replaying every open and quit.
-- If multiple rows target the same app at the same time, the last row wins.
+  missed action for each app or exact URL on wake, rather than replaying every
+  action. Different URLs stay independent, even if their schemes are the same.
+- If multiple rows target the same app or URL at the same time, the last row wins.
 - Starting the scheduler does not replay actions missed while it was closed.
   Edits and time zone changes apply going forward.
 - During daylight saving transitions, a skipped time runs at the next valid

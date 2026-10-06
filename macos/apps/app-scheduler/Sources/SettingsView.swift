@@ -6,12 +6,12 @@ struct SettingsView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text("App Scheduler").font(.title2.bold())
-            Text("Choose an app, action, time, and days. Add multiple rows for the same app to open and quit it at different times.")
+            Text("Choose an app or enter an app URL, then set the action, time, and days. URLs support Open only. Add multiple rows for different times.")
                 .foregroundStyle(.secondary)
 
             HStack(spacing: 12) {
                 Text("On").frame(width: 36)
-                Text("App").frame(width: 220, alignment: .leading)
+                Text("App or URL").frame(width: 320, alignment: .leading)
                 Text("Action").frame(width: 90, alignment: .leading)
                 Text("Time").frame(width: 105, alignment: .leading)
                 Text("Days").frame(width: 280, alignment: .leading)
@@ -58,7 +58,7 @@ struct SettingsView: View {
                 .lineLimit(2)
         }
         .padding(20)
-        .frame(minWidth: 920, minHeight: 420)
+        .frame(minWidth: 1020, minHeight: 420)
     }
 }
 
@@ -81,22 +81,56 @@ private struct ScheduleRow: View {
                 .frame(width: 36)
                 .help("Enable or disable this schedule")
 
-            Picker("App", selection: $schedule.appPath) {
-                Text("Select App…").tag("")
-                if !schedule.appPath.isEmpty,
-                   !applications.contains(where: { $0.path == schedule.appPath }) {
-                    Text("\(schedule.appName) (saved app)").tag(schedule.appPath)
+            HStack(spacing: 6) {
+                Picker("Target type", selection: Binding(
+                    get: { schedule.appURL != nil },
+                    set: { useURL in
+                        schedule.appURL = useURL ? "" : nil
+                        if useURL { schedule.action = .open }
+                    }
+                )) {
+                    Text("App").tag(false)
+                    Text("URL").tag(true)
                 }
-                ForEach(applications) { app in
-                    Text(applications.filter { $0.name == app.name }.count > 1
-                        ? "\(app.name) — \(URL(fileURLWithPath: app.path).deletingLastPathComponent().path)"
-                        : app.name
-                    ).tag(app.path)
+                .labelsHidden()
+                .frame(width: 80)
+
+                if schedule.appURL != nil {
+                    VStack(alignment: .leading, spacing: 3) {
+                        TextField("App URL (e.g. slack://)", text: Binding(
+                            get: { schedule.appURL ?? "" },
+                            set: { schedule.appURL = $0 }
+                        ))
+                        .textFieldStyle(.roundedBorder)
+                        .accessibilityLabel("App URL")
+                        .help("Enter a full URL including its scheme. Encode spaces as %20.")
+                        if !schedule.targetName.isEmpty && schedule.urlToOpen == nil {
+                            Text("Enter a full URL with a scheme.")
+                                .font(.caption)
+                                .foregroundStyle(.red)
+                        }
+                    }
+                    .frame(width: 234)
+                } else {
+                    Picker("App", selection: $schedule.appPath) {
+                        Text("Select App…").tag("")
+                        if !schedule.appPath.isEmpty,
+                           !applications.contains(where: { $0.path == schedule.appPath }) {
+                            Text("\(schedule.appName) (saved app)").tag(schedule.appPath)
+                        }
+                        ForEach(applications) { app in
+                            Text(applications.filter { $0.name == app.name }.count > 1
+                                ? "\(app.name) — \(URL(fileURLWithPath: app.path).deletingLastPathComponent().path)"
+                                : app.name
+                            ).tag(app.path)
+                        }
+                    }
+                    .labelsHidden()
+                    .frame(width: 234)
+                    .help(schedule.appPath.isEmpty ? "Select an app" : schedule.appPath)
                 }
             }
-            .labelsHidden()
-            .frame(width: 220)
-            .help(schedule.appPath.isEmpty ? "Select an app" : schedule.appPath)
+            .frame(width: 320)
 
             Picker("Action", selection: $schedule.action) {
                 ForEach(AppAction.allCases, id: \.self) { action in
@@ -105,6 +139,8 @@ private struct ScheduleRow: View {
             }
             .labelsHidden()
             .frame(width: 90)
+            .disabled(schedule.appURL != nil)
+            .help(schedule.appURL != nil ? "URLs can only be opened, not quit" : "Open or quit the app")
 
             DatePicker("Time", selection: time, displayedComponents: .hourAndMinute)
                 .labelsHidden()
@@ -131,7 +167,7 @@ private struct ScheduleRow: View {
             Button(action: remove) { Image(systemName: "trash") }
                 .buttonStyle(.borderless)
                 .help("Remove schedule")
-                .accessibilityLabel("Remove schedule for \(schedule.appPath.isEmpty ? "unselected app" : schedule.appName)")
+                .accessibilityLabel("Remove schedule for \(schedule.targetName)")
         }
         .opacity(schedule.isEnabled ? 1 : 0.6)
     }
