@@ -652,10 +652,12 @@ struct CachedUserEvents: Codable, Equatable {
         perPage: Int,
         pollInterval: TimeInterval?
     ) -> [GitHubEvent] {
-        var knownIDs = Set(events.map(\.id))
+        var byID = Dictionary(uniqueKeysWithValues: events.map { ($0.id, $0) })
         var insertedEvents: [GitHubEvent] = []
-        for event in newEvents where knownIDs.insert(event.id).inserted {
-            insertedEvents.append(event)
+        for event in newEvents {
+            if byID.updateValue(event, forKey: event.id) == nil {
+                insertedEvents.append(event)
+            }
         }
 
         let hadPageOne = fetchedPages.contains(1)
@@ -668,20 +670,12 @@ struct CachedUserEvents: Codable, Equatable {
             exhausted = false
         }
 
-        var byID = Dictionary(uniqueKeysWithValues: events.map { ($0.id, $0) })
-        for event in newEvents {
-            byID[event.id] = event
-        }
         events = byID.values.sorted {
             if $0.createdAt != $1.createdAt { return $0.createdAt > $1.createdAt }
             return $0.id > $1.id
         }
         fetchedPages.insert(page)
-        if page == 1 {
-            nextPage = max(nextPage, 2)
-        } else {
-            nextPage = max(nextPage, page + 1)
-        }
+        nextPage = max(nextPage, page + 1)
         if page == 1 {
             exhausted = newEvents.count < perPage
         } else if newEvents.count < perPage {
