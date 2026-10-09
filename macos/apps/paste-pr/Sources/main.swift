@@ -171,15 +171,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     // MARK: Clipboard Conversion
 
     @objc func convertClipboard() {
-        beginClipboardConversion(automatically: false)
-    }
-
-    private func beginClipboardConversion(automatically: Bool) {
-        if automatically {
-            enqueueAutomaticConversion()
-            return
-        }
-
         let pb = NSPasteboard.general
         let originalChangeCount = pb.changeCount
 
@@ -344,7 +335,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         let pasteboard = NSPasteboard.general
         let changeCount = pasteboard.changeCount
         guard clipboardChangeTracker.consumeChange(at: changeCount) else { return }
-        beginClipboardConversion(automatically: true)
+        enqueueAutomaticConversion()
     }
 
     private func markClipboardWriteAsObserved(at changeCount: Int) {
