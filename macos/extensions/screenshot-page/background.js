@@ -21,7 +21,6 @@ chrome.action.onClicked.addListener(async (tab) => {
       document.documentElement.scrollHeight,
       document.body ? document.body.scrollHeight : 0
     ),
-    viewportWidth: window.innerWidth,
     viewportHeight: window.innerHeight,
     originalScrollX: window.scrollX,
     originalScrollY: window.scrollY,
