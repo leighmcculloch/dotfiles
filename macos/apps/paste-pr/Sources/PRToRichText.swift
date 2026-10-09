@@ -291,22 +291,13 @@ enum PRToRichText {
             throw ConversionError.parseFailed
         }
 
-        let kind: GitHubLink.Kind
-        switch pathParts[2].lowercased() {
-        case "pull":
-            kind = .pullRequest
-        case "issues":
-            kind = .issue
-        case "discussions":
-            kind = .discussion
-        default:
+        guard let kind = GitHubLink.Kind(rawValue: pathParts[2].lowercased()) else {
             throw ConversionError.parseFailed
         }
 
         let owner = pathParts[0]
         let repository = pathParts[1]
-        let resourcePath = kind == .pullRequest ? "pull" : kind == .issue ? "issues" : "discussions"
-        let canonicalURL = "https://github.com/\(owner)/\(repository)/\(resourcePath)/\(number)"
+        let canonicalURL = "https://github.com/\(owner)/\(repository)/\(kind.rawValue)/\(number)"
 
         return GitHubLink(
             kind: kind,
@@ -378,10 +369,10 @@ struct SlackEmojiSettings: Equatable {
 }
 
 private struct GitHubLink {
-    enum Kind: Equatable {
-        case pullRequest
-        case issue
-        case discussion
+    enum Kind: String {
+        case pullRequest = "pull"
+        case issue = "issues"
+        case discussion = "discussions"
     }
 
     let kind: Kind
