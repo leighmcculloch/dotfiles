@@ -66,12 +66,7 @@ private final class CodexAppServerClient {
 
     fileprivate func refresh(completion: @escaping Completion) {
         queue.async { [self] in
-            if process?.isRunning == true {
-                sendRateLimitRequest(completion: completion)
-            } else {
-                queuedCompletions.append(completion)
-                startProcessIfNeeded()
-            }
+            sendRateLimitRequest(completion: completion)
         }
     }
 
