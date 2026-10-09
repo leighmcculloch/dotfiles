@@ -225,7 +225,9 @@ private final class CodexAppServerClient {
 
     private func send(_ object: [String: Any]) {
         guard let inputPipe else { return }
-        inputPipe.fileHandleForWriting.write(Data(jsonLine(object).appending("\n").utf8))
+        var data = try! JSONSerialization.data(withJSONObject: object)
+        data.append(0x0A)
+        inputPipe.fileHandleForWriting.write(data)
     }
 
     private func receive(_ data: Data) {
@@ -348,11 +350,6 @@ private final class CodexAppServerClient {
         return (fixedLocations + pathLocations)
             .map(URL.init(fileURLWithPath:))
             .first { fileManager.isExecutableFile(atPath: $0.path) }
-    }
-
-    private func jsonLine(_ object: [String: Any]) -> String {
-        let data = try! JSONSerialization.data(withJSONObject: object)
-        return String(decoding: data, as: UTF8.self)
     }
 }
 
