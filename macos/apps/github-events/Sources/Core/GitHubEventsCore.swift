@@ -626,23 +626,6 @@ struct CachedUserEvents: Codable, Equatable {
         pageOneFetchedAt = try container.decodeIfPresent(Date.self, forKey: .pageOneFetchedAt)
     }
 
-    func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(username, forKey: .username)
-        try container.encode(events, forKey: .events)
-        try container.encode(nextPage, forKey: .nextPage)
-        try container.encode(fetchedPages, forKey: .fetchedPages)
-        try container.encode(pageETags, forKey: .pageETags)
-        try container.encode(pageLastModified, forKey: .pageLastModified)
-        try container.encode(pageCounts, forKey: .pageCounts)
-        try container.encode(seenEventIDs, forKey: .seenEventIDs)
-        try container.encode(exhausted, forKey: .exhausted)
-        try container.encode(pollInterval, forKey: .pollInterval)
-        try container.encodeIfPresent(pageOnePollInterval, forKey: .pageOnePollInterval)
-        try container.encodeIfPresent(lastFetchedAt, forKey: .lastFetchedAt)
-        try container.encodeIfPresent(pageOneFetchedAt, forKey: .pageOneFetchedAt)
-    }
-
     @discardableResult
     mutating func merge(
         _ newEvents: [GitHubEvent],
