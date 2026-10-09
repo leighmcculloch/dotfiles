@@ -6,19 +6,7 @@ local function apply_mode_to_buffer(bufnr, mode)
     return
   end
 
-  if mode == "workdir" then
-    -- Restore index reference by re-enabling
-    if vim.b[bufnr].minidiff_is_staged then
-      MiniDiff.disable(bufnr)
-      MiniDiff.enable(bufnr)
-      vim.b[bufnr].minidiff_is_staged = false
-    end
-    -- Ensure overlay is on
-    buf_data = MiniDiff.get_buf_data(bufnr)
-    if buf_data and not buf_data.overlay then
-      MiniDiff.toggle_overlay(bufnr)
-    end
-  elseif mode == "staged" then
+  if mode == "staged" then
     -- Set reference to HEAD
     local filepath = vim.api.nvim_buf_get_name(bufnr)
     if filepath == "" then
@@ -26,26 +14,22 @@ local function apply_mode_to_buffer(bufnr, mode)
     end
     local rel_path = vim.fn.fnamemodify(filepath, ":~:.")
     local head_content = vim.fn.system({ "git", "show", "HEAD:" .. rel_path })
-    if vim.v.shell_error == 0 then
-      vim.b[bufnr].minidiff_is_staged = true
-      MiniDiff.set_ref_text(bufnr, head_content)
-      -- Ensure overlay is on
-      buf_data = MiniDiff.get_buf_data(bufnr)
-      if buf_data and not buf_data.overlay then
-        MiniDiff.toggle_overlay(bufnr)
-      end
+    if vim.v.shell_error ~= 0 then
+      return
     end
-  else
-    -- mode is nil, turn off overlay and restore
-    if vim.b[bufnr].minidiff_is_staged then
-      MiniDiff.disable(bufnr)
-      MiniDiff.enable(bufnr)
-      vim.b[bufnr].minidiff_is_staged = false
-    end
-    buf_data = MiniDiff.get_buf_data(bufnr)
-    if buf_data and buf_data.overlay then
-      MiniDiff.toggle_overlay(bufnr)
-    end
+    vim.b[bufnr].minidiff_is_staged = true
+    MiniDiff.set_ref_text(bufnr, head_content)
+  elseif vim.b[bufnr].minidiff_is_staged then
+    -- Restore index reference by re-enabling
+    MiniDiff.disable(bufnr)
+    MiniDiff.enable(bufnr)
+    vim.b[bufnr].minidiff_is_staged = false
+  end
+
+  buf_data = MiniDiff.get_buf_data(bufnr)
+  local want_overlay = mode == "workdir" or mode == "staged"
+  if buf_data and (not not buf_data.overlay) ~= want_overlay then
+    MiniDiff.toggle_overlay(bufnr)
   end
 end
 
