@@ -690,17 +690,7 @@ struct CachedUserEvents: Codable, Equatable {
         pageCounts[page] = newEvents.count
         if let etag { pageETags[page] = etag }
         if let lastModified { pageLastModified[page] = lastModified }
-        if let pollInterval {
-            let normalizedPollInterval = max(GitHubEventsLimits.minimumPollInterval, pollInterval)
-            self.pollInterval = normalizedPollInterval
-            if page == 1 {
-                pageOnePollInterval = normalizedPollInterval
-            }
-        }
-        lastFetchedAt = Date()
-        if page == 1 {
-            pageOneFetchedAt = lastFetchedAt
-        }
+        recordFetchMetadata(page: page, pollInterval: pollInterval)
         return insertedEvents
     }
 
@@ -710,6 +700,10 @@ struct CachedUserEvents: Codable, Equatable {
         if pageCounts[page].map({ $0 < perPage }) == true {
             exhausted = true
         }
+        recordFetchMetadata(page: page, pollInterval: pollInterval)
+    }
+
+    private mutating func recordFetchMetadata(page: Int, pollInterval: TimeInterval?) {
         if let pollInterval {
             let normalizedPollInterval = max(GitHubEventsLimits.minimumPollInterval, pollInterval)
             self.pollInterval = normalizedPollInterval
