@@ -1082,21 +1082,16 @@ private struct MarkdownText: View {
     let characterLimit: Int
 
     var body: some View {
-        if let attributedString = try? AttributedString(markdown: markdown) {
-            Text(truncated(attributedString))
-                .font(.callout)
-                .foregroundStyle(.primary)
-                .fixedSize(horizontal: false, vertical: true)
-                .lineLimit(8)
-                .truncationMode(.tail)
-        } else {
-            Text(markdown.truncated(to: characterLimit))
-                .font(.callout)
-                .foregroundStyle(.primary)
-                .fixedSize(horizontal: false, vertical: true)
-                .lineLimit(8)
-                .truncationMode(.tail)
-        }
+        let text = (try? AttributedString(markdown: markdown))
+            .map { Text(truncated($0)) }
+            ?? Text(markdown.truncated(to: characterLimit))
+
+        text
+            .font(.callout)
+            .foregroundStyle(.primary)
+            .fixedSize(horizontal: false, vertical: true)
+            .lineLimit(8)
+            .truncationMode(.tail)
     }
 
     private func truncated(_ value: AttributedString) -> AttributedString {
