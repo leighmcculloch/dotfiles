@@ -20,14 +20,14 @@ for f in *; do
   src="$PWD/$f"
   dest="$HOME/.$f"
   echo -n "Linking $src at $dest... "
+  result="done."
   # check if destination already exists
   if [ -f "$dest" ] || [ -d "$dest" ]; then
     # destination already exists
     if [ -L "$dest" ]; then
       # existing destination is a symlink, safe to replace
       rm "$dest"
-      ln -s "$src" "$dest"
-      echo "done (replacing symlink)."
+      result="done (replacing symlink)."
     else
       # existing destination is a real file/dir, back it up first
       # find next available backup name
@@ -37,14 +37,11 @@ for f in *; do
       done
       backup="$dest.bak$i"
       mv "$dest" "$backup"
-      ln -s "$src" "$dest"
-      echo "done (backed up to $backup)."
+      result="done (backed up to $backup)."
     fi
-  else
-    # destination doesn't exist, create symlink
-    ln -sf "$src" "$dest"
-    echo "done."
   fi
+  ln -sf "$src" "$dest"
+  echo "$result"
 done
 popd
 
