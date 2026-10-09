@@ -272,23 +272,18 @@ private final class CodexAppServerClient {
             return .failure(UsageError.invalidResponse)
         }
 
-        let windows = ["primary", "secondary"].compactMap { key in
-            usageWindow(for: key, in: rateLimits).map { (key: key, window: $0) }
-        }
+        let primary = usageWindow(for: "primary", in: rateLimits)
+        let secondary = usageWindow(for: "secondary", in: rateLimits)
+        let windows = [primary, secondary].compactMap { $0 }
         let fiveHourByDuration = windows.first {
-            isDuration($0.window.durationMinutes, approximately: 5 * 60)
-        }?.window
+            isDuration($0.durationMinutes, approximately: 5 * 60)
+        }
         let weeklyByDuration = windows.first {
-            isDuration($0.window.durationMinutes, approximately: 7 * 24 * 60)
-        }?.window
-        let primaryWithoutDuration = windows.first {
-            $0.key == "primary" && $0.window.durationMinutes == nil
-        }?.window
-        let secondaryWithoutDuration = windows.first {
-            $0.key == "secondary" && $0.window.durationMinutes == nil
-        }?.window
-        let fiveHour = fiveHourByDuration ?? (weeklyByDuration == nil ? primaryWithoutDuration : nil)
-        let weekly = weeklyByDuration ?? secondaryWithoutDuration
+            isDuration($0.durationMinutes, approximately: 7 * 24 * 60)
+        }
+        let fiveHour = fiveHourByDuration
+            ?? (weeklyByDuration == nil && primary?.durationMinutes == nil ? primary : nil)
+        let weekly = weeklyByDuration ?? (secondary?.durationMinutes == nil ? secondary : nil)
         guard fiveHour != nil || weekly != nil else {
             return .failure(UsageError.noUsageWindow)
         }
