@@ -95,23 +95,11 @@ Read the file containing the mermaid diagram. For markdown files, extract the co
 ```
 ````
 
-### Step 2: Set Up Working Directory
+### Step 2: Prepare, Validate, and Review
 
-Generate a unique session ID and create the working directory:
+Follow Steps 1-6 of "Creating New Diagrams", using the extracted diagram code as the initial diagram in Step 2.
 
-```bash
-mkdir -p /tmp/claude/[uid]
-```
-
-### Step 3: Write to Working File
-
-Write the extracted mermaid code to `/tmp/claude/[uid]/diagram.mmd`.
-
-### Step 4: Validate, Inspect, and Iterate
-
-Follow Steps 3-6 from "Creating New Diagrams" to validate, generate SVG, inspect, and refine the layout.
-
-### Step 5: Update Original
+### Step 3: Update Original
 
 Once approved, update the original source file with the improved diagram code.
 
