@@ -518,10 +518,6 @@ font-size: clamp(1rem, 3vw, 2.5rem);
 
 ### Testing Recommendations
 
-Test at these viewport sizes:
-- **Desktop:** 1920×1080, 1440×900, 1280×720
-- **Tablet:** 1024×768 (landscape), 768×1024 (portrait)
-- **Mobile:** 375×667 (iPhone SE), 414×896 (iPhone 11)
-- **Landscape phone:** 667×375, 896×414
+Use the viewport sizes listed in [Testing Viewport Fit](SKILL.md#testing-viewport-fit).
 
 Use browser DevTools responsive mode to quickly test multiple sizes.

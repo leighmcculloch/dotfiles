@@ -840,13 +840,6 @@ class CustomCursor {
 
 **See the "CRITICAL: Viewport Fitting Requirements" section above for complete CSS and guidelines.**
 
-Quick reference:
-- Every `.slide` must have `height: 100vh; height: 100dvh; overflow: hidden;`
-- All typography and spacing must use `clamp()`
-- Respect content density limits (max 4-6 bullets, max 6 cards, etc.)
-- Include breakpoints for heights: 700px, 600px, 500px
-- When content doesn't fit → split into multiple slides, never scroll
-
 ---
 
 ## Phase 4: Delivery
@@ -1061,19 +1054,3 @@ class TiltEffect {
 - Use `will-change` sparingly
 - Prefer `transform` and `opacity` animations
 - Throttle scroll/mousemove handlers
-
----
-
-## Example Session Flow
-
-1. User: "I want to create a pitch deck for my AI startup"
-2. Skill asks about purpose, length, content
-3. User shares their bullet points and key messages
-4. Skill asks about desired feeling (Impressed + Excited)
-5. Skill generates 3 style previews
-6. User picks Style B (Neon Cyber), asks for darker background
-7. Skill generates full presentation with all slides
-8. Skill opens the presentation in browser
-9. User requests tweaks to specific slides
-10. Final presentation delivered
-
