@@ -183,12 +183,13 @@ private final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotifica
             return
         }
 
-        let pendingNotifications = pendingNotifications.filter { pending in
-            store.users.contains { $0.username == pending.username }
-                && store.configurationGeneration(for: pending.username) == pending.generation
-        }
-        self.pendingNotifications.removeAll()
-        pendingNotifications.forEach {
+        drainPendingNotifications()
+    }
+
+    private func drainPendingNotifications() {
+        let pending = pendingNotifications
+        pendingNotifications.removeAll()
+        pending.forEach {
             scheduleNotification(
                 username: $0.username,
                 generation: $0.generation,
@@ -453,18 +454,7 @@ private final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotifica
             guard let self else { return }
             self.pendingNotificationRetryScheduled = false
             guard self.notificationsAuthorized else { return }
-            let pendingNotifications = self.pendingNotifications.filter { pending in
-                self.store.users.contains { $0.username == pending.username }
-                    && self.store.configurationGeneration(for: pending.username) == pending.generation
-            }
-            self.pendingNotifications.removeAll()
-            pendingNotifications.forEach {
-                self.scheduleNotification(
-                    username: $0.username,
-                    generation: $0.generation,
-                    events: $0.events
-                )
-            }
+            self.drainPendingNotifications()
         }
     }
 
