@@ -462,7 +462,7 @@ final class QRReaderWindowController: NSWindowController {
         pasteButton.action = #selector(pasteImage)
         styleToolbarButton(openButton)
         styleToolbarButton(pasteButton)
-        updatePasteButtonState(force: true)
+        updatePasteButtonState()
         startClipboardMonitoring()
 
         let controls = NSStackView(views: [openButton, pasteButton])
@@ -536,10 +536,10 @@ final class QRReaderWindowController: NSWindowController {
         clipboardMonitor = timer
     }
 
-    private func updatePasteButtonState(force: Bool = false) {
+    private func updatePasteButtonState() {
         let pasteboard = NSPasteboard.general
         let changeCount = pasteboard.changeCount
-        guard force || changeCount != clipboardChangeCount else { return }
+        guard changeCount != clipboardChangeCount else { return }
 
         clipboardChangeCount = changeCount
         pasteButton.isEnabled = clipboardImageSource(from: pasteboard) != nil
