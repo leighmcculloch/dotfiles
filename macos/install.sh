@@ -82,12 +82,9 @@ echo "$fg[green]Critical install complete.$reset_color"
 
 # install apps in this repo
 echo "$fg[cyan]Installing local mac programs...$reset_color"
-make -C apps/menu-bar-usage-codex install
-make -C apps/paste-markdown install
-make -C apps/paste-pr install
-make -C apps/qr-reader install
-make -C apps/stopwatch install
-make -C apps/app-scheduler install
+for app in menu-bar-usage-codex paste-markdown paste-pr qr-reader stopwatch app-scheduler; do
+  make -C "apps/$app" install
+done
 
 echo "$fg[green]Critical install complete.$reset_color"
 
