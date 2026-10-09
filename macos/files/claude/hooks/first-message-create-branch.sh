@@ -71,7 +71,7 @@ ${prompt}"
 # Sanitize the model's reply: lowercase, spaces → hyphens, drop blank lines,
 # take the first remaining line. Guards against chatty responses that spill
 # onto multiple lines despite the "reply only with the branch name" instruction.
-name=$(ai "$ai_prompt" 2>/dev/null | tr '[:upper:] ' '[:lower:]-' | awk 'NF' | head -1)
+name=$(ai "$ai_prompt" 2>/dev/null | tr '[:upper:] ' '[:lower:]-' | awk 'NF { print; exit }')
 [ -z "$name" ] && exit 0
 
 # Collision fallback. The model is told to avoid existing names, but obeys
