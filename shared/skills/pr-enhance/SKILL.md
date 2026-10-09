@@ -110,21 +110,7 @@ let result = new_function(arg, options)?;
 ```
 
 **Mermaid Diagrams:**
-For architectural changes, create a unified diagram:
-```mermaid
-flowchart LR
-    A[Component A] --> B[Old Component]
-    A --> C[New Component]
-    C --> D[New Dependency]
-
-    style B fill:#ffcccc,stroke:#ff0000
-    style C fill:#ccffcc,stroke:#00ff00
-    style D fill:#ccffcc,stroke:#00ff00
-```
-
-**Legend:**
-- Red = Removed
-- Green = Added
+For architectural changes, create a unified before/after diagram using the example and red-for-removed / green-for-added styling in [Proposal Diagrams](../mermaid-diagram/SKILL.md#proposal-diagrams).
 
 ### 5. Draft and Review (REQUIRED)
 
