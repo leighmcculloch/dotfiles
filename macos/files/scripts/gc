@@ -43,9 +43,7 @@ function {
 
   local branch="${${$(git branch --format='%(refname:short)' --show-current | jq -R -s '.')%\"}#\"}"
 
-  if ! ${=git_diff} --staged --quiet; then
-    :
-  else
+  if ${=git_diff} --staged --quiet; then
     echo "No staged changes"
     return 1
   fi
