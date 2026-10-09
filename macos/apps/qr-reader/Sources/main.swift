@@ -7,17 +7,9 @@ func fileURLs(from pasteboard: NSPasteboard) -> [URL] {
         options: nil
     ) ?? []
 
-    let urls = objects.compactMap { object in
-        if let url = object as? URL, url.isFileURL {
-            return url
-        }
-        guard let object = object as? NSURL,
-              object.isFileURL,
-              let path = object.path
-        else {
-            return nil
-        }
-        return URL(fileURLWithPath: path)
+    let urls = objects.compactMap { object -> URL? in
+        guard let url = object as? URL, url.isFileURL else { return nil }
+        return url
     }
     if !urls.isEmpty { return urls }
 
