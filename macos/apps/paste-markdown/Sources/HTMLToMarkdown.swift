@@ -200,16 +200,13 @@ enum HTMLToMarkdown {
             for child in element.children ?? [] {
                 guard let el = child as? XMLElement else { continue }
                 let tag = el.name?.lowercased() ?? ""
-                switch tag {
-                case "thead", "tbody", "tfoot":
-                    extractRows(from: el)
-                case "tr":
+                if tag == "tr" {
                     let cells = (el.children ?? [])
                         .compactMap { $0 as? XMLElement }
                         .filter { ["td", "th"].contains($0.name?.lowercased()) }
                         .map { processChildren(of: $0, listDepth: 0).trimmed }
                     if !cells.isEmpty { rows.append(cells) }
-                default:
+                } else {
                     extractRows(from: el)
                 }
             }
@@ -218,11 +215,10 @@ enum HTMLToMarkdown {
         extractRows(from: table)
         guard !rows.isEmpty else { return "" }
 
-        let colCount = rows.map(\.count).max() ?? 0
-        guard colCount > 0 else { return "" }
+        let colCount = rows.map(\.count).max()!
 
         let padded = rows.map {
-            $0 + Array(repeating: "", count: max(0, colCount - $0.count))
+            $0 + Array(repeating: "", count: colCount - $0.count)
         }
 
         var lines: [String] = []
