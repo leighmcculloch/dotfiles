@@ -275,17 +275,18 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         _ request: AutomaticConversionRequest,
         result: PRToRichText.Result?
     ) {
-        guard autoConvertEnabled,
-              request.generation == automaticConversionGeneration
-        else {
+        defer {
             automaticConversionInFlight = false
             startPendingAutomaticConversionIfNeeded()
-            return
         }
+
+        guard autoConvertEnabled,
+              request.generation == automaticConversionGeneration
+        else { return }
 
         if let result {
             let pasteboard = NSPasteboard.general
-            switch writeConversionResult(
+            writeConversionResult(
                 result,
                 originalInput: request.originalInput,
                 expectedChangeCount: request.expectedChangeCount,
@@ -293,16 +294,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 onAppOwnedChangeCount: { changeCount in
                     self.markClipboardWriteAsObserved(at: changeCount)
                 }
-            ) {
-            case .written, .failed:
-                break
-            case .stale:
-                break
-            }
+            )
         }
-
-        automaticConversionInFlight = false
-        startPendingAutomaticConversionIfNeeded()
     }
 
     private func startPendingAutomaticConversionIfNeeded() {
