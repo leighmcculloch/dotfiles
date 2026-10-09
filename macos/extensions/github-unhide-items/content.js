@@ -33,14 +33,12 @@
         button.getAttribute("aria-disabled") !== "true"
     );
 
-  const waitForPaginationToFinish = async (
-    button,
-    form,
-    beforeAction,
-    startRequest
-  ) => {
+  const clickAndWaitForPagination = async (button) => {
+    const form = button.closest("form");
+    if (!form) return false;
+
+    const beforeAction = form.getAttribute("action");
     let sawChange = false;
-    let settled = false;
     const observedNode = form.parentElement || form;
 
     const observer = new MutationObserver(() => {
@@ -55,7 +53,7 @@
     });
 
     try {
-      startRequest();
+      button.click();
       const deadline = Date.now() + REQUEST_TIMEOUT_MS;
 
       while (Date.now() < deadline) {
@@ -74,7 +72,6 @@
         }
 
         if (sawChange && !isLoading) {
-          settled = true;
           await sleep(SETTLE_DELAY_MS);
           return true;
         }
@@ -83,17 +80,7 @@
       observer.disconnect();
     }
 
-    return settled || sawChange;
-  };
-
-  const clickAndWaitForPagination = async (button) => {
-    const form = button.closest("form");
-    if (!form) return false;
-
-    const beforeAction = form.getAttribute("action");
-    return waitForPaginationToFinish(button, form, beforeAction, () => {
-      button.click();
-    });
+    return sawChange;
   };
 
   const expandHiddenItems = async () => {
