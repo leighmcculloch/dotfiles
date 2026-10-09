@@ -15,18 +15,16 @@ Delegate bounded execution work to specialized subagents, then have the root int
 
 The expected default topology is:
 
-- root: GPT-6 Astra at medium reasoning
-- explorer: GPT-6 Luna at max reasoning
-- worker: GPT-6 Luna at max reasoning
-- tester: GPT-6 Luna at max reasoning
-- reviewer: GPT-6 Astra at low reasoning
-- researcher: GPT-6 Luna at max reasoning
+- root: `gpt-6-astra` at `medium` reasoning
+- explorer: `gpt-6-luna` at `max` reasoning
+- worker: `gpt-6-luna` at `max` reasoning
+- tester: `gpt-6-luna` at `max` reasoning
+- reviewer: `gpt-6-astra` at `low` reasoning
+- researcher: `gpt-6-luna` at `max` reasoning
 
 Use Luna for all routine subagent execution.
 
 This is a requirement, not a preference.
-
-The root and reviewer use Astra; routine execution subagents use Luna.
 
 Do not override a Luna subagent to a more expensive model unless the user explicitly asks for escalation or a Luna worker reports that the task requires higher-level reasoning.
 
@@ -53,17 +51,7 @@ The task MUST be delegated when at least one of the following is true:
 - an independent post-change review is materially useful
 - the user explicitly asks for delegation, parallelism, agents, or subagents
 
-When a task qualifies for delegation, the root MUST call `spawn_agent` before performing the delegated work itself.
-
-Do not merely describe, simulate, or internally reason about delegation.
-
-Actual subagents must be spawned.
-
-If `spawn_agent` is unavailable or fails, explicitly report that failure.
-
-Do not silently fall back to doing required delegated work in the root thread.
-
-For every delegated task, spawn at least one subagent.
+For every delegated task, the root MUST call `spawn_agent` before performing its delegated work itself; actually spawn at least one subagent rather than describing or simulating delegation. If `spawn_agent` is unavailable or fails, explicitly report the failure and do not silently fall back to the root thread.
 
 Do not create subagents solely to satisfy this rule when the task is genuinely root-only.
 
@@ -95,13 +83,7 @@ The root must not offload architectural ownership to a subagent.
 
 ## Spawn policy
 
-When spawning agents, use these models by default:
-
-- explorer: `gpt-6-luna` at `max` reasoning
-- worker: `gpt-6-luna` at `max` reasoning
-- tester: `gpt-6-luna` at `max` reasoning
-- researcher: `gpt-6-luna` at `max` reasoning
-- reviewer: `gpt-6-astra` at `low` reasoning
+Use the models and reasoning levels specified in the default topology above.
 
 For every delegated task:
 
@@ -119,8 +101,6 @@ Do not spawn Astra workers except for the `reviewer` role unless:
 - the user explicitly requests Astra
 - Luna reports a genuinely difficult reasoning blocker
 - the root determines that a high-risk architectural or security review needs Astra
-
-Routine execution should remain on Luna.
 
 ---
 
@@ -204,30 +184,7 @@ Run independent tasks in parallel.
 
 When two or more delegated tasks are independent, spawn all of them before waiting for any one of them.
 
-Good parallel set:
-
-1. spawn backend explorer
-2. spawn frontend explorer
-3. spawn API researcher
-4. wait for all three
-5. synthesize findings
-
-Do not do this:
-
-1. spawn backend explorer
-2. wait
-3. spawn frontend explorer
-4. wait
-5. spawn researcher
-6. wait
-
-unless later tasks genuinely depend on earlier results.
-
-Good parallel examples:
-
-- explorer maps backend path
-- explorer maps frontend path
-- researcher verifies external API behavior
+Example: spawn a backend explorer, frontend explorer, and API researcher before waiting for all three and synthesizing their findings. Serialize tasks only when later work genuinely depends on earlier results.
 
 Serialize dependent work:
 
@@ -265,8 +222,6 @@ Do not spawn every role mechanically.
 
 Use only the roles that materially improve the task.
 
-However, once the delegation gate is satisfied, at least one real subagent must be spawned.
-
 ---
 
 ## Debugging workflow
@@ -299,8 +254,6 @@ Do not mix speculative external claims into implementation decisions without ver
 ---
 
 ## Cost and context discipline
-
-Use Luna for routine subagent execution.
 
 Keep the root context focused on:
 
