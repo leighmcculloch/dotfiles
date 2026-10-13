@@ -72,7 +72,7 @@ private final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate
         for item in scheduleSummaryItems { menu.removeItem(item) }
         scheduleSummaryItems = store.schedules.map { schedule in
             let item = NSMenuItem(title: schedule.menuSummary, action: nil, keyEquivalent: "")
-            item.toolTip = schedule.appURL ?? schedule.appPath
+            item.toolTip = "\(schedule.appURL ?? schedule.appPath)\n\(schedule.scheduleDescription ?? schedule.cronError ?? "")\nCron: \(schedule.cron)"
             return item
         }
         if scheduleSummaryItems.isEmpty {

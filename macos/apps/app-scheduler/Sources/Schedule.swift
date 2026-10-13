@@ -79,6 +79,10 @@ struct ScheduledAction: Identifiable, Codable, Equatable {
         appURL.map { $0.trimmingCharacters(in: .whitespacesAndNewlines) } ?? appName
     }
 
+    var scheduleDescription: String? {
+        (try? CronExpression(cron))?.humanDescription
+    }
+
     var menuSummary: String {
         let target: String
         if appURL == nil && appPath.isEmpty {
@@ -88,9 +92,10 @@ struct ScheduledAction: Identifiable, Codable, Equatable {
         }
         let shortTarget = target.count > 48 ? String(target.prefix(47)) + "…" : target
         let state = !isEnabled ? " (disabled)" : (isActive ? "" : " (incomplete)")
-        let expression = cron.split(whereSeparator: { $0.isWhitespace }).joined(separator: " ")
-        let shortCron = expression.count > 48 ? String(expression.prefix(47)) + "…" : expression
-        return "\(action.title) \(shortTarget) — \(shortCron.isEmpty ? "No cron entered" : shortCron)\(state)"
+        let description = scheduleDescription ?? (cron.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            ? "No cron entered" : "Invalid cron")
+        let shortDescription = description.count > 96 ? String(description.prefix(95)) + "…" : description
+        return "\(action.title) \(shortTarget) — \(shortDescription)\(state)"
     }
 
     var targetKey: String {

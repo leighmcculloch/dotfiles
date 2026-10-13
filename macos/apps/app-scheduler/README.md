@@ -12,6 +12,8 @@ settings window leaves the scheduler running, with no Dock icon.
 3. Choose **Open** or **Quit** for an app. URLs support **Open** only and are
    handed to macOS to open with the app registered for their scheme. Enter a
    cron expression. New rows default to `0 9 * * 1-5` (9am Monday–Friday).
+   A plain-language description beside the cron field updates as you type,
+   such as “At 9am on Monday–Friday” or “Every 15 minutes”.
 4. Add as many rows as needed, including multiple rows for the same app or URL.
    For example, open Slack with `0 9 * * 1-5` and quit it with `0 17 * * 1-5`.
 
@@ -60,8 +62,9 @@ URL schedules save automatically alongside app schedules, and existing saved
 app schedules remain compatible.
 
 The menu bar dropdown starts with a compact summary of every schedule: action,
-app or URL, and cron expression. Disabled and incomplete rows are labeled. Long
-targets are shortened in the summary; hover over a row to see the full target.
+app or URL, and plain-language timing. Disabled and incomplete rows are labeled.
+Long targets and descriptions are shortened in the summary; hover over a row
+to see the full target, description, and cron expression.
 The menu also has **Launch at Login** and **Quit App Scheduler**.
 
 ## Timing and safety
@@ -95,6 +98,10 @@ install background daemons or use AppleScript/Automation permissions.
 ## Build and install
 
 Requires macOS 13 or later and Swift 5.9 or later. From this directory:
+
+When updating an installed copy, first choose **Quit App Scheduler** from its
+menu. Closing Settings or replacing the app bundle does not restart the running
+app, so it will continue showing the old interface until it is relaunched.
 
 ```sh
 make install

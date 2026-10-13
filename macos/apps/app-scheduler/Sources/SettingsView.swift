@@ -16,7 +16,8 @@ struct SettingsView: View {
                 Text("On").frame(width: 36)
                 Text("App or URL").frame(width: 320, alignment: .leading)
                 Text("Action").frame(width: 90, alignment: .leading)
-                Text("Cron schedule (local time)").frame(width: 397, alignment: .leading)
+                Text("Cron").frame(width: 210, alignment: .leading)
+                Text("When (local time)").frame(width: 215, alignment: .leading)
                 Spacer()
             }
             .font(.caption.weight(.semibold))
@@ -138,20 +139,25 @@ private struct ScheduleRow: View {
             .disabled(schedule.appURL != nil)
             .help(schedule.appURL != nil ? "URLs can only be opened, not quit" : "Open or quit the app")
 
-            VStack(alignment: .leading, spacing: 3) {
-                TextField("0 9 * * 1-5", text: $schedule.cron)
-                    .font(.system(.body, design: .monospaced))
-                    .textFieldStyle(.roundedBorder)
-                    .accessibilityLabel("Cron schedule")
-                    .help("minute (0–59) hour (0–23) day (1–31) month (1–12) weekday (0–7, Sunday = 0 or 7). Supports *, lists, ranges, and /steps. No seconds or commands.")
-                if let error = schedule.cronError {
-                    Text(error)
-                        .font(.caption)
+            TextField("0 9 * * 1-5", text: $schedule.cron)
+                .font(.system(.body, design: .monospaced))
+                .textFieldStyle(.roundedBorder)
+                .accessibilityLabel("Cron schedule")
+                .help("minute (0–59) hour (0–23) day (1–31) month (1–12) weekday (0–7, Sunday = 0 or 7). Supports *, lists, ranges, and /steps. No seconds or commands.")
+                .frame(width: 210)
+
+            Group {
+                if let description = schedule.scheduleDescription {
+                    Text(description)
+                        .foregroundStyle(.secondary)
+                } else {
+                    Text(schedule.cronError ?? "Invalid cron expression")
                         .foregroundStyle(.red)
-                        .fixedSize(horizontal: false, vertical: true)
                 }
             }
-            .frame(width: 397, alignment: .leading)
+            .font(.caption)
+            .frame(width: 215, alignment: .leading)
+            .fixedSize(horizontal: false, vertical: true)
 
             Spacer(minLength: 0)
             Button(action: remove) { Image(systemName: "trash") }

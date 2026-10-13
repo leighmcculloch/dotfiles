@@ -7,17 +7,17 @@ final class SchedulerTests: XCTestCase {
 
     func testMenuSummariesDescribeActiveDisabledAndIncompleteSchedules() {
         var rule = schedule(hour: 9, minute: 7)
-        XCTAssertEqual(rule.menuSummary, "Open Test — 7 9 * * 1,2,3,4,5")
+        XCTAssertEqual(rule.menuSummary, "Open Test — At 9:07am on Monday–Friday")
         rule.action = .quit
         rule.cron = "23 17 * * 0,1,4"
         rule.isEnabled = false
-        XCTAssertEqual(rule.menuSummary, "Quit Test — 23 17 * * 0,1,4 (disabled)")
+        XCTAssertEqual(rule.menuSummary, "Quit Test — At 5:23pm on Monday, Thursday, and Sunday (disabled)")
 
         rule.isEnabled = true
         rule.action = .open
         rule.appURL = "  slack://channel?team=T1&id=C2  "
         rule.cron = "*/15 * * * *"
-        XCTAssertEqual(rule.menuSummary, "Open slack://channel?team=T1&id=C2 — */15 * * * *")
+        XCTAssertEqual(rule.menuSummary, "Open slack://channel?team=T1&id=C2 — Every 15 minutes")
 
         rule.appURL = ""
         rule.cron = ""
@@ -25,16 +25,42 @@ final class SchedulerTests: XCTestCase {
         rule.appURL = nil
         rule.appPath = ""
         XCTAssertEqual(rule.menuSummary, "Open No app selected — No cron entered (incomplete)")
+
+        rule.appPath = "/Applications/Test.app"
+        rule.cron = "* *"
+        XCTAssertNil(rule.scheduleDescription)
+        XCTAssertEqual(rule.menuSummary, "Open Test — Invalid cron (incomplete)")
     }
 
     func testMenuSummaryKeepsLongTargetsCompactWithoutChangingTheURL() {
         var rule = schedule(hour: 12, minute: 34, days: [4])
         let target = "https://example.com/abcdefghijklmnopqrstuvwxyz01"
         rule.appURL = target
-        XCTAssertEqual(rule.menuSummary, "Open https://example.com/abcdefghijklmnopqrstuvwxyz01 — 34 12 * * 3")
+        XCTAssertEqual(rule.menuSummary, "Open https://example.com/abcdefghijklmnopqrstuvwxyz01 — At 12:34pm on Wednesday")
         rule.appURL = target + "2"
-        XCTAssertEqual(rule.menuSummary, "Open https://example.com/abcdefghijklmnopqrstuvwxyz0… — 34 12 * * 3")
+        XCTAssertEqual(rule.menuSummary, "Open https://example.com/abcdefghijklmnopqrstuvwxyz0… — At 12:34pm on Wednesday")
         XCTAssertEqual(rule.targetName, target + "2")
+    }
+
+    func testDescriptionsAppearInMenuSummariesForTheReportedSchedules() {
+        let rows: [(AppAction, String, String)] = [
+            (.open, "32 6 * * 1,2,3,4,5", "At 6:32am on Monday–Friday"),
+            (.quit, "2 7 * * 1,2,3,4,5", "At 7:02am on Monday–Friday"),
+            (.open, "0 9 * * 2,3,4,5", "At 9am on Tuesday, Wednesday, Thursday, and Friday"),
+            (.quit, "30 9 * * 2,3,4,5", "At 9:30am on Tuesday, Wednesday, Thursday, and Friday"),
+            (.open, "30 13 * * 1,2,3,4,5", "At 1:30pm on Monday–Friday")
+        ]
+        for (index, row) in rows.enumerated() {
+            let (action, cron, description) = row
+            var rule = ScheduledAction()
+            rule.appPath = "/Applications/Slack.app"
+            rule.action = action
+            rule.cron = cron
+            if index == 4 { rule.appURL = "claude://code/new" }
+            let target = index == 4 ? "claude://code/new" : "Slack"
+            XCTAssertEqual(rule.scheduleDescription, description)
+            XCTAssertEqual(rule.menuSummary, "\(action.title) \(target) — \(description)")
+        }
     }
 
     func testExactTimeFiresOnceAndNotBefore() {
@@ -257,6 +283,47 @@ final class SchedulerTests: XCTestCase {
         XCTAssertEqual(restored[1].appURL, "")
         XCTAssertFalse(restored[1].isActive)
         XCTAssertNil(restored[2].appURL)
+    }
+
+    func testCronDescriptionsHumanizeTimesAndIntervalsWithoutOverstatingSteps() throws {
+        let examples = [
+            ("0 9 * * 1-5", "At 9am on Monday–Friday"),
+            ("* * * * *", "Every minute"),
+            ("*/15 * * * *", "Every 15 minutes"),
+            ("0 * * * *", "Every hour"),
+            ("7 * * * *", "Every hour at minute 7"),
+            ("0 */2 * * *", "Every 2 hours"),
+            ("7 */2 * * *", "Every 2 hours at minute 7"),
+            ("0 */7 * * *", "At 12am, 7am, 2pm, and 9pm every day"),
+            ("30 8,17 * * *", "At 8:30am and 5:30pm every day"),
+            ("5 0,12 * * *", "Every 12 hours at minute 5"),
+            ("0 8-18/2 * * 1-5", "At 8am, 10am, 12pm, 2pm, 4pm, and 6pm on Monday–Friday"),
+            ("*/15 9 * * *", "At 9am, 9:15am, 9:30am, and 9:45am every day"),
+            ("*/10 9 * * *", "Every 10 minutes during the 9am hour"),
+            ("* 8,13 * * *", "Every minute during the 8am and 1pm hours"),
+            ("7-47/20 8,13 * 10 1-5", "At minutes 7, 27, and 47 past 8am and 1pm in October on Monday–Friday"),
+            ("*/7 * * * *", "At minutes 0, 7, 14, 21, 28, 35, 42, 49, and 56 of every hour every day")
+        ]
+        for (expression, expected) in examples {
+            XCTAssertEqual(try CronExpression(expression).humanDescription, expected, expression)
+        }
+    }
+
+    func testCronDescriptionsPreserveDayOrWeekdayAndWildcardIntersection() throws {
+        let examples = [
+            ("0 9 1 * *", "At 9am on the 1st of each month"),
+            ("0 9 11,21,22,23,31 * *", "At 9am on the 11th, 21st, 22nd, 23rd, and 31st of each month"),
+            ("0 9 29 2 *", "At 9am in February on the 29th of the month"),
+            ("5 6 13 10 2", "At 6:05am in October on the 13th of the month or on Tuesday"),
+            ("0 9 * * 0,7", "At 9am on Sunday"),
+            ("0 9 * 1,3 6,0", "At 9am in January and March on Saturday and Sunday"),
+            ("0 9 1-31 * 2", "At 9am every day"),
+            ("0 9 13 * 0-7", "At 9am every day"),
+            ("0 9 */30 * 1", "At 9am on Monday, restricted to the 1st and 31st of the month")
+        ]
+        for (expression, expected) in examples {
+            XCTAssertEqual(try CronExpression(expression).humanDescription, expected, expression)
+        }
     }
 
     func testCronIntervalsListsAndSteppedRangesRepeatOnlyAtMatchingMinutes() {
