@@ -38,6 +38,29 @@ struct ScheduledAction: Identifiable, Codable, Equatable {
         appURL.map { $0.trimmingCharacters(in: .whitespacesAndNewlines) } ?? appName
     }
 
+    var menuSummary: String {
+        let target: String
+        if appURL == nil && appPath.isEmpty {
+            target = "No app selected"
+        } else {
+            target = targetName.isEmpty ? "No URL entered" : targetName
+        }
+        let shortTarget = target.count > 48 ? String(target.prefix(47)) + "…" : target
+        let time = String(format: "%02d:%02d", hour, minute)
+        let days: String
+        switch weekdays {
+        case [1, 2, 3, 4, 5, 6, 7]: days = "Every day"
+        case [2, 3, 4, 5, 6]: days = "Mon–Fri"
+        case [1, 7]: days = "Sat–Sun"
+        case []: days = "No days"
+        default:
+            days = [(2, "Mon"), (3, "Tue"), (4, "Wed"), (5, "Thu"), (6, "Fri"), (7, "Sat"), (1, "Sun")]
+                .filter { weekdays.contains($0.0) }.map(\.1).joined(separator: ", ")
+        }
+        let state = !isEnabled ? " (disabled)" : (isActive ? "" : " (incomplete)")
+        return "\(action.title) \(shortTarget) — \(time) · \(days)\(state)"
+    }
+
     var targetKey: String {
         appURL == nil ? "app:\(appPath)" : "url:\(urlToOpen?.absoluteString ?? "")"
     }

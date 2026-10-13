@@ -7,7 +7,7 @@ private final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate
     private var statusItem: NSStatusItem!
     private var settingsWindow: NSWindow?
     private var launchAtLoginItem: NSMenuItem!
-    private var scheduleCountItem: NSMenuItem!
+    private var scheduleSummaryItems: [NSMenuItem] = []
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
@@ -42,8 +42,7 @@ private final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate
 
         let menu = NSMenu()
         menu.delegate = self
-        scheduleCountItem = NSMenuItem(title: "", action: nil, keyEquivalent: "")
-        menu.addItem(scheduleCountItem)
+        menu.addItem(.separator())
         let settingsItem = NSMenuItem(title: "Settings…", action: #selector(showSettings), keyEquivalent: ",")
         settingsItem.target = self
         menu.addItem(settingsItem)
@@ -70,8 +69,18 @@ private final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate
     }
 
     func menuWillOpen(_ menu: NSMenu) {
-        let count = store.schedules.filter(\.isActive).count
-        scheduleCountItem.title = "\(count) active schedule\(count == 1 ? "" : "s")"
+        for item in scheduleSummaryItems { menu.removeItem(item) }
+        scheduleSummaryItems = store.schedules.map { schedule in
+            let item = NSMenuItem(title: schedule.menuSummary, action: nil, keyEquivalent: "")
+            item.toolTip = schedule.appURL ?? schedule.appPath
+            return item
+        }
+        if scheduleSummaryItems.isEmpty {
+            scheduleSummaryItems = [NSMenuItem(title: "No schedules", action: nil, keyEquivalent: "")]
+        }
+        for (index, item) in scheduleSummaryItems.enumerated() {
+            menu.insertItem(item, at: index)
+        }
         launchAtLoginItem.state = SMAppService.mainApp.status == .enabled ? .on : .off
     }
 

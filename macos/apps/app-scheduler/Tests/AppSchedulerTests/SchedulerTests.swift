@@ -5,6 +5,42 @@ import XCTest
 final class SchedulerTests: XCTestCase {
     private var brisbane: Calendar { calendar("Australia/Brisbane") }
 
+    func testMenuSummariesDescribeActiveDisabledAndIncompleteSchedules() {
+        var rule = schedule(hour: 9, minute: 7)
+        XCTAssertEqual(rule.menuSummary, "Open Test — 09:07 · Mon–Fri")
+        rule.action = .quit
+        rule.hour = 17
+        rule.minute = 23
+        rule.weekdays = [1, 2, 5]
+        rule.isEnabled = false
+        XCTAssertEqual(rule.menuSummary, "Quit Test — 17:23 · Mon, Thu, Sun (disabled)")
+
+        rule.isEnabled = true
+        rule.action = .open
+        rule.appURL = "  slack://channel?team=T1&id=C2  "
+        rule.weekdays = [1, 7]
+        XCTAssertEqual(rule.menuSummary, "Open slack://channel?team=T1&id=C2 — 17:23 · Sat–Sun")
+        rule.weekdays = [1, 2, 3, 4, 5, 6, 7]
+        XCTAssertEqual(rule.menuSummary, "Open slack://channel?team=T1&id=C2 — 17:23 · Every day")
+
+        rule.appURL = ""
+        rule.weekdays = []
+        XCTAssertEqual(rule.menuSummary, "Open No URL entered — 17:23 · No days (incomplete)")
+        rule.appURL = nil
+        rule.appPath = ""
+        XCTAssertEqual(rule.menuSummary, "Open No app selected — 17:23 · No days (incomplete)")
+    }
+
+    func testMenuSummaryKeepsLongTargetsCompactWithoutChangingTheURL() {
+        var rule = schedule(hour: 12, minute: 34, days: [4])
+        let target = "https://example.com/abcdefghijklmnopqrstuvwxyz01"
+        rule.appURL = target
+        XCTAssertEqual(rule.menuSummary, "Open https://example.com/abcdefghijklmnopqrstuvwxyz01 — 12:34 · Wed")
+        rule.appURL = target + "2"
+        XCTAssertEqual(rule.menuSummary, "Open https://example.com/abcdefghijklmnopqrstuvwxyz0… — 12:34 · Wed")
+        XCTAssertEqual(rule.targetName, target + "2")
+    }
+
     func testExactTimeFiresOnceAndNotBefore() {
         let rule = schedule(hour: 9, minute: 7, days: [2])
         var scheduler = Scheduler(at: date("2026-10-05T09:06:40+10:00"))

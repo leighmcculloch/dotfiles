@@ -29,6 +29,9 @@ its app to the foreground or perform the action specified by the deep link.
 URL schedules save automatically alongside app schedules, and existing saved
 app schedules remain compatible.
 
+The menu bar dropdown starts with a compact summary of every schedule: action,
+app or URL, time, and days. Disabled and incomplete rows are labeled. Long
+targets are shortened in the summary; hover over a row to see the full target.
 The menu also has **Launch at Login** and **Quit App Scheduler**.
 
 ## Timing and safety
