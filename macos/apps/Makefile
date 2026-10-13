@@ -6,3 +6,4 @@ install:
 	$(MAKE) -C github-events install
 	$(MAKE) -C stopwatch install
 	$(MAKE) -C app-scheduler install
+	$(MAKE) -C colour-blindness install
