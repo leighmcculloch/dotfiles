@@ -12,8 +12,11 @@ settings window leaves the scheduler running, with no Dock icon.
 3. Choose **Open** or **Quit** for an app. URLs support **Open** only and are
    handed to macOS to open with the app registered for their scheme. Enter a
    cron expression. New rows default to `0 9 * * 1-5` (9am Monday–Friday).
-   A plain-language description beside the cron field updates as you type,
-   such as “At 9am on Monday–Friday” or “Every 15 minutes”.
+   The five text columns line up under **Minute**, **Hour**, **Day**, **Month**,
+   and **Weekday** headings. **Day** means day of month. You can paste a complete
+   five-field cron into any column to fill them all. A plain-language description
+   beside the columns updates as you type, such as “At 9am on Monday–Friday” or
+   “Every 15 minutes”.
 4. Add as many rows as needed, including multiple rows for the same app or URL.
    For example, open Slack with `0 9 * * 1-5` and quit it with `0 17 * * 1-5`.
 

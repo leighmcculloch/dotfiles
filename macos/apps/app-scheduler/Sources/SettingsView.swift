@@ -1,5 +1,13 @@
 import SwiftUI
 
+private let cronColumns: [(title: String, width: CGFloat, help: String)] = [
+    ("Minute", 56, "Minute (0–59)"),
+    ("Hour", 56, "Hour (0–23)"),
+    ("Day", 56, "Day of month (1–31)"),
+    ("Month", 56, "Month (1–12)"),
+    ("Weekday", 112, "Day of week (0–7, Sunday = 0 or 7)")
+]
+
 struct SettingsView: View {
     @ObservedObject var store: AppSchedulerStore
 
@@ -16,7 +24,13 @@ struct SettingsView: View {
                 Text("On").frame(width: 36)
                 Text("App or URL").frame(width: 320, alignment: .leading)
                 Text("Action").frame(width: 90, alignment: .leading)
-                Text("Cron").frame(width: 210, alignment: .leading)
+                HStack(spacing: 6) {
+                    ForEach(cronColumns.indices, id: \.self) { index in
+                        Text(cronColumns[index].title)
+                            .frame(width: cronColumns[index].width)
+                            .help(cronColumns[index].help)
+                    }
+                }
                 Text("When (local time)").frame(width: 215, alignment: .leading)
                 Spacer()
             }
@@ -61,7 +75,7 @@ struct SettingsView: View {
                 .lineLimit(2)
         }
         .padding(20)
-        .frame(minWidth: 1020, minHeight: 420)
+        .frame(minWidth: 1180, minHeight: 420)
     }
 }
 
@@ -139,12 +153,7 @@ private struct ScheduleRow: View {
             .disabled(schedule.appURL != nil)
             .help(schedule.appURL != nil ? "URLs can only be opened, not quit" : "Open or quit the app")
 
-            TextField("0 9 * * 1-5", text: $schedule.cron)
-                .font(.system(.body, design: .monospaced))
-                .textFieldStyle(.roundedBorder)
-                .accessibilityLabel("Cron schedule")
-                .help("minute (0–59) hour (0–23) day (1–31) month (1–12) weekday (0–7, Sunday = 0 or 7). Supports *, lists, ranges, and /steps. No seconds or commands.")
-                .frame(width: 210)
+            CronEditor(expression: $schedule.cron)
 
             Group {
                 if let description = schedule.scheduleDescription {
@@ -166,5 +175,60 @@ private struct ScheduleRow: View {
                 .accessibilityLabel("Remove schedule for \(schedule.targetName)")
         }
         .opacity(schedule.isEnabled ? 1 : 0.6)
+    }
+}
+
+private struct CronEditor: View {
+    @Binding var expression: String
+    @State private var fields: [String]
+
+    init(expression: Binding<String>) {
+        _expression = expression
+        _fields = State(initialValue: Self.fields(from: expression.wrappedValue))
+    }
+
+    var body: some View {
+        HStack(spacing: 6) {
+            ForEach(cronColumns.indices, id: \.self) { index in
+                TextField("*", text: Binding(
+                    get: { fields[index] },
+                    set: { value in
+                        let pasted = value.split(whereSeparator: { $0.isWhitespace })
+                        if pasted.count == 5 {
+                            fields = pasted.map(String.init)
+                        } else {
+                            fields[index] = value.trimmingCharacters(in: .whitespacesAndNewlines)
+                        }
+                        let tokens = fields.joined(separator: " ").split(whereSeparator: { $0.isWhitespace })
+                        if tokens.count == 5 { fields = tokens.map(String.init) }
+                        expression = fields.joined(separator: " ")
+                    }
+                ))
+                .font(.system(.body, design: .monospaced))
+                .textFieldStyle(.roundedBorder)
+                .multilineTextAlignment(.center)
+                .frame(width: cronColumns[index].width)
+                .accessibilityLabel("Cron \(cronColumns[index].title)")
+                .help("\(cronColumns[index].help). Supports *, lists, ranges, and /steps. Paste a five-field cron into any column to fill all five.")
+            }
+        }
+        .onChange(of: expression) { value in
+            // Keep blank columns in place while editing; splitting on whitespace
+            // after every keystroke would shift the remaining fields to the left.
+            if value != fields.joined(separator: " ") {
+                fields = Self.fields(from: value)
+            }
+        }
+    }
+
+    private static func fields(from expression: String) -> [String] {
+        let tokens = expression.split(whereSeparator: { $0.isWhitespace }).map(String.init)
+        if tokens.count == 5 { return tokens }
+        let columns = expression.components(separatedBy: " ")
+        if columns.count == 5 { return columns }
+        // Keep extra tokens visible in the last column rather than dropping them
+        // and accidentally enabling an invalid saved expression.
+        return (0..<4).map { $0 < tokens.count ? tokens[$0] : "" }
+            + [tokens.dropFirst(4).joined(separator: " ")]
     }
 }
