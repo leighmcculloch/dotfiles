@@ -21,9 +21,12 @@ settings window leaves the scheduler running, with no Dock icon.
    For example, open Slack with `0 9 * * 1-5` and quit it with `0 17 * * 1-5`.
 
 Changes save automatically. The checkbox enables or disables a row, and the
-trash button removes it. Blank or invalid cron expressions show an inline
-error and do not run. Existing time/day schedules migrate to equivalent cron
-expressions automatically; rows with no selected days stay inactive.
+trash button removes it. Drag a row by the grip at its left to reorder the
+schedules. The new order saves automatically and is also used in the menu.
+When rows target the same app or URL at the same time, the bottom-most row wins.
+Blank or invalid cron expressions show an inline error and do not run. Existing
+time/day schedules migrate to equivalent cron expressions automatically; rows
+with no selected days stay inactive.
 The dropdown includes apps in `/Applications`, `/System/Applications`, and
 `~/Applications`, including Utilities folders. **Add Other App…** lets you
 select an app elsewhere. Saved app selections survive relaunches.

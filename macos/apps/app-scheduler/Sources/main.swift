@@ -87,12 +87,12 @@ private final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate
     @objc private func showSettings() {
         if settingsWindow == nil {
             let window = NSWindow(
-                contentRect: NSRect(x: 0, y: 0, width: 1240, height: 520),
+                contentRect: NSRect(x: 0, y: 0, width: 1270, height: 520),
                 styleMask: [.titled, .closable, .miniaturizable, .resizable],
                 backing: .buffered, defer: false
             )
             window.title = "App Scheduler Settings"
-            window.contentMinSize = NSSize(width: 1180, height: 420)
+            window.contentMinSize = NSSize(width: 1210, height: 420)
             window.isReleasedWhenClosed = false
             window.contentView = NSHostingView(rootView: SettingsView(store: store))
             window.center()

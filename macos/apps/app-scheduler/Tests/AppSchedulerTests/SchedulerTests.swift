@@ -118,15 +118,24 @@ final class SchedulerTests: XCTestCase {
         )
     }
 
-    func testSameTimeLastRowWinsWithoutConflatingDifferentAppPaths() {
+    func testSameTimeLastRowWinsWithoutConflatingDifferentAppPaths() throws {
         let open = schedule(hour: 9, minute: 0)
         let quit = schedule(action: .quit, hour: 9, minute: 0)
         let otherCopy = schedule(path: "/Users/test/Applications/Test.app", hour: 9, minute: 0)
-        var scheduler = Scheduler(at: date("2026-10-05T08:59:59+10:00"))
-        XCTAssertEqual(
-            scheduler.dueActions([open, quit, otherCopy], at: date("2026-10-05T09:00:00+10:00"), calendar: brisbane).map(\.schedule),
-            [quit, otherCopy]
-        )
+        for (rows, expected) in [
+            ([open, quit, otherCopy], [quit, otherCopy]),
+            ([quit, otherCopy, open], [otherCopy, open])
+        ] {
+            // Dragging a row changes both its menu position and same-time priority;
+            // saving and restoring must preserve that exact order and row identity.
+            let restored = try JSONDecoder().decode([ScheduledAction].self, from: JSONEncoder().encode(rows))
+            XCTAssertEqual(restored, rows)
+            var scheduler = Scheduler(at: date("2026-10-05T08:59:59+10:00"))
+            XCTAssertEqual(
+                scheduler.dueActions(restored, at: date("2026-10-05T09:00:00+10:00"), calendar: brisbane).map(\.schedule),
+                expected
+            )
+        }
     }
 
     func testInactiveAndIncompleteRulesDoNotRun() {

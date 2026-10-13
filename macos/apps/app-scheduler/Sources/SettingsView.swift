@@ -21,6 +21,10 @@ struct SettingsView: View {
                 .foregroundStyle(.secondary)
 
             HStack(spacing: 12) {
+                Image(systemName: "arrow.up.arrow.down")
+                    .frame(width: 16)
+                    .help("Drag rows to reorder schedules")
+                    .accessibilityLabel("Row order")
                 Text("On").frame(width: 36)
                 Text("App or URL").frame(width: 320, alignment: .leading)
                 Text("Action").frame(width: 90, alignment: .leading)
@@ -38,7 +42,7 @@ struct SettingsView: View {
             .foregroundStyle(.secondary)
             Divider()
 
-            ScrollView {
+            List {
                 if store.schedules.isEmpty {
                     VStack(spacing: 12) {
                         Image(systemName: "calendar").font(.largeTitle)
@@ -48,18 +52,23 @@ struct SettingsView: View {
                     }
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 40)
+                    .listRowSeparator(.hidden)
                 } else {
-                    LazyVStack(spacing: 14) {
-                        ForEach($store.schedules) { $schedule in
-                            ScheduleRow(schedule: $schedule, applications: store.applications) {
-                                let id = schedule.id
-                                store.schedules.removeAll { $0.id == id }
-                            }
+                    ForEach($store.schedules) { $schedule in
+                        ScheduleRow(schedule: $schedule, applications: store.applications) {
+                            let id = schedule.id
+                            store.schedules.removeAll { $0.id == id }
                         }
+                        .listRowInsets(EdgeInsets(top: 7, leading: 0, bottom: 7, trailing: 0))
+                        .listRowSeparator(.hidden)
                     }
-                    .padding(.vertical, 4)
+                    .onMove { offsets, destination in
+                        store.schedules.move(fromOffsets: offsets, toOffset: destination)
+                    }
                 }
             }
+            .listStyle(.plain)
+            .scrollContentBackground(.hidden)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
 
             Divider()
@@ -75,7 +84,7 @@ struct SettingsView: View {
                 .lineLimit(2)
         }
         .padding(20)
-        .frame(minWidth: 1180, minHeight: 420)
+        .frame(minWidth: 1210, minHeight: 420)
     }
 }
 
@@ -86,6 +95,12 @@ private struct ScheduleRow: View {
 
     var body: some View {
         HStack(spacing: 12) {
+            Image(systemName: "line.3.horizontal")
+                .foregroundStyle(.secondary)
+                .frame(width: 16, height: 24)
+                .help("Drag to reorder this schedule")
+                .accessibilityLabel("Reorder schedule for \(schedule.targetName)")
+
             Toggle("Enabled", isOn: $schedule.isEnabled)
                 .labelsHidden()
                 .toggleStyle(.checkbox)
