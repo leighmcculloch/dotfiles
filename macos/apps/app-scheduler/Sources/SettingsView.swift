@@ -6,15 +6,17 @@ struct SettingsView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text("App Scheduler").font(.title2.bold())
-            Text("Choose an app or enter an app URL, then set the action, time, and days. URLs support Open only. Add multiple rows for different times.")
+            Text("Choose an app or enter an app URL, then set the action and cron schedule. URLs support Open only.")
+                .foregroundStyle(.secondary)
+            Text("Cron: minute hour day month weekday · 0 9 * * 1-5 = weekdays at 9am · */15 * * * * = every 15 minutes. Each app or exact URL can run at most once per minute.")
+                .font(.caption)
                 .foregroundStyle(.secondary)
 
             HStack(spacing: 12) {
                 Text("On").frame(width: 36)
                 Text("App or URL").frame(width: 320, alignment: .leading)
                 Text("Action").frame(width: 90, alignment: .leading)
-                Text("Time").frame(width: 105, alignment: .leading)
-                Text("Days").frame(width: 280, alignment: .leading)
+                Text("Cron schedule (local time)").frame(width: 397, alignment: .leading)
                 Spacer()
             }
             .font(.caption.weight(.semibold))
@@ -26,7 +28,7 @@ struct SettingsView: View {
                     VStack(spacing: 12) {
                         Image(systemName: "calendar").font(.largeTitle)
                         Text("No schedules yet").font(.headline)
-                        Text("Add a schedule to get started. New rows default to Monday–Friday.")
+                        Text("Add a schedule to get started. New rows default to 9am Monday–Friday.")
                             .foregroundStyle(.secondary)
                     }
                     .frame(maxWidth: .infinity)
@@ -66,12 +68,6 @@ private struct ScheduleRow: View {
     @Binding var schedule: ScheduledAction
     let applications: [InstalledApp]
     let remove: () -> Void
-
-    private let days: [(Int, String, String)] = [
-        (2, "Mon", "Monday"), (3, "Tue", "Tuesday"), (4, "Wed", "Wednesday"),
-        (5, "Thu", "Thursday"), (6, "Fri", "Friday"), (7, "Sat", "Saturday"),
-        (1, "Sun", "Sunday")
-    ]
 
     var body: some View {
         HStack(spacing: 12) {
@@ -142,26 +138,20 @@ private struct ScheduleRow: View {
             .disabled(schedule.appURL != nil)
             .help(schedule.appURL != nil ? "URLs can only be opened, not quit" : "Open or quit the app")
 
-            DatePicker("Time", selection: time, displayedComponents: .hourAndMinute)
-                .labelsHidden()
-                .frame(width: 105)
-
-            HStack(spacing: 4) {
-                ForEach(days, id: \.0) { day, shortName, fullName in
-                    Toggle(shortName, isOn: Binding(
-                        get: { schedule.weekdays.contains(day) },
-                        set: { selected in
-                            if selected { schedule.weekdays.insert(day) }
-                            else { schedule.weekdays.remove(day) }
-                        }
-                    ))
-                    .toggleStyle(.button)
-                    .controlSize(.small)
-                    .accessibilityLabel(fullName)
+            VStack(alignment: .leading, spacing: 3) {
+                TextField("0 9 * * 1-5", text: $schedule.cron)
+                    .font(.system(.body, design: .monospaced))
+                    .textFieldStyle(.roundedBorder)
+                    .accessibilityLabel("Cron schedule")
+                    .help("minute (0–59) hour (0–23) day (1–31) month (1–12) weekday (0–7, Sunday = 0 or 7). Supports *, lists, ranges, and /steps. No seconds or commands.")
+                if let error = schedule.cronError {
+                    Text(error)
+                        .font(.caption)
+                        .foregroundStyle(.red)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
             }
-            .frame(width: 280, alignment: .leading)
-            .help(schedule.weekdays.isEmpty ? "Select at least one day to run this schedule" : "Days this schedule runs")
+            .frame(width: 397, alignment: .leading)
 
             Spacer(minLength: 0)
             Button(action: remove) { Image(systemName: "trash") }
@@ -170,20 +160,5 @@ private struct ScheduleRow: View {
                 .accessibilityLabel("Remove schedule for \(schedule.targetName)")
         }
         .opacity(schedule.isEnabled ? 1 : 0.6)
-    }
-
-    private var time: Binding<Date> {
-        Binding(
-            get: {
-                Calendar.current.date(from: DateComponents(
-                    year: 2001, month: 1, day: 15, hour: schedule.hour, minute: schedule.minute
-                ))!
-            },
-            set: { date in
-                let components = Calendar.current.dateComponents([.hour, .minute], from: date)
-                schedule.hour = components.hour!
-                schedule.minute = components.minute!
-            }
-        )
     }
 }

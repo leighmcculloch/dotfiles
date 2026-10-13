@@ -7,37 +7,33 @@ final class SchedulerTests: XCTestCase {
 
     func testMenuSummariesDescribeActiveDisabledAndIncompleteSchedules() {
         var rule = schedule(hour: 9, minute: 7)
-        XCTAssertEqual(rule.menuSummary, "Open Test — 09:07 · Mon–Fri")
+        XCTAssertEqual(rule.menuSummary, "Open Test — 7 9 * * 1,2,3,4,5")
         rule.action = .quit
-        rule.hour = 17
-        rule.minute = 23
-        rule.weekdays = [1, 2, 5]
+        rule.cron = "23 17 * * 0,1,4"
         rule.isEnabled = false
-        XCTAssertEqual(rule.menuSummary, "Quit Test — 17:23 · Mon, Thu, Sun (disabled)")
+        XCTAssertEqual(rule.menuSummary, "Quit Test — 23 17 * * 0,1,4 (disabled)")
 
         rule.isEnabled = true
         rule.action = .open
         rule.appURL = "  slack://channel?team=T1&id=C2  "
-        rule.weekdays = [1, 7]
-        XCTAssertEqual(rule.menuSummary, "Open slack://channel?team=T1&id=C2 — 17:23 · Sat–Sun")
-        rule.weekdays = [1, 2, 3, 4, 5, 6, 7]
-        XCTAssertEqual(rule.menuSummary, "Open slack://channel?team=T1&id=C2 — 17:23 · Every day")
+        rule.cron = "*/15 * * * *"
+        XCTAssertEqual(rule.menuSummary, "Open slack://channel?team=T1&id=C2 — */15 * * * *")
 
         rule.appURL = ""
-        rule.weekdays = []
-        XCTAssertEqual(rule.menuSummary, "Open No URL entered — 17:23 · No days (incomplete)")
+        rule.cron = ""
+        XCTAssertEqual(rule.menuSummary, "Open No URL entered — No cron entered (incomplete)")
         rule.appURL = nil
         rule.appPath = ""
-        XCTAssertEqual(rule.menuSummary, "Open No app selected — 17:23 · No days (incomplete)")
+        XCTAssertEqual(rule.menuSummary, "Open No app selected — No cron entered (incomplete)")
     }
 
     func testMenuSummaryKeepsLongTargetsCompactWithoutChangingTheURL() {
         var rule = schedule(hour: 12, minute: 34, days: [4])
         let target = "https://example.com/abcdefghijklmnopqrstuvwxyz01"
         rule.appURL = target
-        XCTAssertEqual(rule.menuSummary, "Open https://example.com/abcdefghijklmnopqrstuvwxyz01 — 12:34 · Wed")
+        XCTAssertEqual(rule.menuSummary, "Open https://example.com/abcdefghijklmnopqrstuvwxyz01 — 34 12 * * 3")
         rule.appURL = target + "2"
-        XCTAssertEqual(rule.menuSummary, "Open https://example.com/abcdefghijklmnopqrstuvwxyz0… — 12:34 · Wed")
+        XCTAssertEqual(rule.menuSummary, "Open https://example.com/abcdefghijklmnopqrstuvwxyz0… — 34 12 * * 3")
         XCTAssertEqual(rule.targetName, target + "2")
     }
 
@@ -164,6 +160,14 @@ final class SchedulerTests: XCTestCase {
             [ScheduledEvent(schedule: rule, date: date("2026-04-05T02:30:00+11:00"))]
         )
         XCTAssertTrue(scheduler.dueActions([rule], at: date("2026-04-05T02:30:00+10:00"), calendar: sydney).isEmpty)
+
+        // Waking in the second 2am hour must still catch the first occurrence,
+        // even though the current wall-clock minute is earlier than the rule.
+        var sleeping = Scheduler(at: date("2026-04-05T01:59:59+11:00"))
+        XCTAssertEqual(
+            sleeping.dueActions([rule], at: date("2026-04-05T02:15:00+10:00"), calendar: sydney),
+            [ScheduledEvent(schedule: rule, date: date("2026-04-05T02:30:00+11:00"))]
+        )
     }
 
     func testPersistenceKeepsIndependentRowsAndEveryField() throws {
@@ -187,10 +191,13 @@ final class SchedulerTests: XCTestCase {
         XCTAssertNil(restored.appURL)
         XCTAssertEqual(restored.appPath, "/Applications/Test.app")
         XCTAssertEqual(restored.action, .quit)
-        XCTAssertEqual(restored.hour, 17)
-        XCTAssertEqual(restored.minute, 23)
-        XCTAssertEqual(restored.weekdays, [2, 4, 6])
+        XCTAssertEqual(restored.cron, "23 17 * * 1,3,5")
         XCTAssertTrue(restored.isActive)
+        var scheduler = Scheduler(at: date("2026-10-07T17:22:59+10:00"))
+        XCTAssertEqual(scheduler.dueActions([restored], at: date("2026-10-07T17:23:00+10:00"), calendar: brisbane).map(\.schedule), [restored])
+        let saved = try XCTUnwrap(JSONSerialization.jsonObject(with: JSONEncoder().encode(restored)) as? [String: Any])
+        XCTAssertEqual(saved["cron"] as? String, restored.cron)
+        XCTAssertNil(saved["weekdays"])
     }
 
     func testURLsRequireASchemeAndPreserveEncodedParameters() {
@@ -222,11 +229,11 @@ final class SchedulerTests: XCTestCase {
         early.appURL = "slack://channel?team=T1&id=C1"
         var late = early
         late.id = UUID()
-        late.hour = 13
+        late.cron = "0 13 * * 1-5"
         var differentURL = early
         differentURL.id = UUID()
         differentURL.appURL = "slack://channel?team=T1&id=C2"
-        differentURL.hour = 11
+        differentURL.cron = "0 11 * * 1-5"
         let appQuit = schedule(action: .quit, hour: 17, minute: 0)
         let rules = [late, differentURL, appQuit, early]
         var scheduler = Scheduler(at: date("2026-10-05T08:00:00+10:00"))
@@ -252,6 +259,107 @@ final class SchedulerTests: XCTestCase {
         XCTAssertNil(restored[2].appURL)
     }
 
+    func testCronIntervalsListsAndSteppedRangesRepeatOnlyAtMatchingMinutes() {
+        var rule = schedule(hour: 9, minute: 0)
+        rule.cron = "7-47/20 8,13 * 10 1-5"
+        var scheduler = Scheduler(at: date("2026-10-05T08:06:59+10:00"))
+        for time in ["08:07", "08:27", "08:47", "13:07"] {
+            let now = date("2026-10-05T\(time):00+10:00")
+            XCTAssertEqual(scheduler.dueActions([rule], at: now, calendar: brisbane), [ScheduledEvent(schedule: rule, date: now)])
+            XCTAssertTrue(scheduler.dueActions([rule], at: now.addingTimeInterval(60), calendar: brisbane).isEmpty)
+        }
+        rule.cron = "*/15 * * * *"
+        scheduler.reset(at: date("2026-10-05T14:14:59+10:00"))
+        XCTAssertEqual(scheduler.dueActions([rule], at: date("2026-10-05T14:15:00+10:00"), calendar: brisbane).count, 1)
+        XCTAssertTrue(scheduler.dueActions([rule], at: date("2026-10-05T14:29:59+10:00"), calendar: brisbane).isEmpty)
+        XCTAssertEqual(scheduler.dueActions([rule], at: date("2026-10-05T14:30:00+10:00"), calendar: brisbane).count, 1)
+    }
+
+    func testCronCalendarFieldsUseStandardDayOrWeekdayAndSundayAliases() {
+        var rule = schedule(hour: 9, minute: 0)
+        rule.cron = "5 6 13 10 2"
+        for (day, expected) in [("2026-10-13", 1), ("2026-10-20", 1), ("2026-10-14", 0), ("2026-11-13", 0)] {
+            var scheduler = Scheduler(at: date("\(day)T06:04:59+10:00"))
+            XCTAssertEqual(scheduler.dueActions([rule], at: date("\(day)T06:05:00+10:00"), calendar: brisbane).count, expected)
+        }
+        // A non-Tuesday 13th still matches; the two restrictions are not ANDed.
+        rule.cron = "5 6 13 * 2"
+        var monday = Scheduler(at: date("2026-07-13T06:04:59+10:00"))
+        XCTAssertEqual(monday.dueActions([rule], at: date("2026-07-13T06:05:00+10:00"), calendar: brisbane).count, 1)
+        for sunday in ["0", "7"] {
+            rule.cron = "0 9 * * \(sunday)"
+            var scheduler = Scheduler(at: date("2026-10-11T08:59:59+10:00"))
+            XCTAssertEqual(scheduler.dueActions([rule], at: date("2026-10-11T09:00:00+10:00"), calendar: brisbane).count, 1)
+        }
+    }
+
+    func testAnnualAndLeapDaySchedulesCatchUpWithoutAssumingWeeklyRecurrence() {
+        var rule = schedule(hour: 9, minute: 0)
+        rule.cron = "5 6 1 2 *"
+        var scheduler = Scheduler(at: date("2026-01-01T00:00:00+10:00"))
+        XCTAssertEqual(
+            scheduler.dueActions([rule], at: date("2026-10-05T12:00:00+10:00"), calendar: brisbane),
+            [ScheduledEvent(schedule: rule, date: date("2026-02-01T06:05:00+10:00"))]
+        )
+        rule.cron = "0 6 29 2 *"
+        scheduler.reset(at: date("2027-02-28T00:00:00+10:00"))
+        XCTAssertTrue(scheduler.dueActions([rule], at: date("2027-03-01T12:00:00+10:00"), calendar: brisbane).isEmpty)
+        XCTAssertEqual(
+            scheduler.dueActions([rule], at: date("2028-03-01T12:00:00+10:00"), calendar: brisbane),
+            [ScheduledEvent(schedule: rule, date: date("2028-02-29T06:00:00+10:00"))]
+        )
+    }
+
+    func testInvalidAndSubMinuteCronsNeverRun() {
+        var rule = schedule(hour: 9, minute: 0)
+        for expression in ["", "* * * * * *", "*/0 * * * *", "*/-1 * * * *", "60 * * * *",
+                           "0 24 * * *", "0 9 0 * *", "0 9 * 13 *", "0 9 * * 8", "0 9 * * MON",
+                           "9-3 * * * *", "1,,2 * * * *", "1/ * * * *", "1//2 * * * *",
+                           "@hourly", "* * * * * open", String(repeating: "9", count: 257)] {
+            rule.cron = expression
+            XCTAssertNotNil(rule.cronError, expression)
+            XCTAssertFalse(rule.isActive, expression)
+            var scheduler = Scheduler(at: date("2026-10-05T08:59:59+10:00"))
+            XCTAssertTrue(scheduler.dueActions([rule], at: date("2026-10-05T09:00:00+10:00"), calendar: brisbane).isEmpty, expression)
+        }
+    }
+
+    func testCooldownUsesDispatchTimeAcrossRowsAndResetsButKeepsOtherTargetsIndependent() {
+        var recurring = schedule(hour: 9, minute: 0)
+        recurring.cron = "* * * * *"
+        let quit = schedule(action: .quit, hour: 9, minute: 1)
+        var url = schedule(hour: 9, minute: 1)
+        url.appURL = "myapp://run"
+        var scheduler = Scheduler(at: date("2026-10-05T08:00:00+10:00"))
+        XCTAssertEqual(
+            scheduler.dueActions([recurring], at: date("2026-10-05T09:00:50+10:00"), calendar: brisbane),
+            [ScheduledEvent(schedule: recurring, date: date("2026-10-05T09:00:00+10:00"))]
+        )
+        scheduler.reset(at: date("2026-10-05T09:00:55+10:00"))
+        XCTAssertEqual(scheduler.dueActions([recurring, quit, url], at: date("2026-10-05T09:01:00+10:00"), calendar: brisbane).map(\.schedule), [url])
+        XCTAssertTrue(scheduler.dueActions([recurring], at: date("2026-10-05T09:01:50+10:00"), calendar: brisbane).isEmpty)
+        XCTAssertEqual(scheduler.dueActions([recurring], at: date("2026-10-05T09:02:00+10:00"), calendar: brisbane).map(\.schedule), [recurring])
+        XCTAssertEqual(scheduler.dueActions([recurring], at: date("2026-10-05T09:03:00+10:00"), calendar: brisbane).map(\.schedule), [recurring])
+    }
+
+    func testLegacyEmptyDaysStayInactiveAndURLSchedulesMigrate() throws {
+        let data = Data("""
+        [{"id":"00000000-0000-0000-0000-000000000001",
+          "appPath":"","appURL":"myapp://run","action":"open",
+          "hour":8,"minute":12,"weekdays":[1,7],"isEnabled":false},
+         {"id":"00000000-0000-0000-0000-000000000002",
+          "appPath":"/Applications/Test.app","action":"open",
+          "hour":9,"minute":0,"weekdays":[],"isEnabled":true}]
+        """.utf8)
+        let restored = try JSONDecoder().decode([ScheduledAction].self, from: data)
+        XCTAssertEqual(restored[0].cron, "12 8 * * 0,6")
+        XCTAssertEqual(restored[0].appURL, "myapp://run")
+        XCTAssertFalse(restored[0].isEnabled)
+        XCTAssertFalse(restored[1].isActive)
+        XCTAssertNotNil(restored[1].cronError)
+        XCTAssertEqual(try JSONDecoder().decode([ScheduledAction].self, from: JSONEncoder().encode(restored)), restored)
+    }
+
     private func schedule(
         path: String = "/Applications/Test.app", action: AppAction = .open,
         hour: Int, minute: Int, days: Set<Int> = [2, 3, 4, 5, 6]
@@ -259,9 +367,8 @@ final class SchedulerTests: XCTestCase {
         var rule = ScheduledAction()
         rule.appPath = path
         rule.action = action
-        rule.hour = hour
-        rule.minute = minute
-        rule.weekdays = days
+        let weekdays = days.map { $0 - 1 }.sorted().map(String.init).joined(separator: ",")
+        rule.cron = days.isEmpty ? "" : "\(minute) \(hour) * * \(weekdays)"
         return rule
     }
 
