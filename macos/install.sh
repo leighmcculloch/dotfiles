@@ -86,6 +86,7 @@ make -C apps/menu-bar-usage-codex install
 make -C apps/paste-markdown install
 make -C apps/paste-pr install
 make -C apps/qr-reader install
+make -C apps/video-compressor install
 make -C apps/stopwatch install
 make -C apps/app-scheduler install
 make -C apps/colour-blindness install
