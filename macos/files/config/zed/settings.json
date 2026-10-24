@@ -7,12 +7,20 @@
 // custom settings, run `zed: open default settings` from the
 // command palette (cmd-shift-p / ctrl-shift-p)
 {
+  "agent_servers": {
+    "claude-acp": {
+      "default_config_options": {
+        "effort": "medium"
+      },
+      "type": "registry"
+    }
+  },
   "diff_view_style": "unified",
   "agent": {
     "default_model": {
-      "effort": "max",
+      "effort": "high",
       "provider": "openai-subscribed",
-      "model": "gpt-5.6-luna",
+      "model": "gpt-6.1-sol",
       "enable_thinking": true
     },
     "favorite_models": [],
