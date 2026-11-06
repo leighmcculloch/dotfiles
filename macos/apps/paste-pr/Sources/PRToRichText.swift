@@ -1,17 +1,20 @@
 import Foundation
 
-/// Converts a GitHub pull request, issue, or discussion link into a rich-text
+/// Converts a GitHub pull request, stack, issue, or discussion link into a rich-text
 /// clipboard entry.
 ///
 /// This mirrors the behaviour of the reference shell script: it asks the
 /// GitHub CLI for the resource's title, number, and repository, then counts
 /// additions and deletions in filtered pull request diffs before formatting a
-/// single line of Markdown. If GitHub cannot provide the filtered diff, the
+/// summary of Markdown. Stacks include a header and one bullet per pull request,
+/// in stack order. If GitHub cannot provide the filtered diff, the
 /// pull request's basic additions and deletions counts are used instead. The
 /// Slack emoji names are configurable in the app
 /// and default to:
 ///
-///     Pull requests: :github-link-pr: <title> [<repo>#<number>](<url>) `+<additions> -<deletions>`
+///     Pull requests: :github-rainbow: <title> [<repo>#<number>](<url>) `+<additions> -<deletions>`
+///     Stacks: :github-rainbow: Stack of N changes [<repo>#<number>](<url>):
+///     Pull requests in stacks: - :one: <title> [<repo>#<number>](<url>) `+<additions> -<deletions>`
 ///     Issues: :github-link-issue: <title> [<repo>#<number>](<url>)
 ///     Discussions: :github-link-discussion: <title> [<repo>#<number>](<url>)
 ///
@@ -42,7 +45,10 @@ enum PRToRichText {
 
         switch link.kind {
         case .pullRequest:
-            return try convertPullRequest(link, ghRunner: ghRunner, emojiSettings: emojiSettings)
+            let result = try convertPullRequest(link, ghRunner: ghRunner, emoji: emojiSettings.pullRequestEmoji)
+            return Result(markdown: result.markdown, html: "<p>\(result.html)</p>")
+        case .stack:
+            return try convertStack(link, ghRunner: ghRunner, emojiSettings: emojiSettings)
         case .issue, .discussion:
             return try convertIssueOrDiscussion(link, ghRunner: ghRunner, emojiSettings: emojiSettings)
         }
@@ -55,7 +61,7 @@ enum PRToRichText {
     private static func convertPullRequest(
         _ link: GitHubLink,
         ghRunner: GHRunner?,
-        emojiSettings: SlackEmojiSettings
+        emoji: String
     ) throws -> Result {
         let json = try fetch([
             "pr", "view", link.url,
@@ -87,7 +93,6 @@ enum PRToRichText {
 
         let repo = link.repository
         let url = link.url
-        let emoji = emojiSettings.pullRequestEmoji
         let escapedEmoji = escapeHTML(emoji)
 
         let markdown =
@@ -96,9 +101,36 @@ enum PRToRichText {
             "`+\(counts.additions) -\(counts.deletions)`"
 
         let html =
-            "<p>\(escapedEmoji) \(escapeHTML(pr.title)) " +
+            "\(escapedEmoji) \(escapeHTML(pr.title)) " +
             "<a href=\"\(escapeHTML(url))\">\(escapeHTML(repo))#\(pr.number)</a> " +
-            "<code>+\(counts.additions) -\(counts.deletions)</code></p>"
+            "<code>+\(counts.additions) -\(counts.deletions)</code>"
+
+        return Result(markdown: markdown, html: html)
+    }
+
+    private static func convertStack(
+        _ link: GitHubLink,
+        ghRunner: GHRunner?,
+        emojiSettings: SlackEmojiSettings
+    ) throws -> Result {
+        let json = try fetch([
+            "api", "repos/\(link.owner)/\(link.repository)/stacks/\(link.number)",
+        ], with: ghRunner)
+        let stack = try JSONDecoder().decode(PullRequestStack.self, from: json)
+        let pullRequests = try stack.pullRequests.enumerated().map { index, entry in
+            try convertPullRequest(
+                GitHubLink(kind: .pullRequest, owner: link.owner, repository: link.repository, number: entry.number),
+                ghRunner: ghRunner,
+                emoji: emojiSettings.stackPullRequestEmoji(at: index)
+            )
+        }
+
+        let header = "\(emojiSettings.pullRequestEmoji) Stack of \(pullRequests.count) changes"
+        let markdown = "\(header) [\(link.repository)#\(link.number)](\(link.url)):" +
+            "\n" + pullRequests.map { "- \($0.markdown)" }.joined(separator: "\n")
+        let html = "<p>\(escapeHTML(header)) " +
+            "<a href=\"\(escapeHTML(link.url))\">\(escapeHTML(link.repository))#\(link.number)</a>:</p>" +
+            "<ul>" + pullRequests.map { "<li>\($0.html)</li>" }.joined() + "</ul>"
 
         return Result(markdown: markdown, html: html)
     }
@@ -295,6 +327,8 @@ enum PRToRichText {
         switch pathParts[2].lowercased() {
         case "pull":
             kind = .pullRequest
+        case "stack":
+            kind = .stack
         case "issues":
             kind = .issue
         case "discussions":
@@ -305,13 +339,12 @@ enum PRToRichText {
 
         let owner = pathParts[0]
         let repository = pathParts[1]
-        let resourcePath = kind == .pullRequest ? "pull" : kind == .issue ? "issues" : "discussions"
-        let canonicalURL = "https://github.com/\(owner)/\(repository)/\(resourcePath)/\(number)"
 
         return GitHubLink(
             kind: kind,
+            owner: owner,
             repository: repository,
-            url: canonicalURL
+            number: number
         )
     }
 
@@ -326,11 +359,16 @@ enum PRToRichText {
 }
 
 struct SlackEmojiSettings: Equatable {
-    static let defaultPullRequest = "github-link-pr"
+    static let defaultPullRequest = "github-rainbow"
+    static let defaultStackPullRequests = [
+        "one", "two", "three", "four", "five",
+        "six", "seven", "eight", "nine", "keycap_ten",
+    ]
     static let defaultIssue = "github-link-issue"
     static let defaultDiscussion = "github-link-discussion"
 
     private static let pullRequestDefaultsKey = "SlackEmojiPullRequest"
+    private static let stackPullRequestsDefaultsKey = "SlackEmojiStackPullRequests"
     private static let issueDefaultsKey = "SlackEmojiIssue"
     private static let discussionDefaultsKey = "SlackEmojiDiscussion"
 
@@ -341,11 +379,18 @@ struct SlackEmojiSettings: Equatable {
     )
 
     let pullRequest: String
+    let stackPullRequests: [String]
     let issue: String
     let discussion: String
 
-    init(pullRequest: String, issue: String, discussion: String) {
+    init(
+        pullRequest: String,
+        issue: String,
+        discussion: String,
+        stackPullRequests: [String] = Self.defaultStackPullRequests
+    ) {
         self.pullRequest = Self.normalizedName(pullRequest, fallback: Self.defaultPullRequest)
+        self.stackPullRequests = stackPullRequests.map { Self.normalizedName($0, fallback: "") }
         self.issue = Self.normalizedName(issue, fallback: Self.defaultIssue)
         self.discussion = Self.normalizedName(discussion, fallback: Self.defaultDiscussion)
     }
@@ -354,12 +399,14 @@ struct SlackEmojiSettings: Equatable {
         self.init(
             pullRequest: userDefaults.string(forKey: Self.pullRequestDefaultsKey) ?? Self.defaultPullRequest,
             issue: userDefaults.string(forKey: Self.issueDefaultsKey) ?? Self.defaultIssue,
-            discussion: userDefaults.string(forKey: Self.discussionDefaultsKey) ?? Self.defaultDiscussion
+            discussion: userDefaults.string(forKey: Self.discussionDefaultsKey) ?? Self.defaultDiscussion,
+            stackPullRequests: userDefaults.stringArray(forKey: Self.stackPullRequestsDefaultsKey) ?? Self.defaultStackPullRequests
         )
     }
 
     func save(to userDefaults: UserDefaults = .standard) {
         userDefaults.set(pullRequest, forKey: Self.pullRequestDefaultsKey)
+        userDefaults.set(stackPullRequests, forKey: Self.stackPullRequestsDefaultsKey)
         userDefaults.set(issue, forKey: Self.issueDefaultsKey)
         userDefaults.set(discussion, forKey: Self.discussionDefaultsKey)
     }
@@ -367,6 +414,16 @@ struct SlackEmojiSettings: Equatable {
     var pullRequestEmoji: String { ":\(pullRequest):" }
     var issueEmoji: String { ":\(issue):" }
     var discussionEmoji: String { ":\(discussion):" }
+
+    func stackPullRequestEmoji(at index: Int) -> String {
+        if index < stackPullRequests.count, !stackPullRequests[index].isEmpty {
+            return ":\(stackPullRequests[index]):"
+        }
+        if index < Self.defaultStackPullRequests.count {
+            return ":\(Self.defaultStackPullRequests[index]):"
+        }
+        return "\(index + 1)."
+    }
 
     private static func normalizedName(_ value: String, fallback: String) -> String {
         let name = value
@@ -378,18 +435,34 @@ struct SlackEmojiSettings: Equatable {
 }
 
 private struct GitHubLink {
-    enum Kind: Equatable {
-        case pullRequest
-        case issue
-        case discussion
+    enum Kind: String {
+        case pullRequest = "pull"
+        case stack
+        case issue = "issues"
+        case discussion = "discussions"
     }
 
     let kind: Kind
+    let owner: String
     let repository: String
-    let url: String
+    let number: Int
+
+    var url: String { "https://github.com/\(owner)/\(repository)/\(kind.rawValue)/\(number)" }
 }
 
 // MARK: - JSON Model
+
+private struct PullRequestStack: Decodable {
+    struct Entry: Decodable {
+        let number: Int
+    }
+
+    let pullRequests: [Entry]
+
+    enum CodingKeys: String, CodingKey {
+        case pullRequests = "pull_requests"
+    }
+}
 
 private struct PullRequest: Decodable {
     let title: String

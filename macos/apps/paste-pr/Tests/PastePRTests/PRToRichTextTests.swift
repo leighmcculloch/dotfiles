@@ -64,7 +64,7 @@ final class PRToRichTextTests: XCTestCase {
                 "--exclude", "tests-expanded/*",
             ],
         ])
-        XCTAssertEqual(result.markdown, ":github-link-pr: Fix the thing [base#123](https://github.com/owner/base/pull/123) `+1 -1`")
+        XCTAssertEqual(result.markdown, ":github-rainbow: Fix the thing [base#123](https://github.com/owner/base/pull/123) `+1 -1`")
     }
 
     func testPullRequestCountsChangedLinesThatBeginWithDiffCharacters() throws {
@@ -90,7 +90,7 @@ final class PRToRichTextTests: XCTestCase {
             }
         )
 
-        XCTAssertEqual(result.markdown, ":github-link-pr: Count the diff [repo#123](https://github.com/owner/repo/pull/123) `+2 -2`")
+        XCTAssertEqual(result.markdown, ":github-rainbow: Count the diff [repo#123](https://github.com/owner/repo/pull/123) `+2 -2`")
     }
 
     func testPullRequestFallsBackToBasicDiffCountsWhenFilteredDiffFails() throws {
@@ -108,11 +108,11 @@ final class PRToRichTextTests: XCTestCase {
 
         XCTAssertEqual(
             result.markdown,
-            ":github-link-pr: Large generated diff [repo#123](https://github.com/owner/repo/pull/123) `+31019 -21`"
+            ":github-rainbow: Large generated diff [repo#123](https://github.com/owner/repo/pull/123) `+31019 -21`"
         )
         XCTAssertEqual(
             result.html,
-            "<p>:github-link-pr: Large generated diff <a href=\"https://github.com/owner/repo/pull/123\">repo#123</a> <code>+31019 -21</code></p>"
+            "<p>:github-rainbow: Large generated diff <a href=\"https://github.com/owner/repo/pull/123\">repo#123</a> <code>+31019 -21</code></p>"
         )
     }
 
@@ -174,7 +174,112 @@ final class PRToRichTextTests: XCTestCase {
             }
         )
 
-        XCTAssertEqual(result.markdown, ":github-link-pr: Filter the diff [repo#123](https://github.com/owner/repo/pull/123) `+2 -2`")
+        XCTAssertEqual(result.markdown, ":github-rainbow: Filter the diff [repo#123](https://github.com/owner/repo/pull/123) `+2 -2`")
+    }
+
+    func testStackFormatsAllPullRequestsInStackOrder() throws {
+        let result = try PRToRichText.convert(
+            prLink: "http://www.github.com/owner/repo/stack/13?tab=changes#top",
+            ghRunner: { arguments in
+                switch arguments[0] {
+                case "api":
+                    XCTAssertEqual(arguments, ["api", "repos/owner/repo/stacks/13"])
+                    return Data(#"{"pull_requests":[{"number":42},{"number":7}]}"#.utf8)
+                case "pr":
+                    if arguments[1] == "view" {
+                        if arguments[2] == "https://github.com/owner/repo/pull/42" {
+                            return Data(#"{"title":"Base <change> & fix","number":42,"additions":9,"deletions":5}"#.utf8)
+                        }
+                        XCTAssertEqual(arguments[2], "https://github.com/owner/repo/pull/7")
+                        return Data(#"{"title":"Follow-up","number":7,"additions":8,"deletions":3}"#.utf8)
+                    }
+                    if arguments[2] == "https://github.com/owner/repo/pull/7" {
+                        throw NSError(domain: "PastePRTests", code: 1)
+                    }
+                    return Data("""
+                    diff --git a/file.swift b/file.swift
+                    --- a/file.swift
+                    +++ b/file.swift
+                    @@ -1 +1,2 @@
+                    -old
+                    +new
+                    +another
+                    """.utf8)
+                default:
+                    XCTFail("Unexpected GitHub CLI command: \(arguments)")
+                    return Data()
+                }
+            }
+        )
+
+        XCTAssertEqual(result.markdown, """
+        :github-rainbow: Stack of 2 changes [repo#13](https://github.com/owner/repo/stack/13):
+        - :one: Base <change> & fix [repo#42](https://github.com/owner/repo/pull/42) `+2 -1`
+        - :two: Follow-up [repo#7](https://github.com/owner/repo/pull/7) `+8 -3`
+        """)
+        XCTAssertEqual(result.html,
+            "<p>:github-rainbow: Stack of 2 changes <a href=\"https://github.com/owner/repo/stack/13\">repo#13</a>:</p>" +
+            "<ul><li>:one: Base &lt;change&gt; &amp; fix " +
+            "<a href=\"https://github.com/owner/repo/pull/42\">repo#42</a> <code>+2 -1</code></li>" +
+            "<li>:two: Follow-up <a href=\"https://github.com/owner/repo/pull/7\">repo#7</a> " +
+            "<code>+8 -3</code></li></ul>"
+        )
+    }
+
+    func testStackUsesConfiguredPositionalEmojisAndNumberedFallbacks() throws {
+        let settings = SlackEmojiSettings(
+            pullRequest: "custom-pr",
+            issue: "custom-issue",
+            discussion: "custom-discussion",
+            stackPullRequests: [" :first: ", " : ", "third"]
+        )
+        let result = try PRToRichText.convert(
+            prLink: "github.com/owner/repo/stack/13",
+            ghRunner: { arguments in
+                if arguments[0] == "api" {
+                    return try JSONSerialization.data(withJSONObject: [
+                        "pull_requests": (1...11).map { ["number": $0 + 20] },
+                    ])
+                }
+                if arguments[1] == "view" {
+                    let number = Int(URL(string: arguments[2])!.lastPathComponent)!
+                    return try JSONSerialization.data(withJSONObject: [
+                        "title": "Change \(number)", "number": number, "additions": 0, "deletions": 0,
+                    ])
+                }
+                return Data()
+            },
+            emojiSettings: settings
+        )
+
+        let lines = result.markdown.components(separatedBy: "\n")
+        XCTAssertEqual(lines.count, 12)
+        XCTAssertEqual(lines[0], ":custom-pr: Stack of 11 changes [repo#13](https://github.com/owner/repo/stack/13):")
+        for (line, emoji, number) in [
+            (1, ":first:", 21), (2, ":two:", 22), (3, ":third:", 23), (4, ":four:", 24),
+            (5, ":five:", 25), (6, ":six:", 26), (7, ":seven:", 27), (8, ":eight:", 28),
+            (9, ":nine:", 29), (10, ":keycap_ten:", 30), (11, "11.", 31),
+        ] {
+            XCTAssertEqual(lines[line], "- \(emoji) Change \(number) [repo#\(number)](https://github.com/owner/repo/pull/\(number)) `+0 -0`")
+        }
+    }
+
+    func testStackDoesNotReturnPartialResultsWhenAPullRequestCannotBeFetched() {
+        XCTAssertThrowsError(try PRToRichText.convert(
+            prLink: "github.com/owner/repo/stack/13",
+            ghRunner: { arguments in
+                if arguments[0] == "api" {
+                    return Data(#"{"pull_requests":[{"number":42},{"number":7}]}"#.utf8)
+                }
+                if arguments[2].hasSuffix("/7") {
+                    throw NSError(domain: "PastePRTests", code: 1)
+                }
+                if arguments[1] == "view" {
+                    return Data(#"{"title":"Base","number":42,"additions":0,"deletions":0}"#.utf8)
+                }
+                return Data()
+            }
+        ))
     }
 
     func testIssueUsesCanonicalURL() throws {
@@ -217,7 +322,8 @@ final class PRToRichTextTests: XCTestCase {
         let settings = SlackEmojiSettings(
             pullRequest: "custom-pr",
             issue: "custom-issue",
-            discussion: "custom-discussion"
+            discussion: "custom-discussion",
+            stackPullRequests: ["custom-stack-pr"]
         )
 
         var pullRequestCallCount = 0
@@ -245,9 +351,27 @@ final class PRToRichTextTests: XCTestCase {
             emojiSettings: settings
         )
 
+        let stackResult = try PRToRichText.convert(
+            prLink: "github.com/owner/repo/stack/13",
+            ghRunner: { arguments in
+                if arguments[0] == "api" {
+                    return Data(#"{"pull_requests":[{"number":123}]}"#.utf8)
+                }
+                if arguments[1] == "view" {
+                    return Data(#"{"title":"Pull request","number":123,"additions":0,"deletions":0}"#.utf8)
+                }
+                return Data()
+            },
+            emojiSettings: settings
+        )
+
         XCTAssertEqual(pullRequestResult.markdown, ":custom-pr: Pull request [repo#123](https://github.com/owner/repo/pull/123) `+0 -0`")
         XCTAssertEqual(issueResult.markdown, ":custom-issue: Issue [repo#42](https://github.com/owner/repo/issues/42)")
         XCTAssertEqual(discussionResult.markdown, ":custom-discussion: Discussion [repo#7](https://github.com/owner/repo/discussions/7)")
+        XCTAssertEqual(stackResult.markdown, """
+        :custom-pr: Stack of 1 changes [repo#13](https://github.com/owner/repo/stack/13):
+        - :custom-stack-pr: Pull request [repo#123](https://github.com/owner/repo/pull/123) `+0 -0`
+        """)
     }
 
     func testSlackEmojiSettingsPersistNormalizedNames() throws {
@@ -260,7 +384,8 @@ final class PRToRichTextTests: XCTestCase {
         let settings = SlackEmojiSettings(
             pullRequest: " :custom-pr: ",
             issue: "custom-issue",
-            discussion: ":custom-discussion"
+            discussion: ":custom-discussion",
+            stackPullRequests: [" :first: ", "", ":third"]
         )
         settings.save(to: userDefaults)
 
@@ -269,9 +394,23 @@ final class PRToRichTextTests: XCTestCase {
             SlackEmojiSettings(
                 pullRequest: "custom-pr",
                 issue: "custom-issue",
-                discussion: "custom-discussion"
+                discussion: "custom-discussion",
+                stackPullRequests: ["first", "", "third"]
             )
         )
+    }
+
+    func testExistingEmojiPreferencesKeepStandaloneChoiceAndUseNewStackDefaults() throws {
+        let suiteName = "PastePRTests.\(UUID().uuidString)"
+        let userDefaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
+        defer { userDefaults.removePersistentDomain(forName: suiteName) }
+        userDefaults.set("existing-pr", forKey: "SlackEmojiPullRequest")
+
+        let settings = SlackEmojiSettings(userDefaults: userDefaults)
+
+        XCTAssertEqual(settings.pullRequestEmoji, ":existing-pr:")
+        XCTAssertEqual(settings.stackPullRequestEmoji(at: 0), ":one:")
+        XCTAssertEqual(settings.stackPullRequestEmoji(at: 1), ":two:")
     }
 
     func testUnsupportedHostDoesNotInvokeGitHubCLI() {
@@ -291,12 +430,15 @@ final class PRToRichTextTests: XCTestCase {
         XCTAssertTrue(PRToRichText.isSupportedGitHubLink("github.com/owner/repo/pull/42"))
         XCTAssertTrue(PRToRichText.isSupportedGitHubLink("https://github.com/owner/repo/issues/42/comments"))
         XCTAssertTrue(PRToRichText.isSupportedGitHubLink("https://www.github.com/owner/repo/discussions/42?answer=1"))
+        XCTAssertTrue(PRToRichText.isSupportedGitHubLink("github.com/stellar/stellar-asset-contract-spec/stack/13"))
     }
 
     func testUnsupportedGitHubLinkDetection() {
         XCTAssertFalse(PRToRichText.isSupportedGitHubLink("https://gitlab.com/owner/repo/issues/42"))
         XCTAssertFalse(PRToRichText.isSupportedGitHubLink("https://github.com/owner/repo"))
         XCTAssertFalse(PRToRichText.isSupportedGitHubLink("https://github.com/owner/repo/pull/42 extra text"))
+        XCTAssertFalse(PRToRichText.isSupportedGitHubLink("https://github.com/owner/repo/stack/0"))
+        XCTAssertFalse(PRToRichText.isSupportedGitHubLink("https://github.com/owner/repo/stack/not-a-number"))
     }
 
     func testClipboardKeepsOriginalPlainTextAndWritesRichHTML() throws {

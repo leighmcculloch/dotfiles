@@ -379,26 +379,29 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     @objc private func configureSlackEmojis() {
         let settings = SlackEmojiSettings(userDefaults: .standard)
         let pullRequestField = NSTextField(string: settings.pullRequestEmoji)
+        let stackPullRequestsField = NSTextField(string: settings.stackPullRequests
+            .map { $0.isEmpty ? "" : ":\($0):" }.joined(separator: ", "))
         let issueField = NSTextField(string: settings.issueEmoji)
         let discussionField = NSTextField(string: settings.discussionEmoji)
-        let fields = [pullRequestField, issueField, discussionField]
+        let fields = [pullRequestField, stackPullRequestsField, issueField, discussionField]
 
         fields.forEach { field in
             field.widthAnchor.constraint(equalToConstant: 200).isActive = true
         }
 
         let grid = NSGridView(views: [
-            [NSTextField(labelWithString: "Pull requests"), pullRequestField],
+            [NSTextField(labelWithString: "PRs / stacks"), pullRequestField],
+            [NSTextField(labelWithString: "PRs in stacks"), stackPullRequestsField],
             [NSTextField(labelWithString: "Issues"), issueField],
             [NSTextField(labelWithString: "Discussions"), discussionField],
         ])
         grid.rowSpacing = 8
         grid.columnSpacing = 12
-        grid.frame = NSRect(x: 0, y: 0, width: 320, height: 90)
+        grid.frame = NSRect(x: 0, y: 0, width: 320, height: 120)
 
         let alert = NSAlert()
         alert.messageText = "Slack Emojis"
-        alert.informativeText = "Enter an emoji name for each GitHub link type. Colons are optional."
+        alert.informativeText = "Stack headers use the pull request emoji. For PRs in stacks, enter comma-separated emojis for the 1st, 2nd, 3rd PR, and so on. Colons are optional; blank entries use numbered defaults."
         alert.accessoryView = grid
         alert.addButton(withTitle: "Save")
         alert.addButton(withTitle: "Cancel")
@@ -408,7 +411,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         SlackEmojiSettings(
             pullRequest: pullRequestField.stringValue,
             issue: issueField.stringValue,
-            discussion: discussionField.stringValue
+            discussion: discussionField.stringValue,
+            stackPullRequests: stackPullRequestsField.stringValue
+                .components(separatedBy: ",")
         ).save()
     }
 
