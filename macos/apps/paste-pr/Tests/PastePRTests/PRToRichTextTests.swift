@@ -426,11 +426,87 @@ final class PRToRichTextTests: XCTestCase {
         XCTAssertFalse(invoked)
     }
 
+    func testMultipleLinksAreSeparatedByNewlinesInInputOrder() throws {
+        let links = [
+            "https://github.com/owner/base/pull/123/changes",
+            "github.com/other/project/issues/42",
+            "http://www.github.com/owner/base/discussions/7?answer=1",
+            "github.com/owner/base/stack/13",
+        ]
+        for separator in [" ", "\n", "\r\n", "\t", " \n\t\u{00A0}"] {
+            let result = try PRToRichText.convert(
+                prLink: " \t" + links.joined(separator: separator) + "\n ",
+                ghRunner: { arguments in
+                    switch arguments[0] {
+                    case "pr":
+                        if arguments[1] == "diff" { return Data() }
+                        return Data(#"{"title":"Fix <thing>","number":123,"additions":0,"deletions":0}"#.utf8)
+                    case "issue":
+                        return Data(#"{"title":"Track & fix","number":42}"#.utf8)
+                    case "discussion":
+                        return Data(#"{"title":"Question","number":7}"#.utf8)
+                    case "api":
+                        return Data(#"{"pull_requests":[{"number":123}]}"#.utf8)
+                    default:
+                        throw NSError(domain: "PastePRTests", code: 1)
+                    }
+                }
+            )
+
+            XCTAssertEqual(result.markdown, """
+            :github-rainbow: Fix <thing> [base#123](https://github.com/owner/base/pull/123) `+0 -0`
+            :github-link-issue: Track & fix [project#42](https://github.com/other/project/issues/42)
+            :github-link-discussion: Question [base#7](https://github.com/owner/base/discussions/7)
+            :github-rainbow: Stack of 1 changes [base#13](https://github.com/owner/base/stack/13):
+            - :one: Fix <thing> [base#123](https://github.com/owner/base/pull/123) `+0 -0`
+            """)
+            XCTAssertEqual(result.html, """
+            <p>:github-rainbow: Fix &lt;thing&gt; <a href="https://github.com/owner/base/pull/123">base#123</a> <code>+0 -0</code></p>
+            <p>:github-link-issue: Track &amp; fix <a href="https://github.com/other/project/issues/42">project#42</a></p>
+            <p>:github-link-discussion: Question <a href="https://github.com/owner/base/discussions/7">base#7</a></p>
+            <p>:github-rainbow: Stack of 1 changes <a href="https://github.com/owner/base/stack/13">base#13</a>:</p><ul><li>:one: Fix &lt;thing&gt; <a href="https://github.com/owner/base/pull/123">base#123</a> <code>+0 -0</code></li></ul>
+            """)
+        }
+    }
+
+    func testMultipleLinksAreValidatedBeforeFetching() {
+        var invoked = false
+        for input in [
+            "github.com/owner/repo/issues/42 https://gitlab.com/owner/repo/issues/7",
+            "github.com/owner/repo/issues/42 extra text",
+            " \n\t",
+            "",
+        ] {
+            XCTAssertFalse(PRToRichText.isSupportedGitHubLink(input))
+            XCTAssertThrowsError(try PRToRichText.convert(
+                prLink: input,
+                ghRunner: { _ in
+                    invoked = true
+                    return Data()
+                }
+            ))
+        }
+        XCTAssertFalse(invoked)
+    }
+
+    func testMultipleLinksDoNotReturnPartialResultsWhenFetchingFails() {
+        XCTAssertThrowsError(try PRToRichText.convert(
+            prLink: "github.com/owner/repo/issues/42 github.com/owner/repo/issues/7",
+            ghRunner: { arguments in
+                if arguments[2].hasSuffix("/7") {
+                    throw NSError(domain: "PastePRTests", code: 1)
+                }
+                return Data(#"{"title":"Track this","number":42}"#.utf8)
+            }
+        ))
+    }
+
     func testSupportedGitHubLinkDetection() {
         XCTAssertTrue(PRToRichText.isSupportedGitHubLink("github.com/owner/repo/pull/42"))
         XCTAssertTrue(PRToRichText.isSupportedGitHubLink("https://github.com/owner/repo/issues/42/comments"))
         XCTAssertTrue(PRToRichText.isSupportedGitHubLink("https://www.github.com/owner/repo/discussions/42?answer=1"))
         XCTAssertTrue(PRToRichText.isSupportedGitHubLink("github.com/stellar/stellar-asset-contract-spec/stack/13"))
+        XCTAssertTrue(PRToRichText.isSupportedGitHubLink(" \tgithub.com/owner/repo/pull/42 \n\t github.com/other/project/issues/7\r\n"))
     }
 
     func testUnsupportedGitHubLinkDetection() {

@@ -1,7 +1,7 @@
 import Foundation
 
-/// Converts a GitHub pull request, stack, issue, or discussion link into a rich-text
-/// clipboard entry.
+/// Converts whitespace-separated GitHub pull request, stack, issue, or discussion
+/// links into a rich-text clipboard entry.
 ///
 /// This mirrors the behaviour of the reference shell script: it asks the
 /// GitHub CLI for the resource's title, number, and repository, then counts
@@ -41,21 +41,27 @@ enum PRToRichText {
         ghRunner: GHRunner? = nil,
         emojiSettings: SlackEmojiSettings = .standard
     ) throws -> Result {
-        let link = try parseGitHubLink(prLink)
-
-        switch link.kind {
-        case .pullRequest:
-            let result = try convertPullRequest(link, ghRunner: ghRunner, emoji: emojiSettings.pullRequestEmoji)
-            return Result(markdown: result.markdown, html: "<p>\(result.html)</p>")
-        case .stack:
-            return try convertStack(link, ghRunner: ghRunner, emojiSettings: emojiSettings)
-        case .issue, .discussion:
-            return try convertIssueOrDiscussion(link, ghRunner: ghRunner, emojiSettings: emojiSettings)
+        let links = try parseGitHubLinks(prLink)
+        let results = try links.map { link in
+            switch link.kind {
+            case .pullRequest:
+                let result = try convertPullRequest(link, ghRunner: ghRunner, emoji: emojiSettings.pullRequestEmoji)
+                return Result(markdown: result.markdown, html: "<p>\(result.html)</p>")
+            case .stack:
+                return try convertStack(link, ghRunner: ghRunner, emojiSettings: emojiSettings)
+            case .issue, .discussion:
+                return try convertIssueOrDiscussion(link, ghRunner: ghRunner, emojiSettings: emojiSettings)
+            }
         }
+
+        return Result(
+            markdown: results.map(\.markdown).joined(separator: "\n"),
+            html: results.map(\.html).joined(separator: "\n")
+        )
     }
 
     static func isSupportedGitHubLink(_ input: String) -> Bool {
-        (try? parseGitHubLink(input)) != nil
+        (try? parseGitHubLinks(input)) != nil
     }
 
     private static func convertPullRequest(
@@ -291,6 +297,14 @@ enum PRToRichText {
             unprefixedPath == "tests-expanded" ||
             unprefixedPath.hasPrefix("tests-expanded/") ||
             unprefixedPath.contains("/tests-expanded/")
+    }
+
+    private static func parseGitHubLinks(_ input: String) throws -> [GitHubLink] {
+        let links = input.split(whereSeparator: \.isWhitespace)
+        guard !links.isEmpty else {
+            throw ConversionError.parseFailed
+        }
+        return try links.map { try parseGitHubLink(String($0)) }
     }
 
     private static func parseGitHubLink(_ input: String) throws -> GitHubLink {

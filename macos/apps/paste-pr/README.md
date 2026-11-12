@@ -44,6 +44,8 @@ brew upgrade --fetch-head paste-pr
 2. Press **⇧⌘P**, or click the menu bar icon and select **Convert GitHub Link to Rich Text**.
 3. Paste. The rich-text clipboard contains the formatted summary, while the plain-text clipboard keeps the original link.
 
+You can also copy multiple supported GitHub URLs separated by whitespace (spaces, newlines, tabs, etc.). Each URL is converted in order, with the rich-text summaries separated by newlines. This works with both the shortcut and automatic conversion. The plain-text clipboard keeps the original input; if any URL is unsupported or cannot be fetched, the clipboard is left unchanged.
+
 The menu bar icon briefly changes to a checkmark on success or an X if the clipboard has no supported GitHub link or the resource could not be fetched.
 
 ## Options
