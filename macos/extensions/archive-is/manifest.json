@@ -4,6 +4,7 @@
   "version": "1.0",
   "description": "Navigate the current page through archive.is",
   "permissions": ["activeTab"],
+  "host_permissions": ["http://*/*", "https://*/*"],
   "action": {
     "default_title": "View on archive.is"
   },
