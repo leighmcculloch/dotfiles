@@ -39,9 +39,24 @@ async function resolveDestination(url) {
         signal,
       });
       // Even a blocked article (e.g. HTTP 403) gives us its final URL.
-      if (response.body) await response.body.cancel();
       url = response.url;
-      if (!embeddedDestination(url)) break;
+      let destination = embeddedDestination(url);
+      if (!destination && new URL(url).hostname === "t.co") {
+        // Chrome receives an HTTP 200 page, not a 301. Read its literal
+        // destination without executing any of the page's JavaScript.
+        const html = await response.text();
+        const match = html.match(/location\.replace\(\s*("(?:\\.|[^"\\])*")\s*\)/);
+        if (match) {
+          const target = new URL(JSON.parse(match[1]), url);
+          if (target.protocol === "http:" || target.protocol === "https:") {
+            destination = target.href;
+          }
+        }
+      } else if (response.body) {
+        await response.body.cancel();
+      }
+      if (!destination) break;
+      url = destination;
     } catch {
       // Still allow archiving when the destination cannot be fetched.
       break;

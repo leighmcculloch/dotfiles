@@ -65,6 +65,19 @@ test("unwraps nested, double-encoded URLs without decoding the article's own que
   assert.equal(result.url, "https://archive.is/" + article);
 });
 
+test("follows t.co's HTTP 200 browser redirect page", async () => {
+  const short = "https://t.co/example";
+  const article = "https://news.example/story?id=3511&edition=test%20edition";
+  // t.co serves this to Chrome instead of the HTTP 301 returned to Node/curl.
+  const html = String.raw`<head><noscript><META http-equiv="refresh" content="0;URL=https://redirect.example/short"></noscript><title>https://redirect.example/short</title></head><script>window.opener = null; location.replace("https:\/\/redirect.example\/short")</script>`;
+  const result = await click(short, async (url) => {
+    if (url === short) return { url, text: async () => html };
+    if (url === "https://redirect.example/short") return { url: article };
+    throw new Error("Unexpected URL: " + url);
+  });
+  assert.equal(result.url, "https://archive.is/" + article);
+});
+
 test("ignores malformed and non-HTTP destinations", async () => {
   const url = "https://news.example/subscribe?bad=%E0%A4%A&next=javascript%3Aalert(1)";
   assert.equal((await click(url, async () => { throw new Error("Offline"); })).url,
