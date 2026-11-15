@@ -38,6 +38,13 @@ async function resolveDestination(url) {
         credentials: "omit",
         signal,
       });
+      const redirected = new URL(response.url);
+      if (redirected.origin === new URL(url).origin && /^\/nocookies\/?$/.test(redirected.pathname)) {
+        // A cookie-check page is not an article destination. Keep the URL
+        // we requested rather than archiving the interstitial.
+        if (response.body) await response.body.cancel();
+        break;
+      }
       // Even a blocked article (e.g. HTTP 403) gives us its final URL.
       url = response.url;
       let destination = embeddedDestination(url);
