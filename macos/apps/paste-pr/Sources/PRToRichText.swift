@@ -146,6 +146,26 @@ enum PRToRichText {
         ghRunner: GHRunner?,
         emojiSettings: SlackEmojiSettings
     ) throws -> Result {
+        var link = link
+        if link.kind == .discussion, link.owner.lowercased() == "orgs" {
+            // Organization discussions live in a repository, but gh discussion
+            // view only accepts the repository URL. GitHub exposes that
+            // repository in the discussion page's metadata.
+            let page = try fetch([
+                "api", link.url, "-H", "Accept: text/html",
+            ], with: ghRunner)
+            guard let html = String(data: page, encoding: .utf8),
+                  let range = html.range(
+                    of: #"<meta\s+name="octolytics-dimension-repository_nwo"\s+content="([A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)""#,
+                    options: .regularExpression
+                  ),
+                  let repository = html[range].split(separator: "\"").last
+            else {
+                throw ConversionError.parseFailed
+            }
+            link = try parseGitHubLink("https://github.com/\(repository)/discussions/\(link.number)")
+        }
+
         let command = link.kind == .issue ? "issue" : "discussion"
         let json = try fetch([
             command, "view", link.url,

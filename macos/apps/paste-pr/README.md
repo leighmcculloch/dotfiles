@@ -23,6 +23,8 @@ gh auth login
 
 Discussion links require a GitHub CLI version that provides `gh discussion view`.
 
+Organization discussion links (`github.com/orgs/<org>/discussions/<number>`) are resolved to their backing repository. The rich-text summary uses the repository name and repository discussion URL; the plain-text clipboard keeps the original organization link. If the repository cannot be resolved, the clipboard is left unchanged.
+
 ## Install
 
 ### Homebrew

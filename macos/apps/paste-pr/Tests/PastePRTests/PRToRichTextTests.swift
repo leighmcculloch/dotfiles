@@ -318,6 +318,48 @@ final class PRToRichTextTests: XCTestCase {
         XCTAssertEqual(result.html, "<p>:github-link-discussion: Question <a href=\"https://github.com/owner/repo/discussions/7\">repo#7</a></p>")
     }
 
+    func testOrganizationDiscussionResolvesBackingRepository() throws {
+        for input in [
+            "github.com/orgs/example/discussions/27",
+            "http://www.github.com/orgs/example/discussions/27/answer?sort=new#discussioncomment-42",
+        ] {
+            XCTAssertTrue(PRToRichText.isSupportedGitHubLink(input))
+            let result = try PRToRichText.convert(
+                prLink: input,
+                ghRunner: { arguments in
+                    if arguments[0] == "api" {
+                        XCTAssertEqual(arguments, [
+                            "api", "https://github.com/orgs/example/discussions/27",
+                            "-H", "Accept: text/html",
+                        ])
+                        return Data(#"<meta name="octolytics-dimension-repository_nwo" content="example/design-notes" />"#.utf8)
+                    }
+                    XCTAssertEqual(arguments, [
+                        "discussion", "view", "https://github.com/example/design-notes/discussions/27",
+                        "--json", "title,number",
+                    ])
+                    return Data(#"{"title":"Design <question> & answer","number":27}"#.utf8)
+                }
+            )
+
+            XCTAssertEqual(result.markdown, ":github-link-discussion: Design <question> & answer [design-notes#27](https://github.com/example/design-notes/discussions/27)")
+            XCTAssertEqual(result.html, "<p>:github-link-discussion: Design &lt;question&gt; &amp; answer <a href=\"https://github.com/example/design-notes/discussions/27\">design-notes#27</a></p>")
+        }
+    }
+
+    func testOrganizationDiscussionFailsWhenRepositoryCannotBeResolved() {
+        for page in ["<html>Sign in</html>", #"<meta name="octolytics-dimension-repository_nwo" content="invalid" />"#] {
+            XCTAssertThrowsError(try PRToRichText.convert(
+                prLink: "github.com/orgs/example/discussions/27",
+                ghRunner: { _ in Data(page.utf8) }
+            ))
+        }
+        XCTAssertThrowsError(try PRToRichText.convert(
+            prLink: "github.com/orgs/example/discussions/27",
+            ghRunner: { _ in throw NSError(domain: "PastePRTests", code: 1) }
+        ))
+    }
+
     func testConversionUsesConfiguredEmojiForEachLinkKind() throws {
         let settings = SlackEmojiSettings(
             pullRequest: "custom-pr",
